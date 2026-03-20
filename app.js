@@ -15,13 +15,7 @@ const BOT_API      = 'https://ninjubot.onrender.com';
 // ── Discord OAuth2 config ──────────────────────────────────
 // Replace CLIENT_ID with your actual Discord application client ID
 const DISCORD_CLIENT_ID    = '1483732014380224552';
-// Derive redirect URI from current page path so GitHub Pages subdirectories work correctly.
-// e.g. https://sohamdasbiswas.github.io/NinjuBot-Dashboard/dashboard.html
-const DISCORD_REDIRECT_URI = encodeURIComponent(
-  window.location.origin +
-  window.location.pathname.replace(/[^/]*$/, '') +
-  'dashboard.html'
-);
+const DISCORD_REDIRECT_URI = encodeURIComponent(window.location.origin + '/dashboard.html');
 const DISCORD_SCOPES       = 'identify+guilds';
 const OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${DISCORD_REDIRECT_URI}&response_type=code&scope=${DISCORD_SCOPES}`;
 
@@ -51,12 +45,22 @@ const GRADS = {
 //  BOOT — decide which screen to show
 // ══════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
+  const isDashboard = !!document.getElementById('oauth-gate');
+
+  // ── Landing page (index.html) ──────────────────────────────
+  if (!isDashboard) {
+    fetchHealth();
+    setInterval(fetchHealth, 30000);
+    initReveal();
+    return;
+  }
+
+  // ── Dashboard page (dashboard.html) ───────────────────────
   // Handle OAuth2 callback (?code=xxx in URL)
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
 
   if (code) {
-    // Clean URL
     window.history.replaceState({}, '', window.location.pathname);
     await handleOAuthCallback(code);
     return;
@@ -72,10 +76,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     showOAuthGate();
   }
 
-  // Init health polling
   fetchHealth();
   setInterval(fetchHealth, 30000);
-  // Scroll reveal for landing page
   initReveal();
 });
 
