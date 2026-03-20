@@ -15,7 +15,13 @@ const BOT_API      = 'https://ninjubot.onrender.com';
 // ── Discord OAuth2 config ──────────────────────────────────
 // Replace CLIENT_ID with your actual Discord application client ID
 const DISCORD_CLIENT_ID    = '1483732014380224552';
-const DISCORD_REDIRECT_URI = encodeURIComponent(window.location.origin + '/dashboard.html');
+// Derive redirect URI from current page path so GitHub Pages subdirectories work correctly.
+// e.g. https://sohamdasbiswas.github.io/NinjuBot-Dashboard/dashboard.html
+const DISCORD_REDIRECT_URI = encodeURIComponent(
+  window.location.origin +
+  window.location.pathname.replace(/[^/]*$/, '') +
+  'dashboard.html'
+);
 const DISCORD_SCOPES       = 'identify+guilds';
 const OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${DISCORD_REDIRECT_URI}&response_type=code&scope=${DISCORD_SCOPES}`;
 
