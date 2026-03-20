@@ -11,14 +11,19 @@
 <body>
 
 <nav class="nav">
+  <div class="nav-neu"></div>
   <div class="nav-in">
-    <a href="#" class="nav-logo"><img src="assets/Ninjubot-nobg.png" alt="NinjuBot" style="width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(78,255,145,0.5))">NinjuBot</a>
+    <a href="#" class="nav-logo">
+      <img src="assets/Ninjubot-nobg.png" alt="NinjuBot" style="width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(78,255,145,0.5))">NinjuBot
+    </a>
     <div class="nav-links">
       <a href="#features" class="nl">Features</a>
       <a href="#commands" class="nl">Commands</a>
       <a href="dashboard.html" class="nl">Dashboard</a>
-      <a href="https://github.com/SohamDasBiswas/NinjuBot" target="_blank" class="nl">GitHub</a>
-      <a href="https://discord.com/oauth2/authorize?client_id=1483732014380224552&permissions=8&scope=bot%20applications.commands" target="_blank" class="nav-cta">Add to Discord</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1483732014380224552&permissions=8&scope=bot%20applications.commands" target="_blank" class="nav-cta" id="nav-cta-btn">
+        <canvas class="btn-particles" id="cta-particles"></canvas>
+        <span style="position:relative;z-index:1">+ Add to Discord</span>
+      </a>
     </div>
     <button class="ham" onclick="toggleMenu()" aria-label="Menu">☰</button>
   </div>
@@ -330,5 +335,104 @@
 })();
 </script>
 <script src="app.js"></script>
+
+<script>
+// ── Navbar CTA Particles ──────────────────────────────────────
+(function() {
+  const btn    = document.getElementById('nav-cta-btn');
+  const canvas = document.getElementById('cta-particles');
+  if (!btn || !canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], raf;
+  const MAX = 38;
+
+  function resize() {
+    const r = btn.getBoundingClientRect();
+    W = canvas.width  = r.width;
+    H = canvas.height = r.height;
+  }
+
+  function Particle(burst) {
+    this.reset(burst);
+  }
+  Particle.prototype.reset = function(burst) {
+    this.x  = Math.random() * W;
+    this.y  = burst ? Math.random() * H : H + 4;
+    this.vx = (Math.random() - 0.5) * (burst ? 2.5 : 0.6);
+    this.vy = burst ? -(Math.random() * 3 + 1.5) : -(Math.random() * 1.2 + 0.4);
+    this.r  = Math.random() * 2.2 + 0.6;
+    this.alpha = burst ? Math.random() * 0.9 + 0.1 : 0;
+    this.targetAlpha = Math.random() * 0.75 + 0.25;
+    this.life  = Math.random() * 80 + 40;
+    this.lived = 0;
+    // code-like chars or dots
+    this.char  = Math.random() > 0.55 ? null : ['<','>','/','{}','[]','01',';;'][Math.floor(Math.random()*7)];
+  };
+
+  function spawnBurst(n) {
+    for (let i = 0; i < n; i++) {
+      particles.push(new Particle(true));
+    }
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Maintain particle count
+    while (particles.length < MAX) particles.push(new Particle(false));
+
+    particles.forEach((p, i) => {
+      p.x    += p.vx;
+      p.y    += p.vy;
+      p.lived++;
+
+      // fade in
+      if (p.alpha < p.targetAlpha) p.alpha = Math.min(p.targetAlpha, p.alpha + 0.03);
+
+      // fade out near end of life
+      const lifeRatio = p.lived / p.life;
+      const a = lifeRatio > 0.7 ? p.alpha * (1 - (lifeRatio - 0.7) / 0.3) : p.alpha;
+
+      if (p.char) {
+        ctx.save();
+        ctx.globalAlpha = a * 0.7;
+        ctx.fillStyle   = '#4eff91';
+        ctx.font        = `${p.r * 4.5}px monospace`;
+        ctx.fillText(p.char, p.x, p.y);
+        ctx.restore();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(78,255,145,${a})`;
+        ctx.fill();
+      }
+
+      if (p.lived >= p.life || p.y < -10 || p.x < -10 || p.x > W + 10) {
+        particles[i] = new Particle(false);
+      }
+    });
+
+    raf = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    resize();
+    if (!raf) { spawnBurst(12); tick(); }
+  }
+  function stop() {
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    particles = [];
+    ctx.clearRect(0, 0, W, H);
+  }
+
+  btn.addEventListener('mouseenter', start);
+  btn.addEventListener('mouseleave', stop);
+  btn.addEventListener('focus',      start);
+  btn.addEventListener('blur',       stop);
+
+  window.addEventListener('resize', () => { if (raf) resize(); });
+})();
+</script>
 </body>
 </html>
