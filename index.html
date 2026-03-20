@@ -104,7 +104,7 @@
       <div class="fc"><div class="fc-badge">New</div><div class="fc-icon">🚀</div><h3 class="fc-title">Server Booster Cards</h3><p class="fc-desc">Custom animated cards for server boosts. Unique welcome and thank-you designs per server.</p><div class="fc-tags"><span class="fc-tag">Custom Design</span><span class="fc-tag">Animated</span><span class="fc-tag">Per-Server</span></div></div>
       <div class="fc"><div class="fc-icon">🛡️</div><h3 class="fc-title">Full Moderation</h3><p class="fc-desc">Ban, kick, mute, timeout, warn with full audit logs. Anti-spam, link filter, auto-mod.</p><div class="fc-tags"><span class="fc-tag">Audit Logs</span><span class="fc-tag">Anti-Spam</span><span class="fc-tag">Auto-Mod</span></div></div>
       <div class="fc"><div class="fc-icon">🎭</div><h3 class="fc-title">Truth or Dare</h3><p class="fc-desc">AI generates funny Hinglish truths & dares. Interactive buttons. Play again instantly.</p><div class="fc-tags"><span class="fc-tag">AI-Generated</span><span class="fc-tag">Hinglish</span></div></div>
-      <div class="fc"><div class="fc-icon">🗄️</div><h3 class="fc-title">Persistent Data</h3><p class="fc-desc">Cloud database backend. Coins, XP, settings and configs never reset on redeploy.</p><div class="fc-tags"><span class="fc-tag">Cloud</span><span class="fc-tag">Cloud</span><span class="fc-tag">Safe</span></div></div>
+      <div class="fc"><div class="fc-icon">🗄️</div><h3 class="fc-title">Persistent Data</h3><p class="fc-desc">Cloud database backend. Coins, XP, settings and configs never reset on redeploy.</p><div class="fc-tags"><span class="fc-tag">Persistent</span><span class="fc-tag">Auto-Sync</span><span class="fc-tag">Safe</span></div></div>
     </div>
   </div>
 </section>
@@ -388,29 +388,52 @@
 </script>
 
 <script>
-// ── Card 3D Wobble ────────────────────────────────────────────
+// ── Card codeblock-style wobble ───────────────────────────────
 window.addEventListener('load', function() {
-  const TILT = 14;
-  const SCALE = 1.035;
-
   document.querySelectorAll('.fc').forEach(card => {
-    // clear any inline transform/transition set by initReveal so wobble can take over
+    let raf = null;
+    let targetX = 0, targetY = 0;
+    let currentX = 0, currentY = 0;
+    let hovering = false;
+
+    // smooth lerp animation loop
+    function animate() {
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+
+      const dx = Math.abs(targetX - currentX);
+      const dy = Math.abs(targetY - currentY);
+
+      card.style.transform = `perspective(800px) rotateX(${currentX.toFixed(3)}deg) rotateY(${currentY.toFixed(3)}deg) scale(${hovering ? 1.03 : 1})`;
+
+      if (hovering || dx > 0.01 || dy > 0.01) {
+        raf = requestAnimationFrame(animate);
+      } else {
+        card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+        raf = null;
+      }
+    }
+
     card.addEventListener('mouseenter', () => {
-      card.style.transition = 'box-shadow 0.2s ease, border-color 0.2s ease';
+      hovering = true;
+      card.style.transition = 'box-shadow 0.25s ease, border-color 0.25s ease';
+      if (!raf) raf = requestAnimationFrame(animate);
     });
 
     card.addEventListener('mousemove', e => {
-      const r  = card.getBoundingClientRect();
-      const x  = (e.clientX - r.left) / r.width  - 0.5;
-      const y  = (e.clientY - r.top)  / r.height - 0.5;
-      const rX = (-y * TILT).toFixed(2);
-      const rY = ( x * TILT).toFixed(2);
-      card.style.transform = `perspective(700px) rotateX(${rX}deg) rotateY(${rY}deg) scale(${SCALE})`;
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - 0.5;
+      const y = (e.clientY - r.top)  / r.height - 0.5;
+      targetX = -y * 16;
+      targetY =  x * 16;
     });
 
     card.addEventListener('mouseleave', () => {
-      card.style.transition = 'transform 0.5s cubic-bezier(0.23,1,0.32,1), box-shadow 0.2s ease, border-color 0.2s ease';
-      card.style.transform  = 'perspective(700px) rotateX(0deg) rotateY(0deg) scale(1)';
+      hovering = false;
+      targetX = 0;
+      targetY = 0;
+      card.style.transition = 'box-shadow 0.25s ease, border-color 0.25s ease';
+      if (!raf) raf = requestAnimationFrame(animate);
     });
   });
 });
