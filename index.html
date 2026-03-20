@@ -386,5 +386,35 @@
   btn.addEventListener('mouseleave',stop);
 })();
 </script>
+
+<script>
+// ── Card 3D Wobble ────────────────────────────────────────────
+(function() {
+  const TILT = 12;      // max tilt degrees
+  const SCALE = 1.03;   // scale on hover
+  const LIFT  = -8;     // translateY px
+
+  document.querySelectorAll('.fc').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - 0.5;  // -0.5 to 0.5
+      const y = (e.clientY - r.top)  / r.height - 0.5;
+      const rotX = (-y * TILT).toFixed(2);
+      const rotY = ( x * TILT).toFixed(2);
+      card.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${SCALE}) translateY(${LIFT}px)`;
+      card.style.transition = 'box-shadow 0.25s ease, border-color 0.25s ease';
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg) scale(1) translateY(0px)';
+      card.style.transition = 'transform 0.45s cubic-bezier(0.23,1,0.32,1), box-shadow 0.25s ease, border-color 0.25s ease';
+    });
+
+    card.addEventListener('mouseenter', () => {
+      card.style.transition = 'transform 0.1s ease, box-shadow 0.25s ease, border-color 0.25s ease';
+    });
+  });
+})();
+</script>
 </body>
 </html>

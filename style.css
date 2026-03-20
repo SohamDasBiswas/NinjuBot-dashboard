@@ -265,11 +265,18 @@ section{padding:100px 40px}
 /* ════════════ FEATURES ════════════ */
 .features{background:var(--base)}
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px}
-.fc{padding:30px;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.05);transition:all var(--t) var(--ease),opacity 0.5s var(--ease),transform 0.5s var(--ease);position:relative;overflow:hidden}
+.fc{
+  padding:30px;background:var(--surface);border-radius:var(--r-lg);
+  box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.05);
+  transition:box-shadow 0.25s ease,border-color 0.25s ease,opacity 0.5s ease,transform 0.5s ease;
+  position:relative;overflow:hidden;
+  transform-style:preserve-3d;
+  will-change:transform;
+}
 /* JS sets opacity:0 inline on .fc — this makes them visible once scrolled into view */
 .fc.in{opacity:1!important;transform:translateY(0)!important}
-.fc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green-border),transparent);opacity:0;transition:opacity var(--t) var(--ease)}
-.fc:hover{transform:translateY(-6px);box-shadow:var(--neu-green);border-color:var(--green-border)}
+.fc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green-border),transparent);opacity:0;transition:opacity 0.25s ease}
+.fc:hover{box-shadow:var(--neu-green);border-color:var(--green-border)}
 .fc:hover::after{opacity:1}
 .fc-badge{position:absolute;top:16px;right:16px;background:var(--green);color:var(--base-down);padding:3px 10px;border-radius:999px;font-size:0.62rem;font-weight:800;letter-spacing:0.5px;text-transform:uppercase}
 .fc-icon{width:46px;height:46px;border-radius:var(--r-sm);background:var(--green-lo);box-shadow:var(--neu-out-sm);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:20px;border:1px solid var(--green-border)}
