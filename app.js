@@ -867,6 +867,121 @@ async function fetchMongoStats() {
   }
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  ADMIN — Currency Manager
+// ══════════════════════════════════════════════════════════════
+
+let cadminCurrentUser = null;
+const cadminLog = [];
+
+function cadminToggleAmount() {
+  const action = document.getElementById('cadmin-action')?.value;
+  const field  = document.getElementById('cadmin-amount-field');
+  if (field) field.style.display = action === 'reset' ? 'none' : 'flex';
+}
+
+async function cadminLookup() {
+  const userId = document.getElementById('cadmin-user-id')?.value?.trim();
+  if (!userId) return showToast('Enter a user ID first', 'warn');
+  if (!currentGuild) return showToast('Select a server first', 'warn');
+
+  const card = document.getElementById('cadmin-user-card');
+  if (card) card.style.display = 'none';
+  cadminCurrentUser = null;
+
+  try {
+    const res  = await fetch(`${BOT_API}/economy/user?guild_id=${currentGuild.id}&user_id=${userId}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Lookup failed');
+
+    cadminCurrentUser = { ...data, guild_id: currentGuild.id };
+
+    // Populate card
+    const avatar = `https://cdn.discordapp.com/avatars/${userId}/avatar.png?size=64`;
+    document.getElementById('cadmin-avatar').src = avatar;
+    document.getElementById('cadmin-avatar').onerror = function(){ this.src='https://cdn.discordapp.com/embed/avatars/0.png'; };
+    document.getElementById('cadmin-uname').textContent = data.username || 'Unknown';
+    document.getElementById('cadmin-uid-display').textContent = userId;
+    document.getElementById('cadmin-balance').textContent = `₹${(data.balance||0).toLocaleString()}`;
+    document.getElementById('cadmin-wl').textContent = `W: ${data.wins||0}  L: ${data.losses||0}`;
+    if (card) card.style.display = 'block';
+
+    showToast(`✅ Loaded ${data.username}`);
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+async function cadminExecute() {
+  if (!cadminCurrentUser) return showToast('Look up a user first', 'warn');
+
+  const action = document.getElementById('cadmin-action')?.value;
+  const amount = parseInt(document.getElementById('cadmin-amount')?.value || '0');
+
+  if (action !== 'reset' && (!amount || amount <= 0)) {
+    return showToast('Enter a valid amount', 'warn');
+  }
+
+  try {
+    const res  = await fetch(`${BOT_API}/economy/admin`, {
+      method:  'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        guild_id: cadminCurrentUser.guild_id,
+        user_id:  cadminCurrentUser.user_id,
+        amount,
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+
+    // Update balance display
+    document.getElementById('cadmin-balance').textContent = `₹${(data.new_balance||0).toLocaleString()}`;
+    cadminCurrentUser.balance = data.new_balance;
+
+    // Add to log
+    const actionLabels = { add:'➕ Added', remove:'➖ Removed', set:'⚙️ Set to', reset:'🔄 Reset' };
+    const amountStr    = action === 'reset' ? '' : ` ₹${amount.toLocaleString()}`;
+    cadminAddLog(actionLabels[action] + amountStr, data.username, data.old_balance, data.new_balance);
+
+    showToast(`✅ Done! New balance: ₹${(data.new_balance||0).toLocaleString()}`);
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+function cadminAddLog(action, username, oldBal, newBal) {
+  const log = document.getElementById('cadmin-log');
+  if (!log) return;
+
+  const diff    = newBal - oldBal;
+  const diffStr = diff >= 0 ? `+₹${diff.toLocaleString()}` : `-₹${Math.abs(diff).toLocaleString()}`;
+  const color   = diff >= 0 ? 'var(--green)' : '#ff6b6b';
+  const time    = new Date().toLocaleTimeString();
+
+  // Clear empty state
+  if (log.querySelector('div[style*="No actions"]')) log.innerHTML = '';
+
+  const entry = document.createElement('div');
+  entry.style.cssText = 'background:var(--base-down);border-radius:var(--r-md);padding:10px 14px;border:1px solid rgba(78,255,145,0.08);display:flex;align-items:center;gap:10px';
+  entry.innerHTML = `
+    <div style="flex:1">
+      <div style="font-size:0.82rem;font-weight:700">${action} — <span style="color:var(--tx-2)">${username}</span></div>
+      <div style="font-size:0.7rem;color:var(--tx-3);margin-top:2px">${time} · ₹${oldBal.toLocaleString()} → ₹${newBal.toLocaleString()}</div>
+    </div>
+    <div style="font-family:var(--font-d);font-weight:800;font-size:0.95rem;color:${color}">${diffStr}</div>`;
+  log.prepend(entry);
+}
+
+function cadminClearLog() {
+  const log = document.getElementById('cadmin-log');
+  if (log) log.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tx-3);font-size:0.8rem">No actions yet</div>';
+}
+
 // ══════════════════════════════════════════════════════════════
 //  LANDING PAGE TABS
 // ══════════════════════════════════════════════════════════════

@@ -114,6 +114,7 @@
   <div class="sidebar-section" style="color:#ff6b6b;border-top:1px solid rgba(255,107,107,0.2);margin-top:6px;padding-top:14px">🔐 Admin Only</div>
   <nav class="sidebar-nav" style="padding-bottom:4px">
     <div class="sl" onclick="showPanel('mongodb',this)"><span class="sl-icon">🗄️</span> MongoDB Stats</div>
+    <div class="sl" onclick="showPanel('currency-admin',this)"><span class="sl-icon">💸</span> Currency Manager</div>
   </nav>
   </div>
 
@@ -555,6 +556,75 @@
       </div>
     </div>
 
+
+    <!-- ══════ CURRENCY MANAGER (ADMIN) ══════ -->
+    <div id="panel-currency-admin" class="panel">
+      <div class="db-row">
+
+        <!-- Left: Lookup + Action -->
+        <div class="db-card">
+          <div class="card-hdr">
+            <h3>💸 Currency Manager <span style="font-size:0.65rem;background:rgba(255,107,107,0.15);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);padding:2px 8px;border-radius:999px;font-weight:700;font-family:var(--font-m)">👑 Admin</span></h3>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🔍 Look Up User</div>
+            <div class="field">
+              <label class="field-label">Discord User ID</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="cadmin-user-id" class="f-input" placeholder="e.g. 769225445803032617" style="flex:1">
+                <button class="btn-sm-o" onclick="cadminLookup()" style="white-space:nowrap">🔍 Lookup</button>
+              </div>
+              <span class="field-hint">Paste the user's Discord ID</span>
+            </div>
+
+            <!-- User info card (hidden until lookup) -->
+            <div id="cadmin-user-card" style="display:none;background:var(--base-down);border-radius:var(--r-md);padding:14px 16px;border:1px solid var(--green-border);margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <img id="cadmin-avatar" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--green)" alt="">
+                <div>
+                  <div id="cadmin-uname" style="font-weight:700;font-size:0.9rem"></div>
+                  <div id="cadmin-uid-display" style="font-size:0.7rem;color:var(--tx-3)"></div>
+                </div>
+                <div style="margin-left:auto;text-align:right">
+                  <div style="font-size:0.7rem;color:var(--tx-3)">Balance</div>
+                  <div id="cadmin-balance" style="font-family:var(--font-d);font-size:1.2rem;font-weight:800;color:var(--green)">₹0</div>
+                  <div id="cadmin-wl" style="font-size:0.68rem;color:var(--tx-3)"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section-title" style="margin-top:4px">⚡ Action</div>
+            <div class="field">
+              <label class="field-label">Action</label>
+              <select id="cadmin-action" class="f-select" onchange="cadminToggleAmount()">
+                <option value="add">➕ Add Coins</option>
+                <option value="remove">➖ Remove Coins</option>
+                <option value="set">⚙️ Set Balance</option>
+                <option value="reset">🔄 Reset to 0</option>
+              </select>
+            </div>
+            <div class="field" id="cadmin-amount-field">
+              <label class="field-label">Amount</label>
+              <input type="number" id="cadmin-amount" class="f-input" placeholder="e.g. 5000" min="1">
+            </div>
+            <button class="btn-sm" onclick="cadminExecute()" style="width:100%;margin-top:4px">💸 Execute</button>
+          </div>
+        </div>
+
+        <!-- Right: Action Log -->
+        <div class="db-card">
+          <div class="card-hdr">
+            <h3>📋 Action Log</h3>
+            <button class="btn-sm-o" onclick="cadminClearLog()">🗑️ Clear</button>
+          </div>
+          <div id="cadmin-log" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto">
+            <div style="text-align:center;padding:40px;color:var(--tx-3);font-size:0.8rem">No actions yet</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div><!-- /panels -->
 </main>
 </div><!-- /dashboard-app -->
