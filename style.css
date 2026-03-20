@@ -100,10 +100,10 @@ button{cursor:pointer;font-family:var(--font-b)}
 .nav{position:fixed;top:12px;left:20px;right:20px;z-index:999;height:54px}
 .nav-neu{width:100%;max-width:1100px;margin:0 auto;height:54px;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--neu-out),0 0 0 1px rgba(78,255,145,0.12),inset 0 1px 0 rgba(78,255,145,0.07);backdrop-filter:blur(28px) saturate(1.8);position:relative;display:block}
 .nav-neu::before{content:'';position:absolute;top:0;left:30px;right:30px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.35),transparent);border-radius:1px;pointer-events:none}
-.nav-in{max-width:1100px;margin:0 auto;padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:absolute;inset:0;border-radius:var(--r-lg);overflow:hidden}
+.nav-in{max-width:1100px;margin:0 auto;padding:0 20px;height:54px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;position:absolute;inset:0;border-radius:var(--r-lg);overflow:hidden}
 .nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-size:1.2rem;font-weight:800;letter-spacing:0.5px;flex-shrink:0}
 .logo-mark{width:38px;height:38px;border-radius:10px;background:var(--surface);box-shadow:var(--neu-out-sm);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid var(--green-border)}
-.nav-links{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:6px;justify-content:center}
 .nl{
   padding:7px 16px;
   border-radius:var(--r-sm);
@@ -112,21 +112,22 @@ button{cursor:pointer;font-family:var(--font-b)}
   color:var(--tx-2);
   transition:all 0.18s ease;
   border:none;
-  background:#162b1d;
+  background:#0f1e14;
   cursor:pointer;
   text-decoration:none;
   white-space:nowrap;
-  box-shadow:3px 3px 7px #090f0b,-3px -3px 7px #233d2a;
+  /* inset neumorphic — sunken into the pill */
+  box-shadow:inset 2px 2px 5px #070e09,inset -2px -2px 5px #1a2e1e;
 }
 .nl:hover{
   color:var(--green);
-  background:#162b1d;
-  box-shadow:3px 3px 7px #090f0b,-3px -3px 7px #233d2a,0 0 0 1px rgba(78,255,145,0.22),0 0 12px rgba(78,255,145,0.08);
+  background:#0f1e14;
+  box-shadow:inset 2px 2px 5px #070e09,inset -2px -2px 5px #1a2e1e,0 0 0 1px rgba(78,255,145,0.25);
 }
 .nl:active{
   color:var(--green);
-  background:#101e15;
-  box-shadow:inset 3px 3px 6px #090f0b,inset -3px -3px 6px #1d3224;
+  background:#0c1810;
+  box-shadow:inset 4px 4px 8px #070e09,inset -4px -4px 8px #1a2e1e;
 }
 /* Neumorphic CTA button */
 .nav-cta{position:relative;overflow:hidden;padding:8px 18px;border-radius:var(--r-sm);background:var(--green);color:var(--base-down);font-size:0.855rem;font-weight:700;border:none;box-shadow:4px 4px 10px #040c07,-2px -2px 8px #1e6e3c,0 0 18px rgba(78,255,145,0.25);transition:box-shadow 0.2s ease,transform 0.2s ease;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;flex-shrink:0;text-decoration:none;line-height:1}
@@ -138,7 +139,7 @@ button{cursor:pointer;font-family:var(--font-b)}
 .nav-user{display:flex;align-items:center;gap:10px}
 .nav-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--green-border);box-shadow:0 0 12px rgba(78,255,145,0.2)}
 .nav-uname{font-size:0.875rem;font-weight:600;color:var(--tx)}
-.ham{display:none;background:none;border:none;color:var(--tx);font-size:1.4rem}
+.ham{display:none;background:none;border:none;color:var(--tx);font-size:1.4rem;justify-self:end}
 
 /* ════════════ HERO ════════════ */
 .hero{min-height:100vh;padding:calc(54px + 28px + 80px) 40px 100px;position:relative;overflow:hidden;display:flex;align-items:center}
