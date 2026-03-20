@@ -106,7 +106,7 @@ button{cursor:pointer;font-family:var(--font-b)}
 
 /* Center column — links */
 .nav-links{
-  display:flex;align-items:center;gap:0;justify-content:center;
+  display:flex;align-items:center;gap:4px;justify-content:center;
   /* single inset container wrapping all buttons */
   background:#0a1510;
   border-radius:10px;
