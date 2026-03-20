@@ -105,28 +105,28 @@ button{cursor:pointer;font-family:var(--font-b)}
 .logo-mark{width:38px;height:38px;border-radius:10px;background:var(--surface);box-shadow:var(--neu-out-sm);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid var(--green-border)}
 .nav-links{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .nl{
-  padding:7px 14px;
+  padding:7px 16px;
   border-radius:var(--r-sm);
   font-size:0.855rem;
-  font-weight:500;
+  font-weight:600;
   color:var(--tx-2);
   transition:all 0.18s ease;
   border:none;
-  background:var(--surface);
+  background:#162b1d;
   cursor:pointer;
   text-decoration:none;
   white-space:nowrap;
-  /* raised — shadow colors tuned to --surface: #122016 */
-  box-shadow:4px 4px 9px #08130d, -4px -4px 9px #1c3322;
+  box-shadow:3px 3px 7px #090f0b,-3px -3px 7px #233d2a;
 }
 .nl:hover{
   color:var(--green);
-  background:var(--surface);
-  box-shadow:4px 4px 9px #08130d,-4px -4px 9px #1c3322,0 0 0 1px rgba(78,255,145,0.2);
+  background:#162b1d;
+  box-shadow:3px 3px 7px #090f0b,-3px -3px 7px #233d2a,0 0 0 1px rgba(78,255,145,0.22),0 0 12px rgba(78,255,145,0.08);
 }
 .nl:active{
   color:var(--green);
-  box-shadow:inset 3px 3px 7px #08130d,inset -3px -3px 7px #1c3322;
+  background:#101e15;
+  box-shadow:inset 3px 3px 6px #090f0b,inset -3px -3px 6px #1d3224;
 }
 /* Neumorphic CTA button */
 .nav-cta{position:relative;overflow:hidden;padding:8px 18px;border-radius:var(--r-sm);background:var(--green);color:var(--base-down);font-size:0.855rem;font-weight:700;border:none;box-shadow:4px 4px 10px #040c07,-2px -2px 8px #1e6e3c,0 0 18px rgba(78,255,145,0.25);transition:box-shadow 0.2s ease,transform 0.2s ease;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;flex-shrink:0;text-decoration:none;line-height:1}
