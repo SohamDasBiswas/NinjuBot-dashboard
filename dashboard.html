@@ -261,39 +261,50 @@
 
     <!-- ══════ ECONOMY SETTINGS ══════ -->
     <div id="panel-cfg-economy" class="panel">
-      <div class="db-row">
+      <!-- Lock overlay for non-admins -->
+      <div id="eco-lock" style="display:none;position:absolute;inset:0;z-index:10;background:rgba(9,17,13,0.7);backdrop-filter:blur(4px);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+        <div style="font-size:2.5rem">🔒</div>
+        <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:800;color:var(--tx)">Economy is Global</div>
+        <div style="font-size:0.82rem;color:var(--tx-2);text-align:center;max-width:320px;line-height:1.6">Economy settings are managed globally by <strong style="color:var(--green)">sdb_darkninja</strong> and apply to all servers equally.</div>
+      </div>
+      <div class="db-row" style="position:relative">
         <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">💰 Daily Reward</div>
-            <div class="field-row">
-              <div class="field"><label class="field-label">Min Daily Coins</label><input type="number" id="cfg-daily-min" class="f-input" placeholder="100" oninput="markDirty('economy')"></div>
-              <div class="field"><label class="field-label">Max Daily Coins</label><input type="number" id="cfg-daily-max" class="f-input" placeholder="300" oninput="markDirty('economy')"></div>
-            </div>
-            <div class="field"><label class="field-label">Daily Cooldown (hours)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-daily-cd" min="1" max="48" value="24" oninput="document.getElementById('cfg-daily-cd-val').textContent=this.value+'h';markDirty('economy')"><span class="range-val" id="cfg-daily-cd-val">24h</span></div></div>
+          <!-- info banner -->
+          <div style="background:rgba(78,255,145,0.06);border:1px solid var(--green-border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:18px;font-size:0.78rem;color:var(--tx-2);display:flex;align-items:center;gap:10px">
+            <span>🌐</span><span>Economy is <strong style="color:var(--green)">global</strong> — these settings apply across all servers and can only be changed by the bot owner.</span>
           </div>
           <div class="settings-section">
-            <div class="settings-section-title">💼 Work Command</div>
+            <div class="settings-section-title">💰 Daily Reward <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
             <div class="field-row">
-              <div class="field"><label class="field-label">Min Work Reward</label><input type="number" id="cfg-work-min" class="f-input" placeholder="50" oninput="markDirty('economy')"></div>
-              <div class="field"><label class="field-label">Max Work Reward</label><input type="number" id="cfg-work-max" class="f-input" placeholder="200" oninput="markDirty('economy')"></div>
+              <div class="field"><label class="field-label">Min Daily Coins</label><input type="number" id="cfg-daily-min" class="f-input" placeholder="100" disabled style="opacity:0.5;cursor:not-allowed"></div>
+              <div class="field"><label class="field-label">Max Daily Coins</label><input type="number" id="cfg-daily-max" class="f-input" placeholder="300" disabled style="opacity:0.5;cursor:not-allowed"></div>
             </div>
-            <div class="field"><label class="field-label">Work Cooldown (minutes)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-work-cd" min="5" max="240" value="60" oninput="document.getElementById('cfg-work-cd-val').textContent=this.value+'m';markDirty('economy')"><span class="range-val" id="cfg-work-cd-val">60m</span></div></div>
+            <div class="field"><label class="field-label">Daily Cooldown (hours)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-daily-cd" min="1" max="48" value="24" disabled style="opacity:0.5;cursor:not-allowed"><span class="range-val" id="cfg-daily-cd-val">24h</span></div></div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">💼 Work Command <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
+            <div class="field-row">
+              <div class="field"><label class="field-label">Min Work Reward</label><input type="number" id="cfg-work-min" class="f-input" placeholder="50" disabled style="opacity:0.5;cursor:not-allowed"></div>
+              <div class="field"><label class="field-label">Max Work Reward</label><input type="number" id="cfg-work-max" class="f-input" placeholder="200" disabled style="opacity:0.5;cursor:not-allowed"></div>
+            </div>
+            <div class="field"><label class="field-label">Work Cooldown (minutes)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-work-cd" min="5" max="240" value="60" disabled style="opacity:0.5;cursor:not-allowed"><span class="range-val" id="cfg-work-cd-val">60m</span></div></div>
           </div>
         </div>
         <div class="db-card">
           <div class="settings-section">
-            <div class="settings-section-title">🎰 Gambling</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Gambling Enabled</div><div class="toggle-desc">-gamble, -slots, -roulette, -blackjack</div></div><label class="toggle"><input type="checkbox" id="cfg-gambling" checked onchange="markDirty('economy')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Min Bet</label><input type="number" id="cfg-gamble-min" class="f-input" placeholder="10" oninput="markDirty('economy')"></div>
-            <div class="field"><label class="field-label">Max Bet (0 = unlimited)</label><input type="number" id="cfg-gamble-max" class="f-input" placeholder="0" oninput="markDirty('economy')"></div>
+            <div class="settings-section-title">🎰 Gambling <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
+            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Gambling Enabled</div><div class="toggle-desc">-gamble, -slots, -roulette, -blackjack</div></div><label class="toggle"><input type="checkbox" id="cfg-gambling" checked disabled><span class="toggle-track" style="opacity:0.5"></span></label></div>
+            <div class="field" style="margin-top:14px"><label class="field-label">Min Bet</label><input type="number" id="cfg-gamble-min" class="f-input" placeholder="10" disabled style="opacity:0.5;cursor:not-allowed"></div>
+            <div class="field"><label class="field-label">Max Bet (0 = unlimited)</label><input type="number" id="cfg-gamble-max" class="f-input" placeholder="0" disabled style="opacity:0.5;cursor:not-allowed"></div>
           </div>
           <div class="settings-section">
-            <div class="settings-section-title">💸 Starting Balance</div>
-            <div class="field"><label class="field-label">New User Starting Coins</label><input type="number" id="cfg-start-balance" class="f-input" placeholder="500" oninput="markDirty('economy')"><span class="field-hint">Coins given on first economy interaction</span></div>
+            <div class="settings-section-title">💸 Starting Balance <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
+            <div class="field"><label class="field-label">New User Starting Coins</label><input type="number" id="cfg-start-balance" class="f-input" placeholder="500" disabled style="opacity:0.5;cursor:not-allowed"><span class="field-hint">Managed globally by the bot owner</span></div>
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Economy</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('economy')">💾 Save</button></div></div>
+      <!-- Save bar hidden for non-admins, shown for admin -->
+      <div class="save-bar" id="eco-save-bar" style="display:none"><span class="save-bar-text">Saves <strong>Economy</strong> global config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('economy')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ LEVELS SETTINGS ══════ -->

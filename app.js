@@ -61,7 +61,22 @@ function applyAdminVisibility() {
   if (adminSection) {
     adminSection.style.display = isAdmin() ? 'block' : 'none';
   }
-  // If non-admin somehow lands on mongodb panel, redirect to overview
+
+  // Economy panel — unlock for admin, keep locked for others
+  const ecoSaveBar = document.getElementById('eco-save-bar');
+  if (ecoSaveBar) ecoSaveBar.style.display = isAdmin() ? 'flex' : 'none';
+  const ecoFields = document.querySelectorAll('#panel-cfg-economy input, #panel-cfg-economy select');
+  ecoFields.forEach(el => {
+    if (isAdmin()) {
+      el.disabled = false;
+      el.style.opacity = '';
+      el.style.cursor = '';
+      // re-attach change handlers
+      if (el.type === 'range') el.oninput = function(){ document.getElementById(this.id+'-val') && (document.getElementById(this.id.replace('cfg-','').replace(/-/g,'_')+'_val') || document.getElementById(this.id+'-val')).textContent; markDirty('economy'); };
+    }
+  });
+
+  // If non-admin somehow lands on mongodb/currency-admin panel, redirect to overview
   if (!isAdmin()) {
     const mongoPanel = document.getElementById('panel-mongodb');
     if (mongoPanel && mongoPanel.classList.contains('active')) {
