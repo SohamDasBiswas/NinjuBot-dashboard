@@ -12,10 +12,6 @@
 
 const BOT_API      = 'https://ninjubot.onrender.com';
 
-// ── Admin config ──────────────────────────────────────────────
-// Only this Discord user ID sees the Database / MongoDB section
-const ADMIN_USER_ID = '769225445803032617';
-
 // ── Discord OAuth2 config ──────────────────────────────────
 // Replace CLIENT_ID with your actual Discord application client ID
 const DISCORD_CLIENT_ID    = '1483732014380224552';
@@ -33,7 +29,6 @@ let auditLogPage   = 1;
 let auditLogFilter = 'all';
 let allLogEntries  = [];
 let boostGrad      = 'forest';
-let lbScope        = 'server';  // 'server' or 'global'
 let boostAccent    = '#4eff91';
 let boostEmoji     = '💎';
 
@@ -46,29 +41,6 @@ const GRADS = {
   sunset:  'linear-gradient(135deg,#2e1a0a,#5c3a1a)',
   dark:    'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
 };
-
-
-// ══════════════════════════════════════════════════════════════
-//  ADMIN — show/hide privileged sections
-// ══════════════════════════════════════════════════════════════
-
-function isAdmin() {
-  return currentUser && String(currentUser.id) === ADMIN_USER_ID;
-}
-
-function applyAdminVisibility() {
-  const adminSection = document.getElementById('admin-sidebar-section');
-  if (adminSection) {
-    adminSection.style.display = isAdmin() ? 'block' : 'none';
-  }
-  // If non-admin somehow lands on mongodb panel, redirect to overview
-  if (!isAdmin()) {
-    const mongoPanel = document.getElementById('panel-mongodb');
-    if (mongoPanel && mongoPanel.classList.contains('active')) {
-      showPanel('overview', document.querySelector('.sl.active'));
-    }
-  }
-}
 
 // ══════════════════════════════════════════════════════════════
 //  BOOT — decide which screen to show
@@ -190,9 +162,7 @@ function showDashboard() {
   document.getElementById('dashboard-app').style.display    = 'flex';
 
   populateUserUI();
-  applyAdminVisibility();
   loadSettings();
-  loadChannels();
   fetchBoostStats();
 }
 
@@ -216,83 +186,6 @@ function showServerPicker() {
   }
 
   loadGuilds();
-}
-
-
-// ══════════════════════════════════════════════════════════════
-//  CHANNELS — populate all channel dropdowns
-// ══════════════════════════════════════════════════════════════
-
-let _cachedChannels = [];
-
-async function loadChannels() {
-  if (!discordToken || !currentGuild) return;
-  try {
-    const res = await fetch(`${BOT_API}/channels?guild_id=${currentGuild.id}`, {
-      headers: { 'Authorization': `Bearer ${discordToken}` }
-    });
-    const channels = await res.json();
-    if (!Array.isArray(channels)) return;
-    _cachedChannels = channels;
-    populateChannelDropdowns(channels);
-  } catch (e) {
-    console.warn('Could not load channels:', e);
-  }
-}
-
-function populateChannelDropdowns(channels) {
-  const channelSelectIds = [
-    'cfg-welcome-channel',
-    'cfg-leave-channel',
-    'cfg-boost-channel',
-    'cfg-modlog-channel',
-    'cfg-yt-alert-channel',
-    'cfg-tw-alert-channel',
-  ];
-
-  // Group by category
-  const cats = {};
-  channels.forEach(ch => {
-    const cat = ch.category || 'Uncategorized';
-    if (!cats[cat]) cats[cat] = [];
-    cats[cat].push(ch);
-  });
-
-  channelSelectIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const currentVal = el.value;
-    el.innerHTML = '<option value="">— Select a channel —</option>';
-    Object.entries(cats).forEach(([cat, chs]) => {
-      const grp = document.createElement('optgroup');
-      grp.label = cat;
-      chs.forEach(ch => {
-        const opt = document.createElement('option');
-        opt.value = ch.id;
-        opt.textContent = '# ' + ch.name;
-        grp.appendChild(opt);
-      });
-      el.appendChild(grp);
-    });
-    // Restore saved value if it exists
-    if (currentVal) el.value = currentVal;
-  });
-}
-
-// Re-populate dropdowns after settings are loaded (so saved values are selected)
-function applyChannelValues(settings) {
-  const map = {
-    'cfg-welcome-channel': settings.welcome_channel_id,
-    'cfg-leave-channel':   settings.leave_channel_id,
-    'cfg-boost-channel':   settings.boost_channel_id,
-    'cfg-modlog-channel':  settings.modlog_channel_id,
-    'cfg-yt-alert-channel':settings.yt_alert_channel_id,
-    'cfg-tw-alert-channel':settings.tw_alert_channel_id,
-  };
-  Object.entries(map).forEach(([id, val]) => {
-    const el = document.getElementById(id);
-    if (el && val) el.value = val;
-  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -437,8 +330,6 @@ function populateForm(d) {
   set('cfg-profanity',d.profanity_filter); set('cfg-raid',d.raid_protection);
   set('cfg-spam-threshold',d.spam_threshold);
   set('cfg-modlog',d.modlog_enabled); set('cfg-modlog-channel',d.modlog_channel_id);
-  // Apply saved channel IDs to dropdowns after channels load
-  if (_cachedChannels.length) applyChannelValues(d); else setTimeout(()=>applyChannelValues(d), 1500);
   set('cfg-admin-role',d.admin_role_id); set('cfg-mod-role',d.mod_role_id); set('cfg-muted-role',d.muted_role_id);
 }
 
@@ -779,34 +670,14 @@ async function fetchServerList() {
   } catch {c.innerHTML=`<div class="loading-state"><p>❌ Could not load servers.</p></div>`;}
 }
 
-
-// ══════════════════════════════════════════════════════════════
-//  LEADERBOARD TABS
-// ══════════════════════════════════════════════════════════════
-
-function switchLbTab(scope) {
-  lbScope = scope;
-  const server = document.getElementById('lb-tab-server');
-  const global = document.getElementById('lb-tab-global');
-  const label  = document.getElementById('lb-scope-label');
-  if (server) server.className = scope === 'server' ? 'btn-sm' : 'btn-sm-o';
-  if (global) global.className = scope === 'global' ? 'btn-sm' : 'btn-sm-o';
-  if (label)  label.textContent = scope === 'server' ? 'Showing: This Server' : 'Showing: Global (all servers)';
-  fetchEconomy();
-  fetchLevels();
-}
-
 async function fetchEconomy() {
   const c=document.getElementById('eco-leaderboard');
   if(!c) return;
   c.innerHTML=`<div class="loading-state"><div class="spinner"></div></div>`;
   try {
-    const scope=lbScope||'server';
-    const params=new URLSearchParams({scope});
-    if(scope==='server'&&currentGuild) params.set('guild_id',currentGuild.id);
-    const res=await fetch(`${BOT_API}/economy/leaderboard?${params}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
+    const res=await fetch(`${BOT_API}/economy/leaderboard${currentGuild?'?guild_id='+currentGuild.id:''}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
     const data=await res.json();
-    if(!data?.length){c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">💰</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No economy data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to use <code style="color:var(--green)">-daily</code> or <code style="color:var(--green)">-work</code> first.</p></div>`;return;}
+    if(!data?.length) throw new Error('empty');
     const max=data[0]?.balance||1;
     const rank=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
     c.innerHTML=`<div class="lb-list">${data.slice(0,10).map((u,i)=>`
@@ -816,7 +687,7 @@ async function fetchEconomy() {
         <div class="lb-bar-wrap"><div class="lb-bar" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
         <div class="lb-val">₹${(u.balance||0).toLocaleString()}</div>
       </div>`).join('')}</div>`;
-  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">💰</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No economy data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to use <code style="color:var(--green)">-daily</code> or <code style="color:var(--green)">-work</code> first.</p></div>`;}
+  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:0.8rem">Add <code style="color:var(--green)">GET /economy/leaderboard</code> to your bot</p></div>`;}
 }
 
 async function fetchLevels() {
@@ -824,12 +695,9 @@ async function fetchLevels() {
   if(!c) return;
   c.innerHTML=`<div class="loading-state"><div class="spinner"></div></div>`;
   try {
-    const scope=lbScope||'server';
-    const params=new URLSearchParams({scope});
-    if(scope==='server'&&currentGuild) params.set('guild_id',currentGuild.id);
-    const res=await fetch(`${BOT_API}/levels/leaderboard?${params}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
+    const res=await fetch(`${BOT_API}/levels/leaderboard${currentGuild?'?guild_id='+currentGuild.id:''}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
     const data=await res.json();
-    if(!data?.length){c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">📈</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No XP data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to send some messages first to earn XP.</p></div>`;return;}
+    if(!data?.length) throw new Error('empty');
     const max=data[0]?.xp||1;
     const rank=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
     c.innerHTML=`<div class="lb-list">${data.slice(0,10).map((u,i)=>`
@@ -840,7 +708,7 @@ async function fetchLevels() {
         <div class="lb-bar-wrap"><div class="lb-bar" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
         <div class="lb-val">${(u.xp||0).toLocaleString()} XP</div>
       </div>`).join('')}</div>`;
-  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">📈</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No XP data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to send some messages first to earn XP.</p></div>`;}
+  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:0.8rem">Add <code style="color:var(--green)">GET /levels/leaderboard</code> to your bot</p></div>`;}
 }
 
 async function fetchMongoStats() {
@@ -865,128 +733,6 @@ async function fetchMongoStats() {
   } catch {
     c.innerHTML=`<div class="loading-state"><p>❌ Add <code>GET /db/stats</code> to your bot API</p><button class="btn-sm-o" onclick="fetchMongoStats()" style="margin-top:8px">🔄 Retry</button></div>`;
   }
-}
-
-
-// ══════════════════════════════════════════════════════════════
-//  ADMIN — Currency Manager
-// ══════════════════════════════════════════════════════════════
-
-let cadminCurrentUser = null;
-const cadminLog = [];
-
-function cadminToggleAmount() {
-  const action = document.getElementById('cadmin-action')?.value;
-  const field  = document.getElementById('cadmin-amount-field');
-  if (field) field.style.display = action === 'reset' ? 'none' : 'flex';
-}
-
-async function cadminLookup() {
-  const userId = document.getElementById('cadmin-user-id')?.value?.trim();
-  if (!userId) return showToast('Enter a user ID first', 'warn');
-  if (!currentGuild) return showToast('Select a server first', 'warn');
-
-  const card = document.getElementById('cadmin-user-card');
-  if (card) card.style.display = 'none';
-  cadminCurrentUser = null;
-
-  try {
-    const res  = await fetch(`${BOT_API}/economy/user?guild_id=${currentGuild.id}&user_id=${userId}`, {
-      headers: { 'Authorization': `Bearer ${discordToken}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Lookup failed');
-
-    cadminCurrentUser = { ...data, guild_id: currentGuild.id };
-
-    // Avatar: use hash from bot cache, fall back to default avatar
-    const discrim = data.discriminator || '0';
-    const defaultAvatar = `https://cdn.discordapp.com/embed/avatars/${parseInt(discrim) % 5}.png`;
-    const avatarUrl = data.avatar_hash
-      ? `https://cdn.discordapp.com/avatars/${userId}/${data.avatar_hash}.png?size=64`
-      : defaultAvatar;
-    const avatarEl = document.getElementById('cadmin-avatar');
-    avatarEl.src = avatarUrl;
-    avatarEl.onerror = function(){ this.src = defaultAvatar; };
-    // Show username + discriminator tag (not raw ID)
-    const tag = discrim && discrim !== '0' ? `${data.username}#${discrim}` : data.username || 'Unknown';
-    document.getElementById('cadmin-uname').textContent = tag;
-    document.getElementById('cadmin-uid-display').textContent = `ID: ${userId}`;
-    document.getElementById('cadmin-balance').textContent = `₹${(data.balance||0).toLocaleString()}`;
-    document.getElementById('cadmin-wl').textContent = `W: ${data.wins||0}  L: ${data.losses||0}`;
-    if (card) card.style.display = 'block';
-
-    showToast(`✅ Loaded ${data.username}`);
-  } catch(e) {
-    showToast('❌ ' + e.message, 'error');
-  }
-}
-
-async function cadminExecute() {
-  if (!cadminCurrentUser) return showToast('Look up a user first', 'warn');
-
-  const action = document.getElementById('cadmin-action')?.value;
-  const amount = parseInt(document.getElementById('cadmin-amount')?.value || '0');
-
-  if (action !== 'reset' && (!amount || amount <= 0)) {
-    return showToast('Enter a valid amount', 'warn');
-  }
-
-  try {
-    const res  = await fetch(`${BOT_API}/economy/admin`, {
-      method:  'POST',
-      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action,
-        guild_id: cadminCurrentUser.guild_id,
-        user_id:  cadminCurrentUser.user_id,
-        amount,
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed');
-
-    // Update balance display
-    document.getElementById('cadmin-balance').textContent = `₹${(data.new_balance||0).toLocaleString()}`;
-    cadminCurrentUser.balance = data.new_balance;
-
-    // Add to log
-    const actionLabels = { add:'➕ Added', remove:'➖ Removed', set:'⚙️ Set to', reset:'🔄 Reset' };
-    const amountStr    = action === 'reset' ? '' : ` ₹${amount.toLocaleString()}`;
-    cadminAddLog(actionLabels[action] + amountStr, data.username, data.old_balance, data.new_balance);
-
-    showToast(`✅ Done! New balance: ₹${(data.new_balance||0).toLocaleString()}`);
-  } catch(e) {
-    showToast('❌ ' + e.message, 'error');
-  }
-}
-
-function cadminAddLog(action, username, oldBal, newBal) {
-  const log = document.getElementById('cadmin-log');
-  if (!log) return;
-
-  const diff    = newBal - oldBal;
-  const diffStr = diff >= 0 ? `+₹${diff.toLocaleString()}` : `-₹${Math.abs(diff).toLocaleString()}`;
-  const color   = diff >= 0 ? 'var(--green)' : '#ff6b6b';
-  const time    = new Date().toLocaleTimeString();
-
-  // Clear empty state
-  if (log.querySelector('div[style*="No actions"]')) log.innerHTML = '';
-
-  const entry = document.createElement('div');
-  entry.style.cssText = 'background:var(--base-down);border-radius:var(--r-md);padding:10px 14px;border:1px solid rgba(78,255,145,0.08);display:flex;align-items:center;gap:10px';
-  entry.innerHTML = `
-    <div style="flex:1">
-      <div style="font-size:0.82rem;font-weight:700">${action} — <span style="color:var(--tx-2)">${username}</span></div>
-      <div style="font-size:0.7rem;color:var(--tx-3);margin-top:2px">${time} · ₹${oldBal.toLocaleString()} → ₹${newBal.toLocaleString()}</div>
-    </div>
-    <div style="font-family:var(--font-d);font-weight:800;font-size:0.95rem;color:${color}">${diffStr}</div>`;
-  log.prepend(entry);
-}
-
-function cadminClearLog() {
-  const log = document.getElementById('cadmin-log');
-  if (log) log.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tx-3);font-size:0.8rem">No actions yet</div>';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1040,6 +786,21 @@ function initReveal() {
   document.querySelectorAll('.fc').forEach((el,i)=>{
     el.style.opacity='0'; el.style.transform='translateY(22px)';
     el.style.transition=`opacity 0.5s var(--ease) ${i*0.05}s,transform 0.5s var(--ease) ${i*0.05}s`;
-    obs.observe(el);
+    const fcObs=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          setTimeout(()=>{
+            e.target.classList.add('in');
+            // clear inline transform so wobble JS can take over freely
+            setTimeout(()=>{
+              e.target.style.transform='';
+              e.target.style.transition='';
+            }, 600);
+          }, i*50);
+          fcObs.unobserve(e.target);
+        }
+      });
+    },{threshold:0.08});
+    fcObs.observe(el);
   });
 }
