@@ -143,13 +143,23 @@ button{cursor:pointer;font-family:var(--font-b)}
 .ring1{position:absolute;inset:-14px;border-radius:calc(var(--r-xl) + 14px);border:1px solid var(--green-border);box-shadow:0 0 30px rgba(78,255,145,0.12);animation:ringP 3s ease-in-out infinite}
 .ring2{position:absolute;inset:-28px;border-radius:calc(var(--r-xl) + 28px);border:1px solid rgba(78,255,145,0.06);animation:ringP 3s ease-in-out infinite 1.5s}
 @keyframes ringP{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.025)}}
-.terminal{width:100%;padding:18px 20px;background:var(--base-down);border-radius:var(--r-lg);box-shadow:var(--neu-in),0 0 0 1px rgba(78,255,145,0.08)}
+.terminal{width:100%;padding:18px 20px;background:var(--base-down);border-radius:var(--r-lg);box-shadow:var(--neu-in),0 0 0 1px rgba(78,255,145,0.08);animation:termWobble 6s ease-in-out infinite;transform-origin:center center}
+@keyframes termWobble{
+  0%,100%{transform:rotate(-0.6deg) translateY(0px)}
+  15%{transform:rotate(0.8deg) translateY(-3px)}
+  30%{transform:rotate(-0.5deg) translateY(1px)}
+  45%{transform:rotate(0.9deg) translateY(-2px)}
+  60%{transform:rotate(-0.7deg) translateY(2px)}
+  75%{transform:rotate(0.5deg) translateY(-1px)}
+  90%{transform:rotate(-0.4deg) translateY(1px)}
+}
 .term-bar{display:flex;align-items:center;gap:7px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(78,255,145,0.06)}
 .tdot{width:11px;height:11px;border-radius:50%}
 .tdot:nth-child(1){background:#ff5f57}.tdot:nth-child(2){background:#febc2e}.tdot:nth-child(3){background:#28c840}
 .ttitle{font-family:var(--font-m);font-size:0.72rem;color:var(--tx-3);margin:0 auto}
-.tlines{display:flex;flex-direction:column;gap:8px}
-.tl{display:flex;align-items:center;gap:10px;font-family:var(--font-m);font-size:0.8rem}
+.tlines{display:flex;flex-direction:column;gap:8px;min-height:130px}
+.tl{display:flex;align-items:center;gap:10px;font-family:var(--font-m);font-size:0.8rem;opacity:0;transition:opacity 0.15s}
+.tl.visible{opacity:1}
 .tp{color:var(--green);font-weight:500}.tc{color:rgba(210,240,220,0.7)}.to{color:rgba(78,255,145,0.5);font-size:0.74rem;padding-left:18px}
 .cursor{display:inline-block;width:7px;height:13px;background:var(--green);margin-left:3px;animation:cur 1s step-end infinite;vertical-align:text-bottom}
 @keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
