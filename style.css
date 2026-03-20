@@ -77,6 +77,80 @@ button{cursor:pointer;font-family:var(--font-b)}
 .neu{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out)}
 .neu-sm{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--neu-out-sm)}
 .neu-in{background:var(--base-down);border-radius:var(--r-md);box-shadow:var(--neu-in)}
+/* ════════ NEUMORPHIC NAVBAR ════════ */
+.nav{position:fixed;top:12px;left:20px;right:20px;z-index:999;height:54px}
+
+/* The floating pill */
+.nav-neu{
+  width:100%;max-width:1100px;margin:0 auto;height:54px;
+  border-radius:14px;
+  background:#122016;
+  box-shadow:8px 8px 20px #040c07,-8px -8px 20px #1e3828,0 0 0 1px rgba(78,255,145,0.12);
+  position:relative;
+}
+.nav-neu::before{
+  content:'';position:absolute;top:0;left:40px;right:40px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(78,255,145,0.4),transparent);
+  pointer-events:none;
+}
+
+/* Content row — 3-col grid so links are perfectly centered */
+.nav-in{
+  position:absolute;inset:0;
+  display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;padding:0 16px;
+  max-width:1100px;margin:0 auto;
+}
+
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-size:1.2rem;font-weight:800;letter-spacing:0.5px;text-decoration:none;color:var(--tx)}
+
+/* Center column — links */
+.nav-links{display:flex;align-items:center;gap:6px;justify-content:center}
+
+/* Inset neumorphic nav buttons */
+.nl{
+  padding:6px 15px;
+  border-radius:10px;
+  font-size:0.84rem;font-weight:600;
+  color:var(--tx-2);
+  text-decoration:none;
+  border:none;cursor:pointer;
+  background:#0e1c13;
+  box-shadow:inset 3px 3px 6px #07100a,inset -3px -3px 6px #18301d;
+  transition:color 0.15s ease,box-shadow 0.15s ease;
+}
+.nl:hover{
+  color:#4eff91;
+  box-shadow:inset 3px 3px 6px #07100a,inset -3px -3px 6px #18301d,0 0 0 1px rgba(78,255,145,0.28);
+}
+.nl:active{
+  color:#4eff91;
+  box-shadow:inset 5px 5px 10px #07100a,inset -5px -5px 10px #18301d;
+}
+
+/* Right column — CTA + ham */
+.nav-right{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+
+/* Add to Discord button */
+.nav-cta{
+  position:relative;overflow:hidden;
+  padding:8px 18px;border-radius:10px;
+  background:#4eff91;color:#0e1c13;
+  font-size:0.84rem;font-weight:700;
+  border:none;cursor:pointer;
+  display:inline-flex;align-items:center;
+  text-decoration:none;white-space:nowrap;
+  box-shadow:4px 4px 10px #040c07,-2px -2px 8px #1e6e3c,0 0 18px rgba(78,255,145,0.25);
+  transition:box-shadow 0.18s ease,transform 0.18s ease;
+}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:4px 4px 14px #040c07,-2px -2px 10px #1e6e3c,0 0 28px rgba(78,255,145,0.5)}
+.nav-cta:active{transform:translateY(0);box-shadow:inset 2px 2px 6px rgba(0,0,0,0.3)}
+.nav-cta canvas.btn-particles{position:absolute;top:0;left:0;width:100% !important;height:100% !important;pointer-events:none;border-radius:inherit;display:block}
+.nav-cta span{position:relative;z-index:1;pointer-events:none}
+
+.ham{display:none;background:none;border:none;color:var(--tx);font-size:1.4rem;cursor:pointer}
+
+
 .green{color:var(--green)}
 .mono{font-family:var(--font-m)}
 .grad{background:linear-gradient(135deg,var(--green),#b2ffd0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -96,50 +170,10 @@ button{cursor:pointer;font-family:var(--font-b)}
 .btn-danger:hover{background:rgba(255,79,79,0.2)}
 
 /* ════════════ NAV ════════════ */
-/* ── Neumorphic floating navbar ───────────────────────── */
-.nav{position:fixed;top:12px;left:20px;right:20px;z-index:999;height:54px}
-.nav-neu{width:100%;max-width:1100px;margin:0 auto;height:54px;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--neu-out),0 0 0 1px rgba(78,255,145,0.12),inset 0 1px 0 rgba(78,255,145,0.07);backdrop-filter:blur(28px) saturate(1.8);position:relative;display:block}
-.nav-neu::before{content:'';position:absolute;top:0;left:30px;right:30px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.35),transparent);border-radius:1px;pointer-events:none}
-.nav-in{max-width:1100px;margin:0 auto;padding:0 20px;height:54px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;position:absolute;inset:0;border-radius:var(--r-lg);overflow:hidden}
-.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-size:1.2rem;font-weight:800;letter-spacing:0.5px;flex-shrink:0}
 .logo-mark{width:38px;height:38px;border-radius:10px;background:var(--surface);box-shadow:var(--neu-out-sm);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid var(--green-border)}
-.nav-links{display:flex;align-items:center;gap:6px;justify-content:center}
-.nl{
-  padding:7px 16px;
-  border-radius:var(--r-sm);
-  font-size:0.855rem;
-  font-weight:600;
-  color:var(--tx-2);
-  transition:all 0.18s ease;
-  border:none;
-  background:#0f1e14;
-  cursor:pointer;
-  text-decoration:none;
-  white-space:nowrap;
-  /* inset neumorphic — sunken into the pill */
-  box-shadow:inset 2px 2px 5px #070e09,inset -2px -2px 5px #1a2e1e;
-}
-.nl:hover{
-  color:var(--green);
-  background:#0f1e14;
-  box-shadow:inset 2px 2px 5px #070e09,inset -2px -2px 5px #1a2e1e,0 0 0 1px rgba(78,255,145,0.25);
-}
-.nl:active{
-  color:var(--green);
-  background:#0c1810;
-  box-shadow:inset 4px 4px 8px #070e09,inset -4px -4px 8px #1a2e1e;
-}
-/* Neumorphic CTA button */
-.nav-cta{position:relative;overflow:hidden;padding:8px 18px;border-radius:var(--r-sm);background:var(--green);color:var(--base-down);font-size:0.855rem;font-weight:700;border:none;box-shadow:4px 4px 10px #040c07,-2px -2px 8px #1e6e3c,0 0 18px rgba(78,255,145,0.25);transition:box-shadow 0.2s ease,transform 0.2s ease;cursor:pointer;display:inline-flex;align-items:center;white-space:nowrap;flex-shrink:0;text-decoration:none;line-height:1}
-.nav-cta:hover{transform:translateY(-1px);box-shadow:4px 4px 14px #040c07,-2px -2px 10px #1e6e3c,0 0 28px rgba(78,255,145,0.45)}
-.nav-cta:active{transform:translateY(0);box-shadow:inset 2px 2px 6px rgba(0,0,0,0.25),0 0 10px rgba(78,255,145,0.2)}
-/* Canvas: absolutely positioned, does NOT affect button size */
-.nav-cta canvas.btn-particles{position:absolute;top:0;left:0;width:100% !important;height:100% !important;pointer-events:none;border-radius:inherit;display:block}
-.nav-cta span{position:relative;z-index:1;pointer-events:none}
 .nav-user{display:flex;align-items:center;gap:10px}
 .nav-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--green-border);box-shadow:0 0 12px rgba(78,255,145,0.2)}
 .nav-uname{font-size:0.875rem;font-weight:600;color:var(--tx)}
-.ham{display:none;background:none;border:none;color:var(--tx);font-size:1.4rem;justify-self:end}
 
 /* ════════════ HERO ════════════ */
 .hero{min-height:100vh;padding:calc(54px + 28px + 80px) 40px 100px;position:relative;overflow:hidden;display:flex;align-items:center}
@@ -539,11 +573,8 @@ section{padding:100px 40px}
   .guild-grid{grid-template-columns:repeat(2,1fr)}.oauth-features{grid-template-columns:1fr 1fr}
 }
 @media(max-width:640px){
-  section,.hero{padding-left:20px;padding-right:20px}.wrap,.nav-in{padding:0 20px}
-  .feat-grid{grid-template-columns:1fr}.cmd-grid{grid-template-columns:1fr}
+  section,.hero{padding-left:20px;padding-right:20px}.wrap,  .feat-grid{grid-template-columns:1fr}.cmd-grid{grid-template-columns:1fr}
   .h-btns,.cta-btns{flex-direction:column;align-items:center}
-  .footer-grid{grid-template-columns:1fr;gap:36px}.ham{display:flex}
-  .nav-links .nl{display:none}.nav-links .nav-cta{display:inline-flex}.nav{top:8px;left:10px;right:10px}
-  .guild-grid{grid-template-columns:repeat(2,1fr)}.oauth-features{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr;gap:36px}  .nav-links .nl{display:none}.nav-links   .guild-grid{grid-template-columns:repeat(2,1fr)}.oauth-features{grid-template-columns:1fr}
   .db-stats-row{grid-template-columns:1fr 1fr}
 }

@@ -21,12 +21,14 @@
       <a href="#commands" class="nl">Commands</a>
       <a href="dashboard.html" class="nl">Dashboard</a>
       <a href="https://top.gg/bot/1483732014380224552/vote" target="_blank" class="nl">Vote ⬆️</a>
+    </div>
+    <div class="nav-right">
       <a href="https://discord.com/oauth2/authorize?client_id=1483732014380224552&permissions=8&scope=bot%20applications.commands" target="_blank" class="nav-cta" id="nav-cta-btn">
         <canvas class="btn-particles" id="cta-particles"></canvas>
         <span>+ Add to Discord</span>
       </a>
+      <button class="ham" onclick="toggleMenu()" aria-label="Menu">☰</button>
     </div>
-    <button class="ham" onclick="toggleMenu()" aria-label="Menu">☰</button>
   </div>
 </nav>
 
@@ -338,90 +340,50 @@
 <script src="app.js"></script>
 
 <script>
-// ── Navbar CTA Particles ──────────────────────────────────────
-(function() {
-  const btn    = document.getElementById('nav-cta-btn');
-  const canvas = document.getElementById('cta-particles');
-  if (!btn || !canvas) return;
+(function(){
+  const btn=document.getElementById('nav-cta-btn');
+  const canvas=document.getElementById('cta-particles');
+  if(!btn||!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let W=0,H=0,parts=[],raf=null;
+  const MAX=32,CHARS=['<','>','/','{}','01',';;','=>'];
 
-  const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, particles = [], raf = null;
-  const MAX = 35;
-
-  // Size canvas via its CSS-pixel size — does NOT affect layout
-  function sizeCanvas() {
-    const r = btn.getBoundingClientRect();
-    W = r.width;
-    H = r.height;
-    // Set internal resolution matching display size, no layout impact
-    canvas.setAttribute('width',  Math.round(W));
-    canvas.setAttribute('height', Math.round(H));
+  function size(){
+    const r=btn.getBoundingClientRect();
+    W=Math.round(r.width);H=Math.round(r.height);
+    canvas.setAttribute('width',W);canvas.setAttribute('height',H);
   }
-
-  function mkParticle(burst) {
-    const fromBottom = !burst;
-    return {
-      x:  Math.random() * (W || 120),
-      y:  burst ? Math.random() * (H || 36) : (H || 36) + 4,
-      vx: (Math.random() - 0.5) * (burst ? 2.2 : 0.5),
-      vy: burst ? -(Math.random() * 2.8 + 1.2) : -(Math.random() * 1.0 + 0.35),
-      r:  Math.random() * 1.8 + 0.5,
-      a:  burst ? Math.random() * 0.85 + 0.1 : 0,
-      ta: Math.random() * 0.7 + 0.2,
-      life:  Math.random() * 75 + 35,
-      lived: 0,
-      char: Math.random() > 0.6 ? null : ['<','>','/','{ }','01',';;','=>'][Math.floor(Math.random()*7)]
-    };
+  function mk(burst){
+    return{x:Math.random()*W,y:burst?Math.random()*H:H+4,
+      vx:(Math.random()-.5)*(burst?2:.5),vy:burst?-(Math.random()*2.5+1):-(Math.random()*.9+.3),
+      r:Math.random()*1.6+.5,a:burst?Math.random()*.8+.1:0,ta:Math.random()*.65+.2,
+      life:Math.random()*70+30,lived:0,
+      char:Math.random()>.6?null:CHARS[Math.floor(Math.random()*CHARS.length)]};
   }
-
-  function tick() {
-    ctx.clearRect(0, 0, W, H);
-    while (particles.length < MAX) particles.push(mkParticle(false));
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx; p.y += p.vy; p.lived++;
-      if (p.a < p.ta) p.a = Math.min(p.ta, p.a + 0.04);
-      const lr = p.lived / p.life;
-      const alpha = lr > 0.65 ? p.a * (1 - (lr - 0.65) / 0.35) : p.a;
-
-      if (p.char) {
-        ctx.save();
-        ctx.globalAlpha = alpha * 0.75;
-        ctx.fillStyle = '#0e1a12';
-        ctx.font = `bold ${Math.round(p.r * 5)}px monospace`;
-        ctx.fillText(p.char, p.x, p.y);
-        ctx.restore();
-      } else {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(14,26,18,${alpha * 0.8})`;
-        ctx.fill();
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    while(parts.length<MAX)parts.push(mk(false));
+    parts.forEach((p,i)=>{
+      p.x+=p.vx;p.y+=p.vy;p.lived++;
+      if(p.a<p.ta)p.a=Math.min(p.ta,p.a+.04);
+      const lr=p.lived/p.life;
+      const a=lr>.65?p.a*(1-(lr-.65)/.35):p.a;
+      if(p.char){
+        ctx.save();ctx.globalAlpha=a*.8;ctx.fillStyle='#0e1c13';
+        ctx.font=`bold ${Math.round(p.r*5)}px monospace`;
+        ctx.fillText(p.char,p.x,p.y);ctx.restore();
+      }else{
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(14,28,19,${a*.9})`;ctx.fill();
       }
-
-      if (p.lived >= p.life || p.y < -12 || p.x < -12 || p.x > W + 12) {
-        particles[i] = mkParticle(false);
-      }
-    }
-    raf = requestAnimationFrame(tick);
+      if(p.lived>=p.life||p.y<-12||p.x<-12||p.x>W+12)parts[i]=mk(false);
+    });
+    raf=requestAnimationFrame(tick);
   }
-
-  function start() {
-    if (raf) return;
-    sizeCanvas();
-    for (let i = 0; i < 10; i++) particles.push(mkParticle(true));
-    tick();
-  }
-  function stop() {
-    if (raf) { cancelAnimationFrame(raf); raf = null; }
-    particles = [];
-    ctx.clearRect(0, 0, W, H);
-  }
-
-  btn.addEventListener('mouseenter', start);
-  btn.addEventListener('mouseleave', stop);
-  btn.addEventListener('focus',      start);
-  btn.addEventListener('blur',       stop);
+  function start(){if(raf)return;size();for(let i=0;i<10;i++)parts.push(mk(true));tick();}
+  function stop(){if(raf){cancelAnimationFrame(raf);raf=null;}parts=[];ctx.clearRect(0,0,W,H);}
+  btn.addEventListener('mouseenter',start);
+  btn.addEventListener('mouseleave',stop);
 })();
 </script>
 </body>
