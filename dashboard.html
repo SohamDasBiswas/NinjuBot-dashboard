@@ -208,7 +208,13 @@
     </div>
 
     <!-- ══════ LEADERBOARDS ══════ -->
-    <div id="panel-leaderboard" class="panel">
+            <div id="panel-leaderboard" class="panel">
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;align-items:center">
+        <button id="lb-tab-server" class="btn-sm" onclick="switchLbTab('server')" style="min-width:130px">🏠 This Server</button>
+        <button id="lb-tab-global" class="btn-sm-o" onclick="switchLbTab('global')" style="min-width:130px">🌐 Global</button>
+        <span id="lb-scope-label" style="font-size:0.72rem;color:var(--tx-3);font-family:var(--font-m);margin-left:4px">Showing: This Server</span>
+      </div>
       <div class="db-row">
         <div class="db-card">
           <div class="card-hdr"><h3>💰 Economy Top 10 <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3><button class="btn-sm-o" onclick="fetchEconomy()">🔄</button></div>

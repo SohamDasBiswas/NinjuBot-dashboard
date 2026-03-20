@@ -33,6 +33,7 @@ let auditLogPage   = 1;
 let auditLogFilter = 'all';
 let allLogEntries  = [];
 let boostGrad      = 'forest';
+let lbScope        = 'server';  // 'server' or 'global'
 let boostAccent    = '#4eff91';
 let boostEmoji     = '💎';
 
@@ -778,14 +779,34 @@ async function fetchServerList() {
   } catch {c.innerHTML=`<div class="loading-state"><p>❌ Could not load servers.</p></div>`;}
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  LEADERBOARD TABS
+// ══════════════════════════════════════════════════════════════
+
+function switchLbTab(scope) {
+  lbScope = scope;
+  const server = document.getElementById('lb-tab-server');
+  const global = document.getElementById('lb-tab-global');
+  const label  = document.getElementById('lb-scope-label');
+  if (server) server.className = scope === 'server' ? 'btn-sm' : 'btn-sm-o';
+  if (global) global.className = scope === 'global' ? 'btn-sm' : 'btn-sm-o';
+  if (label)  label.textContent = scope === 'server' ? 'Showing: This Server' : 'Showing: Global (all servers)';
+  fetchEconomy();
+  fetchLevels();
+}
+
 async function fetchEconomy() {
   const c=document.getElementById('eco-leaderboard');
   if(!c) return;
   c.innerHTML=`<div class="loading-state"><div class="spinner"></div></div>`;
   try {
-    const res=await fetch(`${BOT_API}/economy/leaderboard${currentGuild?'?guild_id='+currentGuild.id:''}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
+    const scope=lbScope||'server';
+    const params=new URLSearchParams({scope});
+    if(scope==='server'&&currentGuild) params.set('guild_id',currentGuild.id);
+    const res=await fetch(`${BOT_API}/economy/leaderboard?${params}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
     const data=await res.json();
-    if(!data?.length) throw new Error('empty');
+    if(!data?.length){c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">💰</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No economy data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to use <code style="color:var(--green)">-daily</code> or <code style="color:var(--green)">-work</code> first.</p></div>`;return;}
     const max=data[0]?.balance||1;
     const rank=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
     c.innerHTML=`<div class="lb-list">${data.slice(0,10).map((u,i)=>`
@@ -795,7 +816,7 @@ async function fetchEconomy() {
         <div class="lb-bar-wrap"><div class="lb-bar" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
         <div class="lb-val">₹${(u.balance||0).toLocaleString()}</div>
       </div>`).join('')}</div>`;
-  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:0.8rem">Add <code style="color:var(--green)">GET /economy/leaderboard</code> to your bot</p></div>`;}
+  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">💰</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No economy data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to use <code style="color:var(--green)">-daily</code> or <code style="color:var(--green)">-work</code> first.</p></div>`;}
 }
 
 async function fetchLevels() {
@@ -803,9 +824,12 @@ async function fetchLevels() {
   if(!c) return;
   c.innerHTML=`<div class="loading-state"><div class="spinner"></div></div>`;
   try {
-    const res=await fetch(`${BOT_API}/levels/leaderboard${currentGuild?'?guild_id='+currentGuild.id:''}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
+    const scope=lbScope||'server';
+    const params=new URLSearchParams({scope});
+    if(scope==='server'&&currentGuild) params.set('guild_id',currentGuild.id);
+    const res=await fetch(`${BOT_API}/levels/leaderboard?${params}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
     const data=await res.json();
-    if(!data?.length) throw new Error('empty');
+    if(!data?.length){c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">📈</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No XP data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to send some messages first to earn XP.</p></div>`;return;}
     const max=data[0]?.xp||1;
     const rank=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
     c.innerHTML=`<div class="lb-list">${data.slice(0,10).map((u,i)=>`
@@ -816,7 +840,7 @@ async function fetchLevels() {
         <div class="lb-bar-wrap"><div class="lb-bar" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
         <div class="lb-val">${(u.xp||0).toLocaleString()} XP</div>
       </div>`).join('')}</div>`;
-  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:0.8rem">Add <code style="color:var(--green)">GET /levels/leaderboard</code> to your bot</p></div>`;}
+  } catch {c.innerHTML=`<div class="loading-state" style="padding:24px"><p style="font-size:1.5rem">📈</p><p style="font-size:0.85rem;margin-top:8px;color:var(--tx-2)">No XP data yet.</p><p style="font-size:0.75rem;color:var(--tx-3);margin-top:4px">Members need to send some messages first to earn XP.</p></div>`;}
 }
 
 async function fetchMongoStats() {
