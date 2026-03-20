@@ -110,10 +110,12 @@
     <div class="sl" onclick="showPanel('cfg-moderation',this)"><span class="sl-icon">🛡️</span> Moderation<span class="dirty-dot" id="dd-moderation" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('audit-log',this)"><span class="sl-icon">📋</span> Audit Log <span class="sl-badge red" id="log-badge">0</span></div>
   </nav>
-  <div class="sidebar-section">Database</div>
+  <div id="admin-sidebar-section" style="display:none">
+  <div class="sidebar-section" style="color:#ff6b6b;border-top:1px solid rgba(255,107,107,0.2);margin-top:6px;padding-top:14px">🔐 Admin Only</div>
   <nav class="sidebar-nav" style="padding-bottom:4px">
     <div class="sl" onclick="showPanel('mongodb',this)"><span class="sl-icon">🗄️</span> MongoDB Stats</div>
   </nav>
+  </div>
 
   <div class="sidebar-foot">
     <div class="bot-status-pill">
@@ -154,7 +156,7 @@
             <div class="info-row"><span>Bot ID</span><strong id="d-botid">—</strong></div>
             <div class="info-row"><span>Selected Server</span><strong id="d-servername">—</strong></div>
             <div class="info-row"><span>Framework</span><strong>discord.py 2.x</strong></div>
-            <div class="info-row"><span>Database</span><strong>MongoDB Atlas</strong></div>
+            
           </div>
         </div>
         <div class="db-card">
@@ -209,11 +211,11 @@
     <div id="panel-leaderboard" class="panel">
       <div class="db-row">
         <div class="db-card">
-          <div class="card-hdr"><h3>💰 Economy Top 10 <span class="db-badge"><div class="db-live-dot"></div>MongoDB</span></h3><button class="btn-sm-o" onclick="fetchEconomy()">🔄</button></div>
+          <div class="card-hdr"><h3>💰 Economy Top 10 <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3><button class="btn-sm-o" onclick="fetchEconomy()">🔄</button></div>
           <div id="eco-leaderboard"><div class="loading-state"><div class="spinner"></div></div></div>
         </div>
         <div class="db-card">
-          <div class="card-hdr"><h3>📈 XP Top 10 <span class="db-badge"><div class="db-live-dot"></div>MongoDB</span></h3><button class="btn-sm-o" onclick="fetchLevels()">🔄</button></div>
+          <div class="card-hdr"><h3>📈 XP Top 10 <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3><button class="btn-sm-o" onclick="fetchLevels()">🔄</button></div>
           <div id="levels-leaderboard"><div class="loading-state"><div class="spinner"></div></div></div>
         </div>
       </div>
@@ -245,7 +247,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Bot Settings</strong> for <strong id="save-server-bot">this server</strong> to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('bot')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>Bot Settings</strong> for <strong id="save-server-bot">this server</strong></span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('bot')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ ECONOMY SETTINGS ══════ -->
@@ -282,7 +284,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Economy</strong> config to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('economy')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>Economy</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('economy')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ LEVELS SETTINGS ══════ -->
@@ -312,7 +314,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>XP & Levels</strong> config to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('levels')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>XP & Levels</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('levels')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ WELCOME / LEAVE ══════ -->
@@ -322,7 +324,7 @@
           <div class="settings-section">
             <div class="settings-section-title">👋 Welcome Messages</div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Welcome Messages</div><div class="toggle-desc">Send when a new member joins</div></div><label class="toggle"><input type="checkbox" id="cfg-welcome-enabled" checked onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Welcome Channel ID</label><input type="text" id="cfg-welcome-channel" class="f-input" placeholder="123456789012345678" oninput="markDirty('welcome')"><span class="field-hint">Right-click channel → Copy ID</span></div>
+            <div class="field" style="margin-top:14px"><label class="field-label">Welcome Channel ID</label><select id="cfg-welcome-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select></div>
             <div class="field"><label class="field-label">Welcome Message</label><input type="text" id="cfg-welcome-msg" class="f-input" placeholder="Welcome {user} to {server}! 🎉" oninput="markDirty('welcome')"><span class="field-hint">Placeholders: <code>{user}</code> <code>{server}</code> <code>{count}</code></span></div>
           </div>
           <div class="settings-section">
@@ -344,7 +346,7 @@
           <div class="settings-section">
             <div class="settings-section-title">🚪 Leave Messages</div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Leave Messages</div><div class="toggle-desc">Send when a member leaves</div></div><label class="toggle"><input type="checkbox" id="cfg-leave-enabled" onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Leave Channel ID</label><input type="text" id="cfg-leave-channel" class="f-input" placeholder="123456789012345678" oninput="markDirty('welcome')"></div>
+            <div class="field" style="margin-top:14px"><label class="field-label">Leave Channel ID</label><select id="cfg-leave-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select></div>
             <div class="field"><label class="field-label">Leave Message</label><input type="text" id="cfg-leave-msg" class="f-input" placeholder="Goodbye {user}!" oninput="markDirty('welcome')"></div>
           </div>
           <div class="settings-section">
@@ -360,7 +362,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('welcome')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('welcome')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ STREAM ALERTS ══════ -->
@@ -372,7 +374,7 @@
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">YouTube Live Alerts</div><div class="toggle-desc">Ping when a new stream goes live</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-alerts" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">YouTube Upload Alerts</div><div class="toggle-desc">Ping when a new video is uploaded</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-uploads" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
             <div class="field" style="margin-top:14px"><label class="field-label">YouTube Channel ID</label><input type="text" id="cfg-yt-channel-id" class="f-input" placeholder="UCxxxxxxxxxxxxxxxxxxxxxxxx" oninput="markDirty('streams')"><span class="field-hint">From youtube.com/@channel → About → Share Channel</span></div>
-            <div class="field"><label class="field-label">Alert Discord Channel ID</label><input type="text" id="cfg-yt-alert-channel" class="f-input" placeholder="123456789012345678" oninput="markDirty('streams')"></div>
+            <div class="field"><label class="field-label">Alert Discord Channel ID</label><select id="cfg-yt-alert-channel" class="f-select" onchange="markDirty('streams')"><option value="">Loading channels…</option></select></div>
             <div class="field"><label class="field-label">Alert Message</label><input type="text" id="cfg-yt-alert-msg" class="f-input" placeholder="🔴 {streamer} is LIVE! {url}" oninput="markDirty('streams')"><span class="field-hint">Placeholders: <code>{streamer}</code> <code>{title}</code> <code>{url}</code> <code>{role}</code></span></div>
           </div>
         </div>
@@ -381,7 +383,7 @@
             <div class="settings-section-title">🎮 Twitch Alerts</div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Twitch Live Alerts</div><div class="toggle-desc">Ping when streamer goes live</div></div><label class="toggle"><input type="checkbox" id="cfg-tw-alerts" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
             <div class="field" style="margin-top:14px"><label class="field-label">Twitch Username</label><input type="text" id="cfg-tw-username" class="f-input" placeholder="sdb_darkninja" oninput="markDirty('streams')"></div>
-            <div class="field"><label class="field-label">Alert Discord Channel ID</label><input type="text" id="cfg-tw-alert-channel" class="f-input" placeholder="123456789012345678" oninput="markDirty('streams')"></div>
+            <div class="field"><label class="field-label">Alert Discord Channel ID</label><select id="cfg-tw-alert-channel" class="f-select" onchange="markDirty('streams')"><option value="">Loading channels…</option></select></div>
             <div class="field"><label class="field-label">Alert Message</label><input type="text" id="cfg-tw-alert-msg" class="f-input" placeholder="🟣 {streamer} is live on Twitch! {url}" oninput="markDirty('streams')"></div>
           </div>
           <div class="settings-section">
@@ -391,7 +393,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Stream Alerts</strong> config to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('streams')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>Stream Alerts</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('streams')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ BOOSTER CARDS ══════ -->
@@ -401,7 +403,7 @@
           <div class="settings-section">
             <div class="settings-section-title">🚀 Boost Alert Settings</div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Boost Alerts Enabled</div><div class="toggle-desc">Send card when someone boosts the server</div></div><label class="toggle"><input type="checkbox" id="cfg-boost-enabled" checked onchange="markDirty('booster');updateBoostPreview()"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Boost Alert Channel ID</label><input type="text" id="cfg-boost-channel" class="f-input" placeholder="123456789012345678" oninput="markDirty('booster')"></div>
+            <div class="field" style="margin-top:14px"><label class="field-label">Boost Alert Channel ID</label><select id="cfg-boost-channel" class="f-select" onchange="markDirty('booster')"><option value="">Loading channels…</option></select></div>
             <div class="field"><label class="field-label">Boost Message</label><input type="text" id="cfg-boost-msg" class="f-input" placeholder="💎 {user} just boosted {server}!" oninput="markDirty('booster');updateBoostPreview()"><span class="field-hint">Placeholders: <code>{user}</code> <code>{server}</code> <code>{boost_count}</code></span></div>
           </div>
           <div class="settings-section">
@@ -469,7 +471,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Booster Card</strong> design to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('booster')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>Booster Card</strong> design</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('booster')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ MODERATION SETTINGS ══════ -->
@@ -489,7 +491,7 @@
           <div class="settings-section">
             <div class="settings-section-title">📋 Mod Logs</div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Mod Logs Enabled</div><div class="toggle-desc">Log bans, kicks, timeouts, warns</div></div><label class="toggle"><input type="checkbox" id="cfg-modlog" checked onchange="markDirty('moderation')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Mod Log Channel ID</label><input type="text" id="cfg-modlog-channel" class="f-input" placeholder="123456789012345678" oninput="markDirty('moderation')"><span class="field-hint">Right-click channel → Copy ID</span></div>
+            <div class="field" style="margin-top:14px"><label class="field-label">Mod Log Channel ID</label><select id="cfg-modlog-channel" class="f-select" onchange="markDirty('moderation')"><option value="">Loading channels…</option></select><span class="field-hint">Right-click channel → Copy ID</span></div>
           </div>
           <div class="settings-section">
             <div class="settings-section-title">👮 Roles</div>
@@ -499,7 +501,7 @@
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Moderation</strong> config to MongoDB</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('moderation')">💾 Save to MongoDB</button></div></div>
+      <div class="save-bar"><span class="save-bar-text">Saves <strong>Moderation</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('moderation')">💾 Save</button></div></div>
     </div>
 
     <!-- ══════ AUDIT LOG ══════ -->
@@ -524,7 +526,7 @@
             <button class="log-filter-btn" onclick="filterLog('leave',this)">🚪 Leaves</button>
           </div>
           <div id="audit-log-list">
-            <div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>
+            <div class="loading-state"><div class="spinner"></div><p>Loading audit log…</p></div>
           </div>
           <div class="log-pagination" id="log-pagination" style="display:none">
             <span class="log-page-info" id="log-page-info">Page 1 of 1</span>
@@ -541,7 +543,7 @@
     <div id="panel-mongodb" class="panel">
       <div class="db-row full">
         <div class="db-card">
-          <div class="card-hdr"><h3>🗄️ MongoDB Overview <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3><button class="btn-sm-o" onclick="fetchMongoStats()">🔄 Refresh</button></div>
+          <div class="card-hdr"><h3>🗄️ MongoDB Overview <span class="db-badge"><div class="db-live-dot"></div>Live</span> <span style="font-size:0.65rem;background:rgba(255,107,107,0.15);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);padding:2px 8px;border-radius:999px;font-weight:700;font-family:var(--font-m)">👑 Admin</span></h3><button class="btn-sm-o" onclick="fetchMongoStats()">🔄 Refresh</button></div>
           <div id="mongo-display"><div class="loading-state"><div class="spinner"></div><p>Connecting…</p></div></div>
         </div>
       </div>

@@ -12,6 +12,10 @@
 
 const BOT_API      = 'https://ninjubot.onrender.com';
 
+// ── Admin config ──────────────────────────────────────────────
+// Only this Discord user ID sees the Database / MongoDB section
+const ADMIN_USER_ID = '769225445803032617';
+
 // ── Discord OAuth2 config ──────────────────────────────────
 // Replace CLIENT_ID with your actual Discord application client ID
 const DISCORD_CLIENT_ID    = '1483732014380224552';
@@ -41,6 +45,29 @@ const GRADS = {
   sunset:  'linear-gradient(135deg,#2e1a0a,#5c3a1a)',
   dark:    'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
 };
+
+
+// ══════════════════════════════════════════════════════════════
+//  ADMIN — show/hide privileged sections
+// ══════════════════════════════════════════════════════════════
+
+function isAdmin() {
+  return currentUser && String(currentUser.id) === ADMIN_USER_ID;
+}
+
+function applyAdminVisibility() {
+  const adminSection = document.getElementById('admin-sidebar-section');
+  if (adminSection) {
+    adminSection.style.display = isAdmin() ? 'block' : 'none';
+  }
+  // If non-admin somehow lands on mongodb panel, redirect to overview
+  if (!isAdmin()) {
+    const mongoPanel = document.getElementById('panel-mongodb');
+    if (mongoPanel && mongoPanel.classList.contains('active')) {
+      showPanel('overview', document.querySelector('.sl.active'));
+    }
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 //  BOOT — decide which screen to show
@@ -162,7 +189,9 @@ function showDashboard() {
   document.getElementById('dashboard-app').style.display    = 'flex';
 
   populateUserUI();
+  applyAdminVisibility();
   loadSettings();
+  loadChannels();
   fetchBoostStats();
 }
 
@@ -186,6 +215,83 @@ function showServerPicker() {
   }
 
   loadGuilds();
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  CHANNELS — populate all channel dropdowns
+// ══════════════════════════════════════════════════════════════
+
+let _cachedChannels = [];
+
+async function loadChannels() {
+  if (!discordToken || !currentGuild) return;
+  try {
+    const res = await fetch(`${BOT_API}/channels?guild_id=${currentGuild.id}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const channels = await res.json();
+    if (!Array.isArray(channels)) return;
+    _cachedChannels = channels;
+    populateChannelDropdowns(channels);
+  } catch (e) {
+    console.warn('Could not load channels:', e);
+  }
+}
+
+function populateChannelDropdowns(channels) {
+  const channelSelectIds = [
+    'cfg-welcome-channel',
+    'cfg-leave-channel',
+    'cfg-boost-channel',
+    'cfg-modlog-channel',
+    'cfg-yt-alert-channel',
+    'cfg-tw-alert-channel',
+  ];
+
+  // Group by category
+  const cats = {};
+  channels.forEach(ch => {
+    const cat = ch.category || 'Uncategorized';
+    if (!cats[cat]) cats[cat] = [];
+    cats[cat].push(ch);
+  });
+
+  channelSelectIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const currentVal = el.value;
+    el.innerHTML = '<option value="">— Select a channel —</option>';
+    Object.entries(cats).forEach(([cat, chs]) => {
+      const grp = document.createElement('optgroup');
+      grp.label = cat;
+      chs.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.id;
+        opt.textContent = '# ' + ch.name;
+        grp.appendChild(opt);
+      });
+      el.appendChild(grp);
+    });
+    // Restore saved value if it exists
+    if (currentVal) el.value = currentVal;
+  });
+}
+
+// Re-populate dropdowns after settings are loaded (so saved values are selected)
+function applyChannelValues(settings) {
+  const map = {
+    'cfg-welcome-channel': settings.welcome_channel_id,
+    'cfg-leave-channel':   settings.leave_channel_id,
+    'cfg-boost-channel':   settings.boost_channel_id,
+    'cfg-modlog-channel':  settings.modlog_channel_id,
+    'cfg-yt-alert-channel':settings.yt_alert_channel_id,
+    'cfg-tw-alert-channel':settings.tw_alert_channel_id,
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val) el.value = val;
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -330,6 +436,8 @@ function populateForm(d) {
   set('cfg-profanity',d.profanity_filter); set('cfg-raid',d.raid_protection);
   set('cfg-spam-threshold',d.spam_threshold);
   set('cfg-modlog',d.modlog_enabled); set('cfg-modlog-channel',d.modlog_channel_id);
+  // Apply saved channel IDs to dropdowns after channels load
+  if (_cachedChannels.length) applyChannelValues(d); else setTimeout(()=>applyChannelValues(d), 1500);
   set('cfg-admin-role',d.admin_role_id); set('cfg-mod-role',d.mod_role_id); set('cfg-muted-role',d.muted_role_id);
 }
 
