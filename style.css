@@ -136,7 +136,7 @@ button{cursor:pointer;font-family:var(--font-b)}
 .metric-l{font-size:0.68rem;color:var(--tx-3);font-weight:600;text-transform:uppercase;letter-spacing:1px}
 .metric-sep{width:1px;background:rgba(78,255,145,0.1)}
 .hero-r{position:relative;animation:fadeUp 0.9s 0.18s var(--ease) both}
-.bot-wrap{display:flex;flex-direction:column;gap:20px;align-items:center}
+.bot-wrap{display:flex;flex-direction:column;gap:44px;align-items:center}
 .bot-avatar-wrap{position:relative;width:180px;height:180px}
 .bot-avatar{width:180px;height:180px;border-radius:var(--r-xl);box-shadow:var(--neu-out-lg);object-fit:cover;filter:drop-shadow(0 0 24px rgba(78,255,145,0.25));animation:botFloat 7s ease-in-out infinite}
 @keyframes botFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
@@ -157,7 +157,7 @@ button{cursor:pointer;font-family:var(--font-b)}
 .tdot{width:11px;height:11px;border-radius:50%}
 .tdot:nth-child(1){background:#ff5f57}.tdot:nth-child(2){background:#febc2e}.tdot:nth-child(3){background:#28c840}
 .ttitle{font-family:var(--font-m);font-size:0.72rem;color:var(--tx-3);margin:0 auto}
-.tlines{display:flex;flex-direction:column;gap:8px;min-height:130px}
+.tlines{display:flex;flex-direction:column;gap:8px;height:174px;overflow:hidden}
 .tl{display:flex;align-items:center;gap:10px;font-family:var(--font-m);font-size:0.8rem;opacity:0;transition:opacity 0.15s}
 .tl.visible{opacity:1}
 .tp{color:var(--green);font-weight:500}.tc{color:rgba(210,240,220,0.7)}.to{color:rgba(78,255,145,0.5);font-size:0.74rem;padding-left:18px}

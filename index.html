@@ -244,14 +244,16 @@
     { type: 'output', text: '💰 +₹247 coins claimed!' },
     { type: 'cmd',    text: '-ask What is life?' },
   ];
-  const CHAR_SPEED   = 42;   // ms per character
-  const LINE_PAUSE   = 340;  // pause after output line
-  const LOOP_PAUSE   = 1800; // pause before restarting
+  const CHAR_SPEED = 42;
+  const LINE_PAUSE = 340;
+  const LOOP_PAUSE = 1800;
 
   const container = document.getElementById('tlines');
   if (!container) return;
 
-  function buildRow(line, text, showCursor) {
+  // Pre-render all rows invisible so the container height is fixed immediately
+  let rows = [];
+  LINES.forEach((line, i) => {
     const div = document.createElement('div');
     if (line.type === 'cmd') {
       div.className = 'tl';
@@ -260,68 +262,68 @@
       prompt.textContent = '$';
       const content = document.createElement('span');
       content.className = 'tc';
-      content.textContent = text;
-      if (showCursor) {
-        const cur = document.createElement('span');
-        cur.className = 'cursor';
-        content.appendChild(cur);
-      }
       div.appendChild(prompt);
       div.appendChild(content);
     } else {
       div.className = 'tl to';
-      div.textContent = text;
     }
-    div.classList.add('visible');
-    return div;
-  }
+    div.style.opacity = '0';
+    container.appendChild(div);
+    rows.push(div);
+  });
 
-  async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   async function typewriter() {
     while (true) {
-      container.innerHTML = '';
+      // Reset all rows
+      rows.forEach((row, i) => {
+        row.style.opacity = '0';
+        row.style.transition = '';
+        if (LINES[i].type === 'cmd') {
+          const tc = row.querySelector('.tc');
+          // clear text but keep cursor if present
+          while (tc.firstChild) tc.removeChild(tc.firstChild);
+          const cur = row.querySelector('.cursor');
+          if (cur) cur.remove();
+        } else {
+          row.textContent = '';
+        }
+      });
+
       for (let i = 0; i < LINES.length; i++) {
         const line = LINES[i];
+        const row  = rows[i];
         const isLast = i === LINES.length - 1;
+        row.style.opacity = '1';
 
         if (line.type === 'cmd') {
-          // Add row with empty text + cursor
-          const row = buildRow(line, '', true);
-          container.appendChild(row);
-          const textEl = row.querySelector('.tc');
+          const tc = row.querySelector('.tc');
+          // Add blinking cursor
+          const cur = document.createElement('span');
+          cur.className = 'cursor';
+          tc.appendChild(cur);
 
-          // Type each character
           for (let c = 0; c < line.text.length; c++) {
-            textEl.childNodes[0]
-              ? textEl.insertBefore(document.createTextNode(line.text[c]), textEl.querySelector('.cursor'))
-              : textEl.prepend(document.createTextNode(line.text[c]));
-            // rebuild to keep cursor at end
-            const cur = textEl.querySelector('.cursor');
-            if (cur) textEl.appendChild(cur);
+            tc.insertBefore(document.createTextNode(line.text[c]), cur);
             await sleep(CHAR_SPEED);
           }
 
-          // Remove cursor unless it's the very last line
           if (!isLast) {
-            const cur = textEl.querySelector('.cursor');
-            if (cur) cur.remove();
+            cur.remove();
           }
           await sleep(LINE_PAUSE * 0.4);
 
         } else {
-          // Output line — appear instantly
-          const row = buildRow(line, line.text, false);
-          container.appendChild(row);
+          row.textContent = line.text;
           await sleep(LINE_PAUSE);
         }
       }
-      // Loop: wait then clear and restart
+
       await sleep(LOOP_PAUSE);
     }
   }
 
-  // Start after a short delay so page loads first
   setTimeout(typewriter, 600);
 })();
 </script>
