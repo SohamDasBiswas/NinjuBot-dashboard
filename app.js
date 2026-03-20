@@ -59,22 +59,31 @@ function isAdmin() {
 function applyAdminVisibility() {
   const adminSection = document.getElementById('admin-sidebar-section');
   if (adminSection) {
-    adminSection.style.display = isAdmin() ? 'block' : 'none';
+    adminSection.style.display = isAdmin() ? '' : 'none';
   }
 
-  // Economy panel — unlock for admin, keep locked for others
+  // Economy panel — fully unlock for admin
   const ecoSaveBar = document.getElementById('eco-save-bar');
   if (ecoSaveBar) ecoSaveBar.style.display = isAdmin() ? 'flex' : 'none';
-  const ecoFields = document.querySelectorAll('#panel-cfg-economy input, #panel-cfg-economy select');
-  ecoFields.forEach(el => {
-    if (isAdmin()) {
+  if (isAdmin()) {
+    document.querySelectorAll('#panel-cfg-economy input, #panel-cfg-economy select').forEach(el => {
       el.disabled = false;
       el.style.opacity = '';
       el.style.cursor = '';
-      // re-attach change handlers
-      if (el.type === 'range') el.oninput = function(){ document.getElementById(this.id+'-val') && (document.getElementById(this.id.replace('cfg-','').replace(/-/g,'_')+'_val') || document.getElementById(this.id+'-val')).textContent; markDirty('economy'); };
-    }
-  });
+    });
+    // re-attach oninput for range sliders
+    const cdDaily = document.getElementById('cfg-daily-cd');
+    if (cdDaily) cdDaily.oninput = function(){ document.getElementById('cfg-daily-cd-val').textContent=this.value+'h'; markDirty('economy'); };
+    const cdWork = document.getElementById('cfg-work-cd');
+    if (cdWork) cdWork.oninput = function(){ document.getElementById('cfg-work-cd-val').textContent=this.value+'m'; markDirty('economy'); };
+    // re-attach oninput for number inputs
+    ['cfg-daily-min','cfg-daily-max','cfg-work-min','cfg-work-max','cfg-gamble-min','cfg-gamble-max','cfg-start-balance'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.oninput = () => markDirty('economy');
+    });
+    const gambling = document.getElementById('cfg-gambling');
+    if (gambling) gambling.onchange = () => markDirty('economy');
+  }
 
   // If non-admin somehow lands on mongodb/currency-admin panel, redirect to overview
   if (!isAdmin()) {
