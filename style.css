@@ -105,27 +105,34 @@ button{cursor:pointer;font-family:var(--font-b)}
 .nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-size:1.2rem;font-weight:800;letter-spacing:0.5px;text-decoration:none;color:var(--tx)}
 
 /* Center column — links */
-.nav-links{display:flex;align-items:center;gap:6px;justify-content:center}
-
-/* Inset neumorphic nav buttons */
-.nl{
-  padding:6px 15px;
+.nav-links{
+  display:flex;align-items:center;gap:0;justify-content:center;
+  /* single inset container wrapping all buttons */
+  background:#0a1510;
   border-radius:10px;
+  box-shadow:inset 4px 4px 8px #060e08,inset -4px -4px 8px #152b1a,0 0 0 1px rgba(78,255,145,0.08);
+  padding:4px;
+}
+
+/* individual buttons inside the container — flat, no shadow */
+.nl{
+  padding:5px 15px;
+  border-radius:7px;
   font-size:0.84rem;font-weight:600;
   color:var(--tx-2);
   text-decoration:none;
   border:none;cursor:pointer;
-  background:#0e1c13;
-  box-shadow:inset 3px 3px 6px #07100a,inset -3px -3px 6px #18301d;
-  transition:color 0.15s ease,box-shadow 0.15s ease;
+  background:transparent;
+  transition:color 0.15s ease,background 0.15s ease;
+  white-space:nowrap;
 }
 .nl:hover{
   color:#4eff91;
-  box-shadow:inset 3px 3px 6px #07100a,inset -3px -3px 6px #18301d,0 0 0 1px rgba(78,255,145,0.28);
+  background:rgba(78,255,145,0.07);
 }
 .nl:active{
   color:#4eff91;
-  box-shadow:inset 5px 5px 10px #07100a,inset -5px -5px 10px #18301d;
+  background:rgba(78,255,145,0.12);
 }
 
 /* Right column — CTA + ham */
