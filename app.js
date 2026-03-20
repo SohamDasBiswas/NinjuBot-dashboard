@@ -899,12 +899,19 @@ async function cadminLookup() {
 
     cadminCurrentUser = { ...data, guild_id: currentGuild.id };
 
-    // Populate card
-    const avatar = `https://cdn.discordapp.com/avatars/${userId}/avatar.png?size=64`;
-    document.getElementById('cadmin-avatar').src = avatar;
-    document.getElementById('cadmin-avatar').onerror = function(){ this.src='https://cdn.discordapp.com/embed/avatars/0.png'; };
-    document.getElementById('cadmin-uname').textContent = data.username || 'Unknown';
-    document.getElementById('cadmin-uid-display').textContent = userId;
+    // Avatar: use hash from bot cache, fall back to default avatar
+    const discrim = data.discriminator || '0';
+    const defaultAvatar = `https://cdn.discordapp.com/embed/avatars/${parseInt(discrim) % 5}.png`;
+    const avatarUrl = data.avatar_hash
+      ? `https://cdn.discordapp.com/avatars/${userId}/${data.avatar_hash}.png?size=64`
+      : defaultAvatar;
+    const avatarEl = document.getElementById('cadmin-avatar');
+    avatarEl.src = avatarUrl;
+    avatarEl.onerror = function(){ this.src = defaultAvatar; };
+    // Show username + discriminator tag (not raw ID)
+    const tag = discrim && discrim !== '0' ? `${data.username}#${discrim}` : data.username || 'Unknown';
+    document.getElementById('cadmin-uname').textContent = tag;
+    document.getElementById('cadmin-uid-display').textContent = `ID: ${userId}`;
     document.getElementById('cadmin-balance').textContent = `₹${(data.balance||0).toLocaleString()}`;
     document.getElementById('cadmin-wl').textContent = `W: ${data.wins||0}  L: ${data.losses||0}`;
     if (card) card.style.display = 'block';
