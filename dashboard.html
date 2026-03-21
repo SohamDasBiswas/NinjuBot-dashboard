@@ -654,7 +654,7 @@
     <!-- ══════ ADMIN HQ ══════ -->
     <div id="panel-admin-hq" class="panel">
       <style>
-        .hq__wrap{font-family:"Courier New",monospace;color:#4eff91;max-width:960px;width:100%;margin:0 auto}
+        .hq__wrap{font-family:"Courier New",monospace;color:#4eff91}
         .hq__wrap *{box-sizing:border-box}
         /* header */
         .hq__hdr{background:#0d1e12;border:1px solid #4eff91;border-radius:12px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 24px rgba(78,255,145,.06)}
@@ -798,5 +798,29 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
+<script>
+(function(){
+  function fixScroll(){
+    var app    = document.getElementById('dashboard-app');
+    var panels = document.querySelector('.panels');
+    var topbar = document.querySelector('.topbar');
+    if(app){
+      app.style.setProperty('overflow','visible','important');
+    }
+    if(panels && topbar){
+      var h = window.innerHeight - topbar.getBoundingClientRect().height;
+      panels.style.setProperty('height', h+'px', 'important');
+      panels.style.setProperty('max-height', h+'px', 'important');
+      panels.style.setProperty('overflow-y', 'scroll', 'important');
+      panels.style.setProperty('flex', 'none', 'important');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', fixScroll);
+  window.addEventListener('load', fixScroll);
+  window.addEventListener('resize', fixScroll);
+  // Run repeatedly to catch dynamic show/hide of dashboard
+  setInterval(fixScroll, 500);
+})();
+</script>
 </body>
 </html>
