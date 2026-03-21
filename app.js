@@ -629,18 +629,45 @@ async function fetchBoostStats() {
 // ══════════════════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
+
+// System-only events that are NOT server mod actions — hidden from default view
+const SYSTEM_ACTIONS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect']);
+
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
   try {
     const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+
+    // Try to fetch Discord's native guild audit log first (real server events)
+    let discordEntries = [];
+    if (currentGuild) {
+      try {
+        const dRes = await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`, {
+          headers: { 'Authorization': `Bearer ${discordToken}` }
+        });
+        if (dRes.ok) {
+          const dData = await dRes.json();
+          discordEntries = dData.entries || dData.audit_log_entries || [];
+        }
+      } catch {}
+    }
+
+    // Fall back to bot's MongoDB log
     const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
       headers: { 'Authorization': `Bearer ${discordToken}` }
     });
     const data = await res.json();
     if (!res.ok) throw new Error('failed');
-    allLogEntries = data.entries || [];
+    const botEntries = data.entries || [];
+
+    // Merge: Discord native entries first, then bot entries not already covered
+    // Filter out pure system/bot-startup events from default view
+    const botFiltered = botEntries.filter(e => !SYSTEM_ACTIONS.has(e.action));
+    allLogEntries = discordEntries.length
+      ? [...discordEntries, ...botFiltered]
+      : botFiltered.length ? botFiltered : botEntries; // fallback: show all if nothing left
 
     // Update badge count
     const badge = document.getElementById('log-badge');
@@ -683,34 +710,51 @@ function renderLog() {
     'channel_create': ['channel_create','channel_delete','channel_rename'],
     'invite_create':  ['invite_create','invite_delete'],
   };
+
+  // Normalise entry — handles both Discord native format and bot MongoDB format
+  const norm = e => ({
+    action:    e.action || e.action_type_name || e.event_type || 'unknown',
+    target:    e.target || e.target_id || e.user || 'Unknown',
+    moderator: e.moderator || e.moderator_name || e.responsible_user || 'System',
+    reason:    e.reason || e.changes?.[0]?.new_value || '',
+    guild:     e.guild_name || e.server_name || (currentGuild ? currentGuild.name : ''),
+    timestamp: e.timestamp || e.created_at || e.id,
+  });
+
   const filtered = auditLogFilter === 'all'
     ? allLogEntries
-    : allLogEntries.filter(e => multiFilters[auditLogFilter]
-        ? multiFilters[auditLogFilter].includes(e.action)
-        : e.action === auditLogFilter);
+    : allLogEntries.filter(e => {
+        const a = norm(e).action;
+        return multiFilters[auditLogFilter]
+          ? multiFilters[auditLogFilter].includes(a)
+          : a === auditLogFilter;
+      });
 
   const total     = Math.ceil(filtered.length / PER_PAGE) || 1;
   auditLogPage    = Math.min(auditLogPage, total);
   const slice     = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
 
   if (!slice.length) {
-    c.innerHTML = `<div class="loading-state"><p>No log entries found.</p></div>`;
+    c.innerHTML = `<div class="loading-state"><p>No server log entries found.</p></div>`;
     if (pg) pg.style.display = 'none';
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => `
-    <div class="log-entry ${e.action||''}">
-      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => {
+    const n = norm(e);
+    return `
+    <div class="log-entry ${n.action}">
+      <div class="log-icon">${LOG_ICONS[n.action]||'📌'}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
-          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
+          <span class="log-tag ${n.action}">${n.action.toUpperCase().replace(/_/g,' ')}</span>
+          <strong>${n.target}</strong>${n.reason ? ` — ${n.reason}` : ''}
         </div>
-        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
+        <div class="log-meta">By ${n.moderator}${n.guild ? ' in <strong>'+n.guild+'</strong>' : ''}</div>
       </div>
-      <div class="log-time">${formatTime(e.timestamp)}</div>
-    </div>`).join('')}</div>`;
+      <div class="log-time">${formatTime(n.timestamp)}</div>
+    </div>`;
+  }).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
@@ -1255,88 +1299,20 @@ async function hq_feed(){
 }
 
 function hq_chart(entries){
-  const mk=id=>{const c=document.getElementById(id);if(!c)return null;if(c._c){c._c.destroy();c._c=null;}return c;};
-  const F={family:'"Courier New",monospace',size:11};
-  const Fsm={family:'"Courier New",monospace',size:10};
-  const G='#4eff91',grd='rgba(78,255,145,.07)',tc='rgba(78,255,145,.6)';
-  const TIP={backgroundColor:'#0a1510',borderColor:G,borderWidth:1,titleColor:G,bodyColor:'#d0ffe0',titleFont:{family:'"Courier New"',size:11},bodyFont:{family:'"Courier New"',size:11},padding:8};
-
-  /* Chart 1 — Action breakdown */
-  const c1=mk('hq__chart');
-  if(c1){
-    const cnt={};
-    entries.forEach(e=>{const a=e.action||e.type||e.event;if(a)cnt[a]=(cnt[a]||0)+1;});
-    const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,9);
-    if(rows.length){
-      const gd=c1.getContext('2d').createLinearGradient(0,0,0,120);
-      gd.addColorStop(0,'rgba(78,255,145,.55)');gd.addColorStop(1,'rgba(78,255,145,.05)');
-      c1._c=new Chart(c1.getContext('2d'),{type:'bar',
-        data:{labels:rows.map(([k])=>k.replace(/_/g,' ').toUpperCase()),datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.75)'}]},
-        options:{responsive:true,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
-          scales:{x:{ticks:{color:tc,font:F,maxRotation:30},grid:{color:grd},border:{color:'rgba(78,255,145,.25)'}},
-                  y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.25)'}}}}});
-    }
-  }
-
-  /* Chart 2 — Timeline */
-  const c2=mk('hq__chart2');
-  if(c2){
-    const now=Date.now(),buckets=new Array(24).fill(0);
-    entries.forEach(e=>{
-      const ts=e.timestamp||e.created_at||e.time;if(!ts)return;
-      const d=new Date(ts);if(isNaN(d))return;
-      const hr=Math.floor((now-d.getTime())/3600000);
-      if(hr>=0&&hr<24)buckets[23-hr]++;
-    });
-    const labels=Array.from({length:24},(_,i)=>i%4===0?new Date(now-(23-i)*3600000).getHours().toString().padStart(2,'0')+'h':'');
-    const gd2=c2.getContext('2d').createLinearGradient(0,0,0,120);
-    gd2.addColorStop(0,'rgba(78,255,145,.32)');gd2.addColorStop(1,'rgba(78,255,145,.0)');
-    c2._c=new Chart(c2.getContext('2d'),{type:'line',
-      data:{labels,datasets:[{data:buckets,borderColor:G,backgroundColor:gd2,borderWidth:2,pointRadius:2,pointBackgroundColor:G,tension:0.35,fill:true}]},
-      options:{responsive:true,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`⏱ ${i.label||i.dataIndex+'h ago'}`,label:i=>`EVENTS: ${i.raw}`}}},
-        scales:{x:{ticks:{color:tc,font:Fsm},grid:{color:grd},border:{color:'rgba(78,255,145,.25)'}},
-                y:{ticks:{color:tc,font:F,stepSize:1},grid:{color:grd},border:{color:'rgba(78,255,145,.25)'}}}}});
-  }
-
-  /* Chart 3 — Severity doughnut */
-  const c3=mk('hq__chart3');
-  if(c3){
-    const HIGH=['ban','kick','unban'],MED=['mute','timeout','warn'],LOW=['join','leave','bot_start'];
-    const v={h:0,m:0,l:0,i:0};
-    entries.forEach(e=>{
-      const a=(e.action||e.type||'').toLowerCase();
-      if(HIGH.some(x=>a.includes(x)))v.h++;
-      else if(MED.some(x=>a.includes(x)))v.m++;
-      else if(LOW.some(x=>a.includes(x)))v.l++;
-      else v.i++;
-    });
-    const vals=[v.h,v.m,v.l,v.i];
-    const clrs=['#ff4f4f','#fbbf24',G,'rgba(78,255,145,.4)'];
-    const bgs=['rgba(255,79,79,.22)','rgba(251,191,36,.22)','rgba(78,255,145,.2)','rgba(78,255,145,.07)'];
-    const lbls=['HIGH','MEDIUM','LOW','INFO'];
-    c3._c=new Chart(c3.getContext('2d'),{type:'doughnut',
-      data:{labels:lbls,datasets:[{data:vals,backgroundColor:bgs,borderColor:clrs,borderWidth:2,hoverOffset:5}]},
-      options:{responsive:false,cutout:'58%',plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>i.label,label:i=>`${i.raw} events`}}}}});
-    const leg=document.getElementById('hq__legend');
-    if(leg)leg.innerHTML=lbls.map((l,i)=>`<span style="font-family:'Courier New',monospace;font-size:.7rem;color:${clrs[i]};display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${clrs[i]};display:inline-block;flex-shrink:0"></span>${l}: ${vals[i]}</span>`).join('');
-  }
-
-  /* Chart 4 — Guild vertical bars */
-  const c4=mk('hq__chart4');
-  if(c4){
-    const gc={};
-    entries.forEach(e=>{const g=e.guild_name||e.server_name||e.guild||'Unknown';gc[g]=(gc[g]||0)+1;});
-    const rows=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,7);
-    if(rows.length){
-      const gd=c4.getContext('2d').createLinearGradient(0,0,0,120);
-      gd.addColorStop(0,'rgba(78,255,145,.6)');gd.addColorStop(1,'rgba(78,255,145,.07)');
-      c4._c=new Chart(c4.getContext('2d'),{type:'bar',
-        data:{labels:rows.map(([k])=>k.length>12?k.slice(0,10)+'…':k),datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.8)'}]},
-        options:{responsive:true,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`🌐 ${i.label}`,label:i=>`EVENTS: ${i.raw}`}}},
-          scales:{x:{ticks:{color:tc,font:F,maxRotation:20},grid:{color:grd},border:{color:'rgba(78,255,145,.25)'}},
-                  y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.25)'}}}}});
-    }
-  }
+  const canvas=document.getElementById('hq__chart');if(!canvas)return;
+  const counts={};
+  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  if(!sorted.length)return;
+  if(canvas._c)canvas._c.destroy();
+  canvas._c=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
+      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
+    }}
+  });
 }
 
 function hqExportAudit(){
