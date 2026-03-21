@@ -112,6 +112,7 @@
     <div id="admin-sidebar-section" style="display:none;flex-direction:column">
       <div style="height:1px;background:rgba(255,107,107,0.15);margin:6px 4px"></div>
       <div class="sidebar-section" style="margin-top:4px;color:#ff6b6b">🔐 Admin Only</div>
+      <div class="sl" onclick="showPanel('admin-hq',this)" style="color:#4eff91;font-weight:700"><span class="sl-icon">💻</span> Admin HQ</div>
       <div class="sl" onclick="showPanel('mongodb',this)"><span class="sl-icon">🗄️</span> DB Stats</div>
       <div class="sl" onclick="showPanel('currency-admin',this)"><span class="sl-icon">💸</span> Currency Manager</div>
       <div class="sl" onclick="showPanel('cfg-economy',this)"><span class="sl-icon">💰</span> Economy Config</div>
@@ -637,10 +638,127 @@
 
       </div>
     </div>
+
+    <!-- ══════ ADMIN HQ ══════ -->
+    <div id="panel-admin-hq" class="panel" style="padding:0;background:transparent;box-shadow:none">
+
+      <!-- Header -->
+      <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:16px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 30px rgba(78,255,145,0.08)">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="font-family:monospace;font-size:1.4rem;color:#4eff91;text-shadow:0 0 10px #4eff91">💻</div>
+          <div>
+            <div style="font-family:monospace;font-size:1rem;font-weight:700;color:#4eff91;letter-spacing:2px">NINJUBOT // ADMIN_HQ</div>
+            <div style="font-family:monospace;font-size:0.65rem;color:rgba(78,255,145,0.5);margin-top:2px" id="hq-timestamp">SYSTEM READY</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="font-family:monospace;font-size:0.7rem;color:rgba(78,255,145,0.6)" id="hq-ping">LATENCY: —ms</div>
+          <button class="btn-sm-o" onclick="hqRefreshAll()" style="font-family:monospace;font-size:0.75rem">⟳ REFRESH ALL</button>
+        </div>
+      </div>
+
+      <!-- Top stat strip -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px" id="hq-stat-strip">
+        <div class="hq-stat-card" id="hqs-guilds"><div class="hq-stat-val" id="hqs-guilds-v">—</div><div class="hq-stat-lbl">SERVERS</div></div>
+        <div class="hq-stat-card" id="hqs-users"><div class="hq-stat-val" id="hqs-users-v">—</div><div class="hq-stat-lbl">TOTAL USERS</div></div>
+        <div class="hq-stat-card" id="hqs-uptime"><div class="hq-stat-val" id="hqs-uptime-v">—</div><div class="hq-stat-lbl">UPTIME</div></div>
+        <div class="hq-stat-card" id="hqs-dbdocs"><div class="hq-stat-val" id="hqs-dbdocs-v">—</div><div class="hq-stat-lbl">DB DOCS</div></div>
+        <div class="hq-stat-card" id="hqs-logs"><div class="hq-stat-val" id="hqs-logs-v">—</div><div class="hq-stat-lbl">AUDIT LOGS</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+
+        <!-- Server roster -->
+        <div class="hq-card">
+          <div class="hq-card-hdr">🌐 SERVER ROSTER <span class="hq-live">LIVE</span></div>
+          <div id="hq-servers" class="hq-scroll">
+            <div class="hq-loading">FETCHING SERVERS…</div>
+          </div>
+        </div>
+
+        <!-- DB Stats -->
+        <div class="hq-card">
+          <div class="hq-card-hdr">🗄️ DATABASE MATRIX</div>
+          <div id="hq-db" class="hq-scroll">
+            <div class="hq-loading">CONNECTING TO DB…</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+
+        <!-- Economy top 10 global -->
+        <div class="hq-card">
+          <div class="hq-card-hdr">💰 ECONOMY GLOBAL TOP 10</div>
+          <div id="hq-eco" class="hq-scroll"><div class="hq-loading">LOADING…</div></div>
+        </div>
+
+        <!-- XP top 10 global -->
+        <div class="hq-card">
+          <div class="hq-card-hdr">📈 XP GLOBAL TOP 10</div>
+          <div id="hq-xp" class="hq-scroll"><div class="hq-loading">LOADING…</div></div>
+        </div>
+
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px">
+
+        <!-- Live audit feed -->
+        <div class="hq-card">
+          <div class="hq-card-hdr">📋 LIVE AUDIT FEED <span class="hq-live">LIVE</span>
+            <span style="margin-left:auto;font-size:0.65rem;color:rgba(78,255,145,0.5)" id="hq-feed-count">0 entries</span>
+          </div>
+          <div id="hq-feed" class="hq-scroll" style="max-height:320px">
+            <div class="hq-loading">AWAITING FEED…</div>
+          </div>
+        </div>
+
+        <!-- Bot health monitor -->
+        <div class="hq-card">
+          <div class="hq-card-hdr">⚡ BOT HEALTH</div>
+          <div id="hq-health" style="padding:10px 0">
+            <div class="hq-loading">SCANNING…</div>
+          </div>
+          <div class="hq-card-hdr" style="margin-top:12px">🔧 QUICK COMMANDS</div>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:8px 0">
+            <button class="hq-btn" onclick="hqBroadcast()">📢 Broadcast Message</button>
+            <button class="hq-btn" onclick="hqExportAudit()">📥 Export Audit Log</button>
+            <button class="hq-btn" onclick="hqExportEco()">📥 Export Economy Data</button>
+            <button class="hq-btn" onclick="showPanel('currency-admin', document.querySelector('.sl[onclick*=currency-admin]'))">💸 Currency Manager</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Activity graph -->
+      <div class="hq-card" style="margin-bottom:14px">
+        <div class="hq-card-hdr">📊 AUDIT ACTIVITY BREAKDOWN
+          <span style="margin-left:auto;font-size:0.65rem;color:rgba(78,255,145,0.5)">Last 200 entries</span>
+        </div>
+        <div id="hq-chart-wrap" style="padding:16px 0">
+          <canvas id="hq-chart" height="80"></canvas>
+        </div>
+      </div>
+
+      <!-- Broadcast modal -->
+      <div id="hq-broadcast-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center">
+        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:24px;width:500px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,0.2)">
+          <div style="font-family:monospace;color:#4eff91;font-size:0.9rem;margin-bottom:16px;font-weight:700">📢 BROADCAST MESSAGE</div>
+          <textarea id="hq-broadcast-msg" class="f-input" placeholder="Enter message to broadcast to all servers..." style="height:100px;resize:vertical;font-family:monospace;margin-bottom:12px"></textarea>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm-o" onclick="document.getElementById('hq-broadcast-modal').style.display='none'">Cancel</button>
+            <button class="btn-sm" onclick="hqSendBroadcast()" style="font-family:monospace">BROADCAST</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div><!-- /panels -->
 </main>
 </div><!-- /dashboard-app -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
