@@ -1290,3 +1290,17 @@ async function hqExportEco(){
     a.download=`economy_${Date.now()}.csv`;a.click();showToast('✅ Exported');
   }catch{showToast('❌ Export failed','error');}
 }
+
+// ── Scroll safety net ──
+// Forces .panels to always be scrollable by setting an explicit pixel height
+// derived from the actual DOM, bypassing any flex chain issues.
+function fixPanelsHeight() {
+  const panels = document.querySelector('.panels');
+  const topbar = document.querySelector('.topbar');
+  if (!panels) return;
+  const topH = topbar ? topbar.getBoundingClientRect().height : 64;
+  panels.style.height = (window.innerHeight - topH) + 'px';
+  panels.style.overflowY = 'auto';
+}
+window.addEventListener('load', fixPanelsHeight);
+window.addEventListener('resize', fixPanelsHeight);

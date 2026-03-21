@@ -357,7 +357,7 @@ section{padding:100px 40px}
 .page-title{font-family:var(--font-d);font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:10px}
 .topbar-r{display:flex;align-items:center;gap:10px}
 .uptime-pill{padding:7px 14px;border-radius:var(--r-sm);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.78rem;font-family:var(--font-m);color:var(--green)}
-.panels{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(78,255,145,0.4) transparent}
+.panels{flex:1;min-height:0;height:calc(100vh - 64px);overflow-y:auto;overflow-x:hidden;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(78,255,145,0.4) transparent}
 .panel{display:none;animation:fadeUp 0.28s var(--ease)}
 .panel.active{display:block}
 
@@ -700,4 +700,4 @@ section{padding:100px 40px}
 .panels::-webkit-scrollbar-thumb{background:rgba(78,255,145,0.3);border-radius:3px}
 .panels::-webkit-scrollbar-thumb:hover{background:#4eff91}
 
-#dashboard-app{flex:1 !important;min-height:0 !important;display:flex !important;overflow:hidden}
+#dashboard-app{flex:1;min-height:0;display:flex;height:100%;overflow:visible}
