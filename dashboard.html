@@ -8,14 +8,17 @@
 <title>NinjuBot — Control Panel</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* ── SCROLL FIX: overrides broken rules in style.css ── */
-  #dashboard-app          { overflow: visible !important; height: 100vh !important; }
-  .db-main                { position: relative !important; overflow: hidden !important; }
-  .panels                 { position: absolute !important; top: 64px !important; left: 0 !important;
-                            right: 0 !important; bottom: 0 !important; height: auto !important;
-                            overflow-y: scroll !important; overflow-x: hidden !important; padding: 22px !important; }
+  /* ── SCROLL FIX ── */
+  #dashboard-app { overflow: visible !important; }
+  .db-main       { overflow: visible !important; }
+  .panels {
+    flex: none !important;
+    height: calc(100vh - 64px) !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+  }
   .panels::-webkit-scrollbar       { width: 8px !important; }
-  .panels::-webkit-scrollbar-track { background: #0a1510 !important; }
+  .panels::-webkit-scrollbar-track { background: #0d1a10 !important; }
   .panels::-webkit-scrollbar-thumb { background: rgba(78,255,145,0.55) !important; border-radius: 4px !important; }
   .panels::-webkit-scrollbar-thumb:hover { background: #4eff91 !important; }
 </style>
@@ -810,5 +813,33 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
+<script>
+  // Scroll fix — runs after everything loads, beats all CSS including !important
+  function applyScrollFix() {
+    var panels = document.querySelector('.panels');
+    var main   = document.querySelector('.db-main');
+    var app    = document.getElementById('dashboard-app');
+    if (panels) {
+      var h = window.innerHeight - 64;
+      panels.style.setProperty('height',     h + 'px',  'important');
+      panels.style.setProperty('overflow-y', 'scroll',  'important');
+      panels.style.setProperty('overflow-x', 'hidden',  'important');
+      panels.style.setProperty('flex',       'none',     'important');
+    }
+    if (main) {
+      main.style.setProperty('overflow', 'visible', 'important');
+    }
+    if (app) {
+      app.style.setProperty('overflow', 'visible', 'important');
+    }
+  }
+  // Run at multiple points to catch any timing issues
+  document.addEventListener('DOMContentLoaded', applyScrollFix);
+  window.addEventListener('load', applyScrollFix);
+  window.addEventListener('resize', applyScrollFix);
+  setTimeout(applyScrollFix, 300);
+  setTimeout(applyScrollFix, 800);
+  setTimeout(applyScrollFix, 1500);
+</script>
 </body>
 </html>
