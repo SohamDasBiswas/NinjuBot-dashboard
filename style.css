@@ -697,7 +697,7 @@ section{padding:100px 40px}
 /* ── Dashboard scrollbar ── */
 .panels::-webkit-scrollbar{width:8px}
 .panels::-webkit-scrollbar-track{background:#0a1510}
-.panels::-webkit-scrollbar-thumb{background:rgba(78,255,145,0.5);border-radius:4px}
+.panels::-webkit-scrollbar-thumb{background:rgba(78,255,145,0.6);border-radius:4px}
 .panels::-webkit-scrollbar-thumb:hover{background:#4eff91}
 
 #dashboard-app{flex:1;min-height:0;display:flex;height:100%}
