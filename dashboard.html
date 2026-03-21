@@ -651,167 +651,147 @@
       </div>
 
     </div>
-
     <!-- ══════ ADMIN HQ ══════ -->
     <div id="panel-admin-hq" class="panel">
-    <div id="ahq">
       <style>
-      #ahq,#ahq *{box-sizing:border-box;font-family:"Courier New",monospace}
-      #ahq{color:#4eff91}
-      #ahq .ahq-row{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
-      #ahq .ahq-col{flex:1;min-width:0}
-      #ahq .ahq-col2{flex:2;min-width:0}
-      #ahq .ahq-box{background:#07100a;border:1px solid rgba(78,255,145,.2);border-radius:12px;padding:16px;position:relative;overflow:hidden}
-      #ahq .ahq-box::after{content:"";position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,#4eff91,transparent);opacity:.5}
-      #ahq .ahq-ttl{font-size:.62rem;letter-spacing:2px;color:#4eff91;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-weight:700}
-      #ahq .ahq-dot{width:7px;height:7px;border-radius:50%;background:#4eff91;box-shadow:0 0 6px #4eff91;animation:ahqdot 1.5s infinite;flex-shrink:0}
-      @keyframes ahqdot{0%,100%{opacity:1}50%{opacity:.15}}
-      #ahq .ahq-scroll{overflow-y:auto;max-height:220px}
-      #ahq .ahq-empty{font-size:.68rem;color:rgba(78,255,145,.3);padding:24px;text-align:center}
-      /* stat strip */
-      #ahq .ahq-stats{display:flex;gap:10px;margin-bottom:12px}
-      #ahq .ahq-stat{flex:1;background:#07100a;border:1px solid rgba(78,255,145,.2);border-radius:10px;padding:14px 8px;text-align:center;position:relative;overflow:hidden}
-      #ahq .ahq-stat::after{content:"";position:absolute;top:0;left:5%;right:5%;height:1px;background:#4eff91;opacity:.4}
-      #ahq .ahq-sv{font-size:1.4rem;font-weight:700;color:#4eff91;text-shadow:0 0 14px rgba(78,255,145,.5);line-height:1.1}
-      #ahq .ahq-sk{font-size:.55rem;color:rgba(78,255,145,.4);letter-spacing:2px;margin-top:4px}
-      /* server rows */
-      #ahq .ahq-sr{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;margin-bottom:3px;border:1px solid rgba(78,255,145,.05);background:rgba(78,255,145,.015);transition:background .15s}
-      #ahq .ahq-sr:hover{background:rgba(78,255,145,.05);border-color:rgba(78,255,145,.15)}
-      #ahq .ahq-icon{width:28px;height:28px;border-radius:6px;background:rgba(78,255,145,.1);border:1px solid rgba(78,255,145,.2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#4eff91;flex-shrink:0;overflow:hidden}
-      #ahq .ahq-icon img{width:100%;height:100%;object-fit:cover;border-radius:5px}
-      #ahq .ahq-sname{font-size:.73rem;color:#d0ffe0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      #ahq .ahq-smeta{font-size:.6rem;color:rgba(78,255,145,.4);white-space:nowrap}
-      /* kv pairs */
-      #ahq .ahq-kv{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid rgba(78,255,145,.05);font-size:.7rem}
-      #ahq .ahq-kv:last-child{border-bottom:none}
-      #ahq .ahq-kk{color:rgba(78,255,145,.5)}
-      #ahq .ahq-vv{color:#4eff91;font-weight:700}
-      /* leaderboard */
-      #ahq .ahq-lb{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border:1px solid rgba(78,255,145,.04)}
-      #ahq .ahq-lrank{font-size:.63rem;color:rgba(78,255,145,.4);width:20px;text-align:right;flex-shrink:0}
-      #ahq .ahq-lname{font-size:.7rem;color:#d0ffe0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      #ahq .ahq-bw{width:60px;height:3px;background:rgba(78,255,145,.1);border-radius:2px;flex-shrink:0}
-      #ahq .ahq-bb{height:3px;background:#4eff91;border-radius:2px;box-shadow:0 0 4px #4eff91}
-      #ahq .ahq-lval{font-size:.65rem;color:#4eff91;font-weight:700;width:65px;text-align:right;flex-shrink:0}
-      /* feed */
-      #ahq .ahq-fe{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border-left:2px solid rgba(78,255,145,.2);background:rgba(78,255,145,.012)}
-      #ahq .ahq-fico{font-size:.72rem;flex-shrink:0;margin-top:1px}
-      #ahq .ahq-fbody{flex:1;min-width:0}
-      #ahq .ahq-fact{font-size:.68rem;color:#d0ffe0;font-weight:600}
-      #ahq .ahq-fmeta{font-size:.58rem;color:rgba(78,255,145,.38);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      #ahq .ahq-ftime{font-size:.56rem;color:rgba(78,255,145,.22);flex-shrink:0;white-space:nowrap}
-      /* health */
-      #ahq .ahq-hr{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(78,255,145,.02);border:1px solid rgba(78,255,145,.06)}
-      #ahq .ahq-hk{font-size:.68rem;color:rgba(78,255,145,.5)}
-      #ahq .ahq-hv{font-size:.68rem;color:#4eff91;font-weight:700}
-      /* buttons */
-      #ahq .ahq-btn{width:100%;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.18);color:rgba(78,255,145,.7);font-family:"Courier New",monospace;font-size:.68rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:left;display:block;margin-bottom:5px}
-      #ahq .ahq-btn:hover{background:rgba(78,255,145,.07);border-color:#4eff91;color:#4eff91;box-shadow:0 0 10px rgba(78,255,145,.1)}
+        .hq__wrap{font-family:"Courier New",monospace;color:#4eff91}
+        .hq__wrap *{box-sizing:border-box}
+        /* header */
+        .hq__hdr{background:#0d1e12;border:1px solid #4eff91;border-radius:12px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 24px rgba(78,255,145,.06)}
+        .hq__htitle{font-size:.85rem;font-weight:700;letter-spacing:3px;color:#4eff91}
+        .hq__hsub{font-size:.58rem;color:rgba(78,255,145,.4);margin-top:2px;letter-spacing:1px}
+        .hq__ping{font-size:.62rem;color:rgba(78,255,145,.4)}
+        .hq__rbtn{padding:6px 14px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.25);color:rgba(78,255,145,.7);font-family:"Courier New",monospace;font-size:.68rem;cursor:pointer;transition:all .15s}
+        .hq__rbtn:hover{background:rgba(78,255,145,.08);border-color:#4eff91;color:#4eff91}
+        /* stat strip */
+        .hq__strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+        .hq__stat{background:#0d1e12;border:1px solid rgba(78,255,145,.22);border-radius:10px;padding:14px 8px;text-align:center;position:relative;overflow:hidden;transition:border-color .2s}
+        .hq__stat:hover{border-color:#4eff91;box-shadow:0 0 16px rgba(78,255,145,.07)}
+        .hq__stat::before{content:"";position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,#4eff91,transparent)}
+        .hq__sv{font-size:1.5rem;font-weight:700;color:#4eff91;text-shadow:0 0 14px rgba(78,255,145,.45);line-height:1.1}
+        .hq__sk{font-size:.55rem;color:rgba(78,255,145,.4);letter-spacing:2px;margin-top:5px;text-transform:uppercase}
+        /* grid */
+        .hq__g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+        .hq__g21{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+        /* box */
+        .hq__box{background:#0d1e12;border:1px solid rgba(78,255,145,.18);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+        .hq__box::before{content:"";position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,.5),transparent)}
+        /* title */
+        .hq__ttl{font-size:.62rem;font-weight:700;letter-spacing:2px;color:#4eff91;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .hq__dot{width:7px;height:7px;border-radius:50%;background:#4eff91;box-shadow:0 0 6px #4eff91;flex-shrink:0;animation:hq__blink 1.5s infinite}
+        @keyframes hq__blink{0%,100%{opacity:1}50%{opacity:.1}}
+        .hq__sc{overflow-y:auto;max-height:200px}
+        .hq__em{font-size:.68rem;color:rgba(78,255,145,.3);padding:20px;text-align:center}
+        /* server row */
+        .hq__sr{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;margin-bottom:3px;border:1px solid rgba(78,255,145,.05);background:rgba(78,255,145,.015);transition:background .15s}
+        .hq__sr:hover{background:rgba(78,255,145,.06);border-color:rgba(78,255,145,.18)}
+        .hq__ico{width:28px;height:28px;border-radius:6px;background:rgba(78,255,145,.1);border:1px solid rgba(78,255,145,.2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#4eff91;flex-shrink:0;overflow:hidden}
+        .hq__ico img{width:100%;height:100%;object-fit:cover;border-radius:5px}
+        .hq__sn{font-size:.73rem;color:#d0ffe0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .hq__sm{font-size:.6rem;color:rgba(78,255,145,.4);white-space:nowrap}
+        /* kv */
+        .hq__kv{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid rgba(78,255,145,.05);font-size:.7rem}
+        .hq__kv:last-child{border-bottom:none}
+        .hq__kk{color:rgba(78,255,145,.5)}
+        .hq__vv{color:#4eff91;font-weight:700}
+        /* leaderboard */
+        .hq__lb{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border:1px solid rgba(78,255,145,.04)}
+        .hq__lr{font-size:.63rem;color:rgba(78,255,145,.4);width:20px;text-align:right;flex-shrink:0}
+        .hq__ln{font-size:.7rem;color:#d0ffe0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .hq__bw{width:60px;height:3px;background:rgba(78,255,145,.1);border-radius:2px;flex-shrink:0}
+        .hq__bb{height:3px;background:#4eff91;border-radius:2px;box-shadow:0 0 4px #4eff91}
+        .hq__lv{font-size:.65rem;color:#4eff91;font-weight:700;width:65px;text-align:right;flex-shrink:0}
+        /* feed */
+        .hq__fe{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border-left:2px solid rgba(78,255,145,.2);background:rgba(78,255,145,.012)}
+        .hq__fi{font-size:.72rem;flex-shrink:0;margin-top:1px}
+        .hq__fb{flex:1;min-width:0}
+        .hq__fa{font-size:.68rem;color:#d0ffe0;font-weight:600}
+        .hq__fm{font-size:.58rem;color:rgba(78,255,145,.38);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .hq__ft{font-size:.56rem;color:rgba(78,255,145,.22);flex-shrink:0;white-space:nowrap}
+        /* health */
+        .hq__hr{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(78,255,145,.02);border:1px solid rgba(78,255,145,.06)}
+        .hq__hk{font-size:.68rem;color:rgba(78,255,145,.5)}
+        .hq__hv{font-size:.68rem;color:#4eff91;font-weight:700}
+        /* buttons */
+        .hq__qb{width:100%;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.18);color:rgba(78,255,145,.7);font-family:"Courier New",monospace;font-size:.68rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:left;display:block;margin-bottom:5px}
+        .hq__qb:hover{background:rgba(78,255,145,.07);border-color:#4eff91;color:#4eff91;box-shadow:0 0 8px rgba(78,255,145,.1)}
       </style>
 
-      <!-- Header bar -->
-      <div style="background:#07100a;border:1px solid #4eff91;border-radius:12px;padding:13px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 30px rgba(78,255,145,.06)">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span style="font-size:1.1rem">💻</span>
-          <div>
-            <div style="font-family:'Courier New',monospace;font-size:.85rem;font-weight:700;letter-spacing:3px;color:#4eff91">NINJUBOT // ADMIN_HQ</div>
-            <div style="font-family:'Courier New',monospace;font-size:.58rem;color:rgba(78,255,145,.4);margin-top:2px;letter-spacing:1px" id="hq-ts">SYSTEM READY</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <span style="font-family:'Courier New',monospace;font-size:.62rem;color:rgba(78,255,145,.45)" id="hq-ping">PING: —ms</span>
-          <button class="btn-sm-o" onclick="hqRefreshAll()" style="font-family:'Courier New',monospace;font-size:.7rem;letter-spacing:1px">⟳ REFRESH</button>
-        </div>
-      </div>
+      <div class="hq__wrap">
 
-      <!-- Stat strip -->
-      <div class="ahq-stats">
-        <div class="ahq-stat"><div class="ahq-sv" id="hqs-g">—</div><div class="ahq-sk">SERVERS</div></div>
-        <div class="ahq-stat"><div class="ahq-sv" id="hqs-u">—</div><div class="ahq-sk">USERS</div></div>
-        <div class="ahq-stat"><div class="ahq-sv" id="hqs-up" style="font-size:1rem">—</div><div class="ahq-sk">UPTIME</div></div>
-        <div class="ahq-stat"><div class="ahq-sv" id="hqs-db">—</div><div class="ahq-sk">DB DOCS</div></div>
-        <div class="ahq-stat"><div class="ahq-sv" id="hqs-al">—</div><div class="ahq-sk">AUDIT LOGS</div></div>
-      </div>
+        <!-- Header -->
+        <div class="hq__hdr">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:1.1rem">💻</span>
+            <div>
+              <div class="hq__htitle">NINJUBOT // ADMIN_HQ</div>
+              <div class="hq__hsub" id="hq__ts">SYSTEM READY</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <span class="hq__ping" id="hq__ping">PING: —ms</span>
+            <button class="hq__rbtn" onclick="hqRefresh()">⟳ REFRESH ALL</button>
+          </div>
+        </div>
 
-      <!-- Row 1: servers + db -->
-      <div class="ahq-row">
-        <div class="ahq-col">
-          <div class="ahq-box">
-            <div class="ahq-ttl"><div class="ahq-dot"></div>🌐 SERVER ROSTER</div>
-            <div class="ahq-scroll" id="hq-servers"><div class="ahq-empty">FETCHING…</div></div>
-          </div>
+        <!-- Stats -->
+        <div class="hq__strip">
+          <div class="hq__stat"><div class="hq__sv" id="hq__sg">—</div><div class="hq__sk">Servers</div></div>
+          <div class="hq__stat"><div class="hq__sv" id="hq__su">—</div><div class="hq__sk">Users</div></div>
+          <div class="hq__stat"><div class="hq__sv" id="hq__sup" style="font-size:1rem">—</div><div class="hq__sk">Uptime</div></div>
+          <div class="hq__stat"><div class="hq__sv" id="hq__sdb">—</div><div class="hq__sk">DB Docs</div></div>
+          <div class="hq__stat"><div class="hq__sv" id="hq__sal">—</div><div class="hq__sk">Audit Logs</div></div>
         </div>
-        <div class="ahq-col">
-          <div class="ahq-box">
-            <div class="ahq-ttl">🗄️ DATABASE MATRIX</div>
-            <div id="hq-dbm"><div class="ahq-empty">CONNECTING…</div></div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Row 2: eco + xp -->
-      <div class="ahq-row">
-        <div class="ahq-col">
-          <div class="ahq-box">
-            <div class="ahq-ttl">💰 ECONOMY GLOBAL TOP 10</div>
-            <div class="ahq-scroll" id="hq-eco"><div class="ahq-empty">LOADING…</div></div>
+        <!-- Row 1 -->
+        <div class="hq__g2">
+          <div class="hq__box">
+            <div class="hq__ttl"><div class="hq__dot"></div>🌐 SERVER ROSTER</div>
+            <div class="hq__sc" id="hq__servers"><div class="hq__em">FETCHING…</div></div>
+          </div>
+          <div class="hq__box">
+            <div class="hq__ttl">🗄️ DATABASE MATRIX</div>
+            <div id="hq__dbm"><div class="hq__em">CONNECTING…</div></div>
           </div>
         </div>
-        <div class="ahq-col">
-          <div class="ahq-box">
-            <div class="ahq-ttl">📈 XP GLOBAL TOP 10</div>
-            <div class="ahq-scroll" id="hq-xp"><div class="ahq-empty">LOADING…</div></div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Row 3: feed + health -->
-      <div class="ahq-row">
-        <div class="ahq-col2">
-          <div class="ahq-box">
-            <div class="ahq-ttl"><div class="ahq-dot"></div>📋 LIVE AUDIT FEED <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)" id="hq-fc">0 entries</span></div>
-            <div class="ahq-scroll" style="max-height:280px" id="hq-feed"><div class="ahq-empty">AWAITING EVENTS…</div></div>
+        <!-- Row 2 -->
+        <div class="hq__g2">
+          <div class="hq__box">
+            <div class="hq__ttl">💰 ECONOMY GLOBAL TOP 10</div>
+            <div class="hq__sc" id="hq__eco"><div class="hq__em">LOADING…</div></div>
+          </div>
+          <div class="hq__box">
+            <div class="hq__ttl">📈 XP GLOBAL TOP 10</div>
+            <div class="hq__sc" id="hq__xp"><div class="hq__em">LOADING…</div></div>
           </div>
         </div>
-        <div class="ahq-col">
-          <div class="ahq-box" style="display:flex;flex-direction:column">
-            <div class="ahq-ttl">⚡ BOT HEALTH</div>
-            <div id="hq-health"><div class="ahq-empty">SCANNING…</div></div>
-            <div class="ahq-ttl" style="margin-top:14px">🔧 QUICK OPS</div>
-            <button class="ahq-btn" onclick="hqBroadcast()">📢 Broadcast Message</button>
-            <button class="ahq-btn" onclick="hqExportAudit()">📥 Export Audit CSV</button>
-            <button class="ahq-btn" onclick="hqExportEco()">📥 Export Economy CSV</button>
-            <button class="ahq-btn" onclick="showPanel('currency-admin',null)">💸 Currency Manager →</button>
-            <button class="ahq-btn" onclick="showPanel('mongodb',null)">🗄️ DB Stats →</button>
-          </div>
-        </div>
-      </div>
 
-      <!-- Row 4: chart -->
-      <div class="ahq-row" style="margin-bottom:4px">
-        <div class="ahq-col">
-          <div class="ahq-box">
-            <div class="ahq-ttl">📊 AUDIT ACTIVITY BREAKDOWN <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Last 200 entries</span></div>
-            <canvas id="hq-chart" height="65"></canvas>
+        <!-- Row 3 -->
+        <div class="hq__g21">
+          <div class="hq__box">
+            <div class="hq__ttl"><div class="hq__dot"></div>📋 LIVE AUDIT FEED <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)" id="hq__fc">0 entries</span></div>
+            <div class="hq__sc" style="max-height:300px" id="hq__feed"><div class="hq__em">AWAITING EVENTS…</div></div>
+          </div>
+          <div class="hq__box" style="display:flex;flex-direction:column">
+            <div class="hq__ttl">⚡ BOT HEALTH</div>
+            <div id="hq__health"><div class="hq__em">SCANNING…</div></div>
+            <div class="hq__ttl" style="margin-top:14px">🔧 QUICK OPS</div>
+            <button class="hq__qb" onclick="hqExportAudit()">📥 Export Audit CSV</button>
+            <button class="hq__qb" onclick="hqExportEco()">📥 Export Economy CSV</button>
+            <button class="hq__qb" onclick="showPanel('currency-admin',document.querySelector('.sl[onclick*=currency-admin]'))">💸 Currency Manager →</button>
+            <button class="hq__qb" onclick="showPanel('mongodb',document.querySelector('.sl[onclick*=mongodb]'))">🗄️ DB Stats →</button>
           </div>
         </div>
-      </div>
 
-      <!-- Broadcast modal -->
-      <div id="hq-bcast-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
-        <div style="background:#07100a;border:1px solid #4eff91;border-radius:14px;padding:24px;width:460px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2);font-family:'Courier New',monospace">
-          <div style="font-size:.8rem;font-weight:700;color:#4eff91;letter-spacing:2px;margin-bottom:14px">📢 BROADCAST</div>
-          <textarea id="hq-bcast-txt" class="f-input" placeholder="Message to all servers..." style="height:80px;resize:vertical;font-family:'Courier New',monospace;margin-bottom:12px;width:100%"></textarea>
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn-sm-o" onclick="document.getElementById('hq-bcast-modal').style.display='none'">Cancel</button>
-            <button class="btn-sm" onclick="hqSendBroadcast()" style="font-family:'Courier New',monospace">SEND</button>
-          </div>
+        <!-- Row 4: chart -->
+        <div class="hq__box">
+          <div class="hq__ttl">📊 AUDIT ACTIVITY BREAKDOWN <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Last 200 entries</span></div>
+          <canvas id="hq__chart" height="70"></canvas>
         </div>
-      </div>
 
+      </div>
     </div>
-    </div>
-
   </div><!-- /panels -->
 </main>
 </div><!-- /dashboard-app -->

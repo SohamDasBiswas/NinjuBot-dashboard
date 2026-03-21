@@ -1076,177 +1076,6 @@ function cadminClearLog() {
 
 
 // ══════════════════════════════════════════════════════════════
-//  ADMIN HQ
-// ══════════════════════════════════════════════════════════════
-let _hqInt=null;
-const _HQI={ban:'🔨',unban:'🔓',kick:'👢',timeout:'⏱',untimeout:'🔊',warn:'⚠️',purge:'🧹',delete:'🗑️',edit:'✏️',join:'✅',leave:'🚪',nick:'✏️',role_add:'➕',role_remove:'➖',role_create:'🎭',role_delete:'🗑️',role_rename:'🏷️',channel_create:'📢',channel_delete:'🗑️',channel_rename:'📝',voice_join:'🎙️',voice_leave:'🔇',voice_move:'🔀',invite_create:'🔗',invite_delete:'❌',server_rename:'🏠',emoji_add:'😀',slowmode:'🐢',lock:'🔒',unlock:'🔓',bot_start:'🚀'};
-function _hqs(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
-function _hqf(v){return typeof v==='number'?v.toLocaleString():(v||'—');}
-
-async function hqLoad(){hqRefreshAll();if(_hqInt)clearInterval(_hqInt);_hqInt=setInterval(hqRefreshAll,30000);}
-
-async function hqRefreshAll(){
-  const ts=document.getElementById('hq-ts');if(ts)ts.textContent='SYNCING… '+new Date().toLocaleTimeString('en-GB',{hour12:false});
-  const t0=Date.now();
-  await Promise.all([_hqHealth(),_hqServers(),_hqDB(),_hqEco(),_hqXP(),_hqFeed()]);
-  const p=Date.now()-t0;
-  const pe=document.getElementById('hq-ping');if(pe)pe.textContent=`PING: ${p}ms`;
-  if(ts)ts.textContent='LAST SYNC: '+new Date().toLocaleTimeString('en-GB',{hour12:false});
-}
-
-async function _hqHealth(){
-  try{
-    const d=await(await fetch(`${BOT_API}/health`)).json();
-    const online=d.status==='online';
-    _hqs('hqs-g',_hqf(d.guilds));_hqs('hqs-u',_hqf(d.users));_hqs('hqs-up',(d.uptime||'—').split('.')[0]);
-    _hqs('hq-health',[
-      ['STATUS',online?'<span style="color:#4eff91">🟢 ONLINE</span>':'<span style="color:#faa61a">🟡 STARTING</span>'],
-      ['BOT',d.bot_name||'—'],['UPTIME',(d.uptime||'—').split('.')[0]],
-      ['SERVERS',_hqf(d.guilds)],['USERS',_hqf(d.users)],
-    ].map(([k,v])=>`<div class="ahq-hr"><span class="ahq-hk">${k}</span><span class="ahq-hv">${v}</span></div>`).join(''));
-  }catch(e){console.warn('hqHealth',e);}
-}
-
-async function _hqServers(){
-  const c=document.getElementById('hq-servers');if(!c)return;
-  try{
-    const d=await(await fetch(`${BOT_API}/stats`)).json();
-    const gs=d.guilds||[];
-    c.innerHTML=gs.length?gs.map((g,i)=>`
-      <div class="ahq-sr">
-        <div class="ahq-icon">${g.icon?`<img src="${g.icon}" alt="">`:(g.name||'?').charAt(0)}</div>
-        <span class="ahq-sname">${g.name}</span>
-        <span class="ahq-smeta">👥 ${(g.members||0).toLocaleString()}</span>
-        <span class="ahq-smeta" style="margin-left:6px;opacity:.4">#${i+1}</span>
-      </div>`).join(''):'<div class="ahq-empty">NO SERVERS</div>';
-  }catch{c.innerHTML='<div class="ahq-empty">ERROR LOADING</div>';}
-}
-
-async function _hqDB(){
-  try{
-    const d=await(await fetch(`${BOT_API}/db/stats`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(d.error)throw new Error(d.error);
-    _hqs('hqs-db',(d.total_documents||0).toLocaleString());
-    _hqs('hq-dbm',[
-      ['USERS',d.users||0],['GUILDS',d.guilds||0],
-      ['ECONOMY',d.economy_entries||0],['XP',d.xp_entries||0],
-      ['COLLECTIONS',d.collections||0],['TOTAL DOCS',(d.total_documents||0).toLocaleString()],
-      ['LAST SYNC',d.last_sync||'—'],
-    ].map(([k,v])=>`<div class="ahq-kv"><span class="ahq-kk">${k}</span><span class="ahq-vv">${v}</span></div>`).join(''));
-  }catch{_hqs('hq-dbm','<div class="ahq-empty">DB ERROR — check /db/stats endpoint</div>');}
-}
-
-async function _hqEco(){
-  const c=document.getElementById('hq-eco');if(!c)return;
-  try{
-    const data=await(await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(!data.length){c.innerHTML='<div class="ahq-empty">NO ECONOMY DATA</div>';return;}
-    const max=data[0]?.balance||1,M=['🥇','🥈','🥉'];
-    c.innerHTML=data.slice(0,10).map((u,i)=>`
-      <div class="ahq-lb">
-        <span class="ahq-lrank">${M[i]||'#'+(i+1)}</span>
-        <span class="ahq-lname">${u.username||'Unknown'}</span>
-        <div class="ahq-bw"><div class="ahq-bb" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
-        <span class="ahq-lval">₹${(u.balance||0).toLocaleString()}</span>
-      </div>`).join('');
-  }catch{c.innerHTML='<div class="ahq-empty">ERROR</div>';}
-}
-
-async function _hqXP(){
-  const c=document.getElementById('hq-xp');if(!c)return;
-  try{
-    const data=await(await fetch(`${BOT_API}/levels/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(!data.length){c.innerHTML='<div class="ahq-empty">NO XP DATA</div>';return;}
-    const max=data[0]?.xp||1,M=['🥇','🥈','🥉'];
-    c.innerHTML=data.slice(0,10).map((u,i)=>`
-      <div class="ahq-lb">
-        <span class="ahq-lrank">${M[i]||'#'+(i+1)}</span>
-        <span class="ahq-lname">${u.username||'Unknown'}</span>
-        <div class="ahq-bw"><div class="ahq-bb" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
-        <span class="ahq-lval">Lv.${u.level||0}</span>
-      </div>`).join('');
-  }catch{c.innerHTML='<div class="ahq-empty">ERROR</div>';}
-}
-
-async function _hqFeed(){
-  const c=document.getElementById('hq-feed');if(!c)return;
-  try{
-    const data=await(await fetch(`${BOT_API}/audit/log?limit=200`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    const entries=data.entries||[];
-    _hqs('hqs-al',entries.length);
-    const fc=document.getElementById('hq-fc');if(fc)fc.textContent=entries.length+' entries';
-    if(!entries.length){c.innerHTML='<div class="ahq-empty">NO LOG ENTRIES YET — mod actions will appear here</div>';_hqChart([]);return;}
-    c.innerHTML=entries.slice(0,60).map(e=>{
-      const icon=_HQI[e.action]||'📌';
-      const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
-      const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
-      return `<div class="ahq-fe">
-        <span class="ahq-fico">${icon}</span>
-        <div class="ahq-fbody">
-          <div class="ahq-fact">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
-          <div class="ahq-fmeta">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
-        </div>
-        <span class="ahq-ftime">${time}</span>
-      </div>`;
-    }).join('');
-    _hqChart(entries);
-  }catch(e){console.error('hqFeed',e);c.innerHTML='<div class="ahq-empty">FEED ERROR: '+e.message+'</div>';}
-}
-
-function _hqChart(entries){
-  const canvas=document.getElementById('hq-chart');if(!canvas)return;
-  const counts={};
-  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  if(!sorted.length){canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);return;}
-  if(canvas._hqc){canvas._hqc.destroy();}
-  canvas._hqc=new Chart(canvas.getContext('2d'),{
-    type:'bar',
-    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{
-      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
-      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
-    }}
-  });
-}
-
-function hqBroadcast(){const m=document.getElementById('hq-bcast-modal');if(m)m.style.display='flex';}
-function hqSendBroadcast(){
-  const msg=document.getElementById('hq-bcast-txt')?.value?.trim();
-  if(!msg)return showToast('Enter a message','warn');
-  showToast('📢 Add /broadcast endpoint to bot.py to send to servers','warn');
-  document.getElementById('hq-bcast-modal').style.display='none';
-}
-function hqExportAudit(){
-  if(!allLogEntries.length)return showToast('No audit entries','warn');
-  const csv=['action,target,moderator,reason,guild,timestamp',
-    ...allLogEntries.map(e=>[e.action,e.target,e.moderator,e.reason,e.guild_name,e.timestamp]
-      .map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`audit_${Date.now()}.csv`;a.click();showToast('✅ Audit log exported');
-}
-async function hqExportEco(){
-  try{
-    const data=await(await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(!data.length)return showToast('No economy data','warn');
-    const csv=['username,user_id,balance,wins,losses',
-      ...data.map(u=>`"${u.username}","${u.user_id}","${u.balance}","${u.wins||0}","${u.losses||0}"`)].join('\n');
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-    a.download=`economy_${Date.now()}.csv`;a.click();showToast('✅ Economy exported');
-  }catch{showToast('❌ Export failed','error');}
-}
-
-// ══════════════════════════════════════════════════════════════
-//  LANDING PAGE TABS
-// ══════════════════════════════════════════════════════════════
-function showTab(tab, btn) {
-  document.querySelectorAll('.cpanel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));
-  const p=document.getElementById('p-'+tab); if(p) p.classList.add('active');
-  if(btn) btn.classList.add('active');
-}
-
-// ══════════════════════════════════════════════════════════════
 //  MOBILE NAV
 // ══════════════════════════════════════════════════════════════
 function toggleMenu() {
@@ -1300,4 +1129,161 @@ function initReveal() {
     },{threshold:0.08});
     fcObs.observe(el);
   });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ADMIN HQ
+// ══════════════════════════════════════════════════════════════
+let _hqInt = null;
+const _HQICONS = {ban:'🔨',unban:'🔓',kick:'👢',timeout:'⏱',untimeout:'🔊',warn:'⚠️',purge:'🧹',delete:'🗑️',edit:'✏️',join:'✅',leave:'🚪',nick:'✏️',role_add:'➕',role_remove:'➖',role_create:'🎭',role_delete:'🗑️',role_rename:'🏷️',channel_create:'📢',channel_delete:'🗑️',channel_rename:'📝',voice_join:'🎙️',voice_leave:'🔇',voice_move:'🔀',invite_create:'🔗',invite_delete:'❌',server_rename:'🏠',slowmode:'🐢',lock:'🔒',unlock:'🔓',bot_start:'🚀'};
+
+function hqLoad() {
+  hqRefresh();
+  if (_hqInt) clearInterval(_hqInt);
+  _hqInt = setInterval(hqRefresh, 30000);
+}
+
+async function hqRefresh() {
+  const ts = document.getElementById('hq__ts');
+  if (ts) ts.textContent = 'SYNCING… ' + new Date().toLocaleTimeString('en-GB',{hour12:false});
+  const t0 = Date.now();
+  await Promise.all([hq_health(), hq_servers(), hq_db(), hq_eco(), hq_xp(), hq_feed()]);
+  const p = Date.now() - t0;
+  const pe = document.getElementById('hq__ping'); if (pe) pe.textContent = `PING: ${p}ms`;
+  if (ts) ts.textContent = 'LAST SYNC: ' + new Date().toLocaleTimeString('en-GB',{hour12:false});
+}
+
+function hq_s(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
+function hq_fmt(v){return typeof v==='number'?v.toLocaleString():(v||'—');}
+function hq_get(url){return fetch(`${BOT_API}${url}`,{headers:{'Authorization':`Bearer ${discordToken}`}});}
+
+async function hq_health(){
+  try{
+    const d=await(await fetch(`${BOT_API}/health`)).json();
+    const on=d.status==='online';
+    hq_s('hq__sg',hq_fmt(d.guilds));hq_s('hq__su',hq_fmt(d.users));hq_s('hq__sup',(d.uptime||'—').split('.')[0]);
+    hq_s('hq__health',[
+      ['STATUS',on?'<span style="color:#4eff91">🟢 ONLINE</span>':'<span style="color:#faa61a">🟡 STARTING</span>'],
+      ['BOT',d.bot_name||'—'],['UPTIME',(d.uptime||'—').split('.')[0]],
+      ['SERVERS',hq_fmt(d.guilds)],['USERS',hq_fmt(d.users)],
+    ].map(([k,v])=>`<div class="hq__hr"><span class="hq__hk">${k}</span><span class="hq__hv">${v}</span></div>`).join(''));
+  }catch(e){console.warn('hq_health',e);}
+}
+
+async function hq_servers(){
+  try{
+    const d=await(await fetch(`${BOT_API}/stats`)).json();
+    const gs=d.guilds||[];
+    hq_s('hq__servers',gs.length?gs.map((g,i)=>`
+      <div class="hq__sr">
+        <div class="hq__ico">${g.icon?`<img src="${g.icon}" alt="">`:(g.name||'?').charAt(0)}</div>
+        <span class="hq__sn">${g.name}</span>
+        <span class="hq__sm">👥 ${(g.members||0).toLocaleString()}</span>
+        <span class="hq__sm" style="margin-left:6px;opacity:.4">#${i+1}</span>
+      </div>`).join(''):'<div class="hq__em">NO SERVERS</div>');
+  }catch{hq_s('hq__servers','<div class="hq__em">ERROR</div>');}
+}
+
+async function hq_db(){
+  try{
+    const d=await(await hq_get('/db/stats')).json();
+    if(d.error)throw new Error(d.error);
+    hq_s('hq__sdb',(d.total_documents||0).toLocaleString());
+    hq_s('hq__dbm',[
+      ['USERS',d.users||0],['GUILDS',d.guilds||0],['ECONOMY',d.economy_entries||0],
+      ['XP',d.xp_entries||0],['COLLECTIONS',d.collections||0],
+      ['TOTAL DOCS',(d.total_documents||0).toLocaleString()],['LAST SYNC',d.last_sync||'—'],
+    ].map(([k,v])=>`<div class="hq__kv"><span class="hq__kk">${k}</span><span class="hq__vv">${v}</span></div>`).join(''));
+  }catch{hq_s('hq__dbm','<div class="hq__em">DB ERROR</div>');}
+}
+
+async function hq_eco(){
+  try{
+    const data=await(await hq_get('/economy/leaderboard?scope=global')).json();
+    if(!data.length){hq_s('hq__eco','<div class="hq__em">NO DATA</div>');return;}
+    const max=data[0]?.balance||1,M=['🥇','🥈','🥉'];
+    hq_s('hq__eco',data.slice(0,10).map((u,i)=>`
+      <div class="hq__lb">
+        <span class="hq__lr">${M[i]||'#'+(i+1)}</span>
+        <span class="hq__ln">${u.username||'Unknown'}</span>
+        <div class="hq__bw"><div class="hq__bb" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
+        <span class="hq__lv">₹${(u.balance||0).toLocaleString()}</span>
+      </div>`).join(''));
+  }catch{hq_s('hq__eco','<div class="hq__em">ERROR</div>');}
+}
+
+async function hq_xp(){
+  try{
+    const data=await(await hq_get('/levels/leaderboard?scope=global')).json();
+    if(!data.length){hq_s('hq__xp','<div class="hq__em">NO DATA</div>');return;}
+    const max=data[0]?.xp||1,M=['🥇','🥈','🥉'];
+    hq_s('hq__xp',data.slice(0,10).map((u,i)=>`
+      <div class="hq__lb">
+        <span class="hq__lr">${M[i]||'#'+(i+1)}</span>
+        <span class="hq__ln">${u.username||'Unknown'}</span>
+        <div class="hq__bw"><div class="hq__bb" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
+        <span class="hq__lv">Lv.${u.level||0}</span>
+      </div>`).join(''));
+  }catch{hq_s('hq__xp','<div class="hq__em">ERROR</div>');}
+}
+
+async function hq_feed(){
+  try{
+    const data=await(await hq_get('/audit/log?limit=200')).json();
+    const entries=data.entries||[];
+    hq_s('hq__sal',entries.length);
+    const fc=document.getElementById('hq__fc');if(fc)fc.textContent=entries.length+' entries';
+    if(!entries.length){hq_s('hq__feed','<div class="hq__em">NO LOG ENTRIES YET</div>');hq_chart([]);return;}
+    hq_s('hq__feed',entries.slice(0,60).map(e=>{
+      const icon=_HQICONS[e.action]||'📌';
+      const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
+      const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
+      return `<div class="hq__fe">
+        <span class="hq__fi">${icon}</span>
+        <div class="hq__fb">
+          <div class="hq__fa">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
+          <div class="hq__fm">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
+        </div>
+        <span class="hq__ft">${time}</span>
+      </div>`;
+    }).join(''));
+    hq_chart(entries);
+  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);}
+}
+
+function hq_chart(entries){
+  const canvas=document.getElementById('hq__chart');if(!canvas)return;
+  const counts={};
+  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  if(!sorted.length)return;
+  if(canvas._c)canvas._c.destroy();
+  canvas._c=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
+      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
+    }}
+  });
+}
+
+function hqExportAudit(){
+  if(!allLogEntries.length)return showToast('No audit entries','warn');
+  const csv=['action,target,moderator,reason,guild,timestamp',
+    ...allLogEntries.map(e=>[e.action,e.target,e.moderator,e.reason,e.guild_name,e.timestamp]
+      .map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`audit_${Date.now()}.csv`;a.click();showToast('✅ Exported');
+}
+
+async function hqExportEco(){
+  try{
+    const data=await(await hq_get('/economy/leaderboard?scope=global')).json();
+    if(!data.length)return showToast('No economy data','warn');
+    const csv=['username,user_id,balance,wins,losses',
+      ...data.map(u=>`"${u.username}","${u.user_id}","${u.balance}","${u.wins||0}","${u.losses||0}"`)].join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download=`economy_${Date.now()}.csv`;a.click();showToast('✅ Exported');
+  }catch{showToast('❌ Export failed','error');}
 }
