@@ -94,15 +94,13 @@
     <div><div class="s-uname" id="s-username">—</div><div class="s-tag" id="s-tag">—</div></div>
   </div>
 
-  <div class="sidebar-section">Overview</div>
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" style="flex:1;padding:6px 10px">
+    <div class="sidebar-section">Overview</div>
     <div class="sl active" onclick="showPanel('overview',this)"><span class="sl-icon">📊</span> Overview</div>
     <div class="sl" onclick="showPanel('stats',this)"><span class="sl-icon">📈</span> Live Stats</div>
     <div class="sl" onclick="showPanel('servers',this)"><span class="sl-icon">🌐</span> Server List</div>
     <div class="sl" onclick="showPanel('leaderboard',this)"><span class="sl-icon">🏆</span> Leaderboards</div>
-  </nav>
-  <div class="sidebar-section">Config (this server)</div>
-  <nav class="sidebar-nav">
+    <div class="sidebar-section" style="margin-top:8px">Config (this server)</div>
     <div class="sl" onclick="showPanel('cfg-bot',this)"><span class="sl-icon">🤖</span> Bot Settings<span class="dirty-dot" id="dd-bot" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-levels',this)"><span class="sl-icon">📈</span> XP & Levels<span class="dirty-dot" id="dd-levels" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-welcome',this)"><span class="sl-icon">👋</span> Welcome / Leave<span class="dirty-dot" id="dd-welcome" style="margin-left:auto"></span></div>
@@ -110,15 +108,13 @@
     <div class="sl" onclick="showPanel('cfg-booster',this)"><span class="sl-icon">🚀</span> Booster Cards<span class="dirty-dot" id="dd-booster" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-moderation',this)"><span class="sl-icon">🛡️</span> Moderation<span class="dirty-dot" id="dd-moderation" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('audit-log',this)"><span class="sl-icon">📋</span> Audit Log <span class="sl-badge red" id="log-badge">0</span></div>
+    <div id="admin-sidebar-section" style="display:none;flex-direction:column">
+      <div class="sidebar-section" style="margin-top:8px;color:#ff6b6b">🔐 Admin Only</div>
+      <div class="sl" onclick="showPanel('mongodb',this)"><span class="sl-icon">🗄️</span> DB Stats</div>
+      <div class="sl" onclick="showPanel('currency-admin',this)"><span class="sl-icon">💸</span> Currency Manager</div>
+      <div class="sl" onclick="showPanel('cfg-economy',this)"><span class="sl-icon">💰</span> Economy Config</div>
+    </div>
   </nav>
-  <div id="admin-sidebar-section" style="display:none;flex-direction:column">
-  <div class="sidebar-section" style="color:#ff6b6b;border-top:1px solid rgba(255,107,107,0.2);margin-top:6px;padding-top:14px">🔐 Admin Only</div>
-  <nav class="sidebar-nav" style="padding-bottom:4px">
-    <div class="sl" onclick="showPanel('mongodb',this)"><span class="sl-icon">🗄️</span> DB Stats</div>
-    <div class="sl" onclick="showPanel('currency-admin',this)"><span class="sl-icon">💸</span> Currency Manager</div>
-    <div class="sl" onclick="showPanel('cfg-economy',this)"><span class="sl-icon">💰</span> Economy Config</div>
-  </nav>
-  </div>
 
   <div class="sidebar-foot">
     <div class="bot-status-pill">

@@ -331,21 +331,21 @@ section{padding:100px 40px}
    DASHBOARD LAYOUT
 ════════════════════════════════════ */
 .db-body{overflow:hidden;height:100vh;display:flex}
-.sidebar{width:250px;min-width:250px;height:100vh;background:var(--surface);box-shadow:var(--neu-out);display:flex;flex-direction:column;z-index:10;border-right:1px solid rgba(78,255,145,0.07)}
+.sidebar{width:250px;min-width:250px;height:100vh;background:var(--surface);box-shadow:var(--neu-out);display:flex;flex-direction:column;z-index:10;border-right:1px solid rgba(78,255,145,0.07);overflow-y:auto;overflow-x:hidden}
 .sidebar-brand{padding:22px 20px;display:flex;align-items:center;gap:12px;font-family:var(--font-d);font-size:1.3rem;font-weight:800;border-bottom:1px solid rgba(78,255,145,0.08)}
 .sidebar-user{padding:14px 16px;margin:10px 12px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);display:flex;align-items:center;gap:10px;border:1px solid rgba(78,255,145,0.08)}
 .s-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--green-border)}
 .s-uname{font-size:0.82rem;font-weight:700;color:var(--tx)}
 .s-tag{font-size:0.7rem;color:var(--tx-3);font-family:var(--font-m)}
-.sidebar-section{padding:10px 12px 4px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx-3);font-family:var(--font-m)}
-.sidebar-nav{flex:1;padding:4px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.sidebar-section{padding:8px 4px 4px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx-3);font-family:var(--font-m)}
+.sidebar-nav{padding:4px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
 .sl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r-md);font-size:0.875rem;font-weight:600;color:var(--tx-2);transition:all var(--t) var(--ease);border:1px solid transparent;cursor:pointer}
 .sl:hover{color:var(--tx);background:var(--green-lo2);border-color:rgba(78,255,145,0.08)}
 .sl.active{color:var(--green);background:var(--green-lo);border-color:var(--green-border);box-shadow:var(--neu-gsm)}
 .sl-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
 .sl-badge{margin-left:auto;font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--green-lo);color:var(--green);border:1px solid var(--green-border);font-family:var(--font-m)}
 .sl-badge.red{background:var(--red-lo);color:var(--red);border-color:rgba(255,79,79,0.25)}
-.sidebar-foot{padding:14px 12px;border-top:1px solid rgba(78,255,145,0.08);display:flex;flex-direction:column;gap:8px}
+.sidebar-foot{padding:14px 12px;border-top:1px solid rgba(78,255,145,0.08);display:flex;flex-direction:column;gap:8px;margin-top:auto;flex-shrink:0}
 .bot-status-pill{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.8rem;font-weight:600}
 .back-btn{padding:10px 14px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);font-size:0.8rem;color:var(--tx-2);text-align:center;transition:all var(--t) var(--ease);border:1px solid rgba(78,255,145,0.06)}
 .back-btn:hover{color:var(--green);border-color:var(--green-border)}
