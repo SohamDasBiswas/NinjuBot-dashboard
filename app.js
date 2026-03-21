@@ -630,8 +630,10 @@ async function fetchBoostStats() {
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
 
-// System-only events that are NOT server mod actions — hidden from default view
-const SYSTEM_ACTIONS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect']);
+// These are bot system events — NOT server mod actions, never show them
+const SYSTEM_ACTIONS = new Set([
+  'bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready'
+]);
 
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
@@ -639,35 +641,14 @@ async function fetchAuditLog() {
   c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
   try {
     const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
-
-    // Try to fetch Discord's native guild audit log first (real server events)
-    let discordEntries = [];
-    if (currentGuild) {
-      try {
-        const dRes = await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`, {
-          headers: { 'Authorization': `Bearer ${discordToken}` }
-        });
-        if (dRes.ok) {
-          const dData = await dRes.json();
-          discordEntries = dData.entries || dData.audit_log_entries || [];
-        }
-      } catch {}
-    }
-
-    // Fall back to bot's MongoDB log
     const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
       headers: { 'Authorization': `Bearer ${discordToken}` }
     });
     const data = await res.json();
     if (!res.ok) throw new Error('failed');
-    const botEntries = data.entries || [];
 
-    // Merge: Discord native entries first, then bot entries not already covered
-    // Filter out pure system/bot-startup events from default view
-    const botFiltered = botEntries.filter(e => !SYSTEM_ACTIONS.has(e.action));
-    allLogEntries = discordEntries.length
-      ? [...discordEntries, ...botFiltered]
-      : botFiltered.length ? botFiltered : botEntries; // fallback: show all if nothing left
+    // Strictly exclude bot system events — only keep real server mod actions
+    allLogEntries = (data.entries || []).filter(e => !SYSTEM_ACTIONS.has(e.action));
 
     // Update badge count
     const badge = document.getElementById('log-badge');
@@ -677,7 +658,7 @@ async function fetchAuditLog() {
   } catch {
     c.innerHTML = `<div class="loading-state">
       <p>❌ Audit log not available.</p>
-      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
+      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Make sure <code style="color:var(--green)">GET /audit/log</code> is available on your bot API.</p>
       <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
     </div>`;
   }
@@ -710,51 +691,41 @@ function renderLog() {
     'channel_create': ['channel_create','channel_delete','channel_rename'],
     'invite_create':  ['invite_create','invite_delete'],
   };
-
-  // Normalise entry — handles both Discord native format and bot MongoDB format
-  const norm = e => ({
-    action:    e.action || e.action_type_name || e.event_type || 'unknown',
-    target:    e.target || e.target_id || e.user || 'Unknown',
-    moderator: e.moderator || e.moderator_name || e.responsible_user || 'System',
-    reason:    e.reason || e.changes?.[0]?.new_value || '',
-    guild:     e.guild_name || e.server_name || (currentGuild ? currentGuild.name : ''),
-    timestamp: e.timestamp || e.created_at || e.id,
-  });
-
   const filtered = auditLogFilter === 'all'
     ? allLogEntries
-    : allLogEntries.filter(e => {
-        const a = norm(e).action;
-        return multiFilters[auditLogFilter]
-          ? multiFilters[auditLogFilter].includes(a)
-          : a === auditLogFilter;
-      });
+    : allLogEntries.filter(e => multiFilters[auditLogFilter]
+        ? multiFilters[auditLogFilter].includes(e.action)
+        : e.action === auditLogFilter);
 
   const total     = Math.ceil(filtered.length / PER_PAGE) || 1;
   auditLogPage    = Math.min(auditLogPage, total);
   const slice     = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
 
   if (!slice.length) {
-    c.innerHTML = `<div class="loading-state"><p>No server log entries found.</p></div>`;
+    c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:12px;padding:48px">
+      <span style="font-size:2rem">🛡️</span>
+      <p style="font-weight:700;color:var(--tx)">No server moderation events yet</p>
+      <p style="font-size:0.8rem;color:var(--tx-3);max-width:420px;text-align:center">
+        This log shows bans, kicks, mutes, warns, role changes and other mod actions performed in <strong style="color:var(--green)">${currentGuild ? currentGuild.name : 'this server'}</strong>.<br><br>
+        Events will appear here once moderators perform actions in the server.
+      </p>
+    </div>`;
     if (pg) pg.style.display = 'none';
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => {
-    const n = norm(e);
-    return `
-    <div class="log-entry ${n.action}">
-      <div class="log-icon">${LOG_ICONS[n.action]||'📌'}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => `
+    <div class="log-entry ${e.action||''}">
+      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${n.action}">${n.action.toUpperCase().replace(/_/g,' ')}</span>
-          <strong>${n.target}</strong>${n.reason ? ` — ${n.reason}` : ''}
+          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
+          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
         </div>
-        <div class="log-meta">By ${n.moderator}${n.guild ? ' in <strong>'+n.guild+'</strong>' : ''}</div>
+        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
       </div>
-      <div class="log-time">${formatTime(n.timestamp)}</div>
-    </div>`;
-  }).join('')}</div>`;
+      <div class="log-time">${formatTime(e.timestamp)}</div>
+    </div>`).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
