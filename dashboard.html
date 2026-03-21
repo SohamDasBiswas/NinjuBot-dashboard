@@ -8,35 +8,13 @@
 <title>NinjuBot — Control Panel</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* ===== SCROLL FIX ===== */
-  #dashboard-app {
-    flex: 1 !important;
-    min-height: 0 !important;
-    display: flex !important;
-    height: 100vh !important;
-    overflow: visible !important;   /* was overflow:hidden — that killed scroll */
-  }
-  .db-main {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-    position: relative !important;  /* anchor for absolute .panels */
-    overflow: hidden !important;
-  }
-  .panels {
-    position: absolute !important;  /* bypasses broken flex height chain */
-    top: 64px !important;           /* below the topbar */
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    overflow-y: scroll !important;
-    overflow-x: hidden !important;
-    padding: 22px !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: rgba(78,255,145,0.5) #0a1510 !important;
-  }
-  .panels::-webkit-scrollbar { width: 8px !important; }
+  /* ── SCROLL FIX: overrides broken rules in style.css ── */
+  #dashboard-app          { overflow: visible !important; height: 100vh !important; }
+  .db-main                { position: relative !important; overflow: hidden !important; }
+  .panels                 { position: absolute !important; top: 64px !important; left: 0 !important;
+                            right: 0 !important; bottom: 0 !important; height: auto !important;
+                            overflow-y: scroll !important; overflow-x: hidden !important; padding: 22px !important; }
+  .panels::-webkit-scrollbar       { width: 8px !important; }
   .panels::-webkit-scrollbar-track { background: #0a1510 !important; }
   .panels::-webkit-scrollbar-thumb { background: rgba(78,255,145,0.55) !important; border-radius: 4px !important; }
   .panels::-webkit-scrollbar-thumb:hover { background: #4eff91 !important; }
