@@ -629,31 +629,55 @@ async function fetchBoostStats() {
 // ══════════════════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
+
+const SYSTEM_ACTIONS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready']);
+
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
-  try {
-    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
-    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
-      headers: { 'Authorization': `Bearer ${discordToken}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error('failed');
-    allLogEntries = data.entries || [];
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
 
-    // Update badge count
-    const badge = document.getElementById('log-badge');
-    if (badge) badge.textContent = allLogEntries.length;
+  const headers = { 'Authorization': `Bearer ${discordToken}` };
+  const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+  let entries = [];
 
-    renderLog();
-  } catch {
-    c.innerHTML = `<div class="loading-state">
-      <p>❌ Audit log not available.</p>
-      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
-      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
-    </div>`;
+  // 1. Try Discord native audit log (new endpoint, requires updated bot.py on Render)
+  if (currentGuild) {
+    try {
+      const r = await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        entries = d.entries || [];
+      }
+    } catch {}
   }
+
+  // 2. Fall back to MongoDB log — filtered (no bot system events)
+  if (!entries.length) {
+    try {
+      const r = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        entries = (d.entries || []).filter(e => !SYSTEM_ACTIONS.has(e.action));
+      }
+    } catch {}
+  }
+
+  // 3. Last resort — show everything including system events
+  if (!entries.length) {
+    try {
+      const r = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        entries = d.entries || [];
+      }
+    } catch {}
+  }
+
+  allLogEntries = entries;
+  const badge = document.getElementById('log-badge');
+  if (badge) badge.textContent = allLogEntries.filter(e => !SYSTEM_ACTIONS.has(e.action)).length || allLogEntries.length;
+  renderLog();
 }
 
 function filterLog(filter, btn) {
@@ -670,28 +694,18 @@ function logPage(dir) {
 }
 
 const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓', bot_start:'🚀',
-  // Discord native action names
   member_ban_add:'🔨', member_ban_remove:'🔓', member_kick:'👢', member_update:'✏️', member_role_update:'🏷️',
-  message_delete:'🗑️', message_bulk_delete:'🧹', message_pin:'📌', message_unpin:'📌',
-  channel_create:'📢', channel_delete:'🗑️', channel_update:'📝',
-  role_create:'🎭', role_delete:'🗑️', role_update:'🏷️',
-  invite_create:'🔗', invite_delete:'❌',
-  webhook_create:'🔗', webhook_update:'🔗', webhook_delete:'❌',
-  emoji_create:'😀', emoji_delete:'🗑️', emoji_update:'😀',
-  guild_update:'🏠', integration_create:'🔌', integration_delete:'🔌',
-  bot_add:'🤖', stage_instance_create:'🎙️', voice_channel_status_update:'🎙️',
+  message_delete:'🗑️', message_bulk_delete:'🧹', channel_update:'📝', role_update:'🏷️',
+  guild_update:'🏠', bot_add:'🤖', voice_channel_status_update:'🎙️'
 };
-
-// Human-friendly action label
 const ACTION_LABELS = {
-  member_ban_add: 'BAN', member_ban_remove: 'UNBAN', member_kick: 'KICK',
-  member_update: 'MEMBER UPDATE', member_role_update: 'ROLE CHANGE',
-  message_delete: 'MSG DELETE', message_bulk_delete: 'PURGE',
-  channel_create: 'CHANNEL CREATE', channel_delete: 'CHANNEL DELETE', channel_update: 'CHANNEL UPDATE',
-  role_create: 'ROLE CREATE', role_delete: 'ROLE DELETE', role_update: 'ROLE UPDATE',
-  invite_create: 'INVITE CREATE', invite_delete: 'INVITE DELETE',
-  guild_update: 'SERVER UPDATE', bot_add: 'BOT ADDED',
-  voice_channel_status_update: 'VOICE UPDATE',
+  member_ban_add:'BAN', member_ban_remove:'UNBAN', member_kick:'KICK',
+  member_update:'MEMBER UPDATE', member_role_update:'ROLE CHANGE',
+  message_delete:'MSG DELETE', message_bulk_delete:'PURGE',
+  channel_create:'CHANNEL CREATE', channel_delete:'CHANNEL DELETE', channel_update:'CHANNEL UPDATE',
+  role_create:'ROLE CREATE', role_delete:'ROLE DELETE', role_update:'ROLE UPDATE',
+  invite_create:'INVITE CREATE', invite_delete:'INVITE DELETE',
+  guild_update:'SERVER UPDATE', bot_add:'BOT ADDED',
 };
 const PER_PAGE  = 20;
 
