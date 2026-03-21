@@ -1079,78 +1079,67 @@ function cadminClearLog() {
 //  ADMIN HQ
 // ══════════════════════════════════════════════════════════════
 
-let hqInterval = null;
+let _hqInterval = null;
+const _HQ_ICONS = {ban:'🔨',unban:'🔓',kick:'👢',timeout:'⏱',untimeout:'🔊',warn:'⚠️',purge:'🧹',delete:'🗑️',edit:'✏️',join:'✅',leave:'🚪',nick:'✏️',role_add:'➕',role_remove:'➖',role_create:'🎭',role_delete:'🗑️',role_rename:'🏷️',channel_create:'📢',channel_delete:'🗑️',channel_rename:'📝',voice_join:'🎙️',voice_leave:'🔇',voice_move:'🔀',invite_create:'🔗',invite_delete:'❌',server_rename:'🏠',emoji_add:'😀',emoji_remove:'🗑️',slowmode:'🐢',lock:'🔒',unlock:'🔓',bot_start:'🚀'};
 
 async function hqLoad() {
-  hqTick();
   hqRefreshAll();
-  if (hqInterval) clearInterval(hqInterval);
-  hqInterval = setInterval(hqRefreshAll, 30000);
-}
-
-function hqTick() {
-  const el = document.getElementById('hq-timestamp');
-  if (el) el.textContent = 'LAST SYNC: ' + new Date().toLocaleTimeString('en-GB', {hour12:false}) + ' UTC+0';
+  if (_hqInterval) clearInterval(_hqInterval);
+  _hqInterval = setInterval(hqRefreshAll, 30000);
 }
 
 async function hqRefreshAll() {
-  hqTick();
+  const ts = document.getElementById('hq-ts');
+  if (ts) ts.textContent = 'SYNCING… ' + new Date().toLocaleTimeString('en-GB',{hour12:false});
   const t0 = Date.now();
-  await Promise.all([hqLoadHealth(), hqLoadServers(), hqLoadDB(), hqLoadEco(), hqLoadXP(), hqLoadFeed()]);
+  await Promise.all([_hqHealth(), _hqServers(), _hqDB(), _hqEco(), _hqXP(), _hqFeed()]);
   const ping = Date.now() - t0;
-  const pel = document.getElementById('hq-ping');
-  if (pel) pel.textContent = `LATENCY: ${ping}ms`;
+  const pel = document.getElementById('hq-ping'); if (pel) pel.textContent = `PING: ${ping}ms`;
+  if (ts) ts.textContent = 'LAST SYNC: ' + new Date().toLocaleTimeString('en-GB',{hour12:false});
 }
 
-async function hqLoadHealth() {
-  try {
-    const res  = await fetch(`${BOT_API}/health`);
-    const d    = await res.json();
-    const fmt  = v => typeof v==='number' ? v.toLocaleString() : (v||'—');
-    document.getElementById('hqs-guilds-v').textContent  = fmt(d.guilds);
-    document.getElementById('hqs-users-v').textContent   = fmt(d.users);
-    document.getElementById('hqs-uptime-v').textContent  = (d.uptime||'—').split('.')[0];
+function _hqSet(id, val) { const el=document.getElementById(id); if(el) el.innerHTML=val; }
+function _hqFmt(v) { return typeof v==='number' ? v.toLocaleString() : (v||'—'); }
 
-    const online = d.status === 'online';
-    const c = document.getElementById('hq-health');
-    if (!c) return;
-    c.innerHTML = [
-      ['STATUS',    online ? '🟢 ONLINE' : '🟡 STARTING'],
-      ['BOT NAME',  d.bot_name || '—'],
-      ['BOT ID',    d.bot_id   || '—'],
-      ['UPTIME',    (d.uptime||'—').split('.')[0]],
-      ['SERVERS',   fmt(d.guilds)],
-      ['USERS',     fmt(d.users)],
-    ].map(([k,v]) => `<div class="hq-health-row"><span class="hq-health-key">${k}</span><span class="hq-health-val">${v}</span></div>`).join('');
-  } catch(e) { console.warn('hqHealth', e); }
+async function _hqHealth() {
+  try {
+    const d = await (await fetch(`${BOT_API}/health`)).json();
+    const online = d.status==='online';
+    _hqSet('hqs-g',  _hqFmt(d.guilds));
+    _hqSet('hqs-u',  _hqFmt(d.users));
+    _hqSet('hqs-up', (d.uptime||'—').split('.')[0]);
+    _hqSet('hq-health', [
+      ['STATUS',   online?'<span style="color:#4eff91">🟢 ONLINE</span>':'<span style="color:#faa61a">🟡 STARTING</span>'],
+      ['BOT NAME', d.bot_name||'—'],
+      ['UPTIME',   (d.uptime||'—').split('.')[0]],
+      ['SERVERS',  _hqFmt(d.guilds)],
+      ['USERS',    _hqFmt(d.users)],
+      ['STATUS',   online?'OPERATIONAL':'STARTING UP'],
+    ].map(([k,v])=>`<div class="hq-hr"><span class="hq-hk">${k}</span><span class="hq-hv">${v}</span></div>`).join(''));
+  } catch{}
 }
 
-async function hqLoadServers() {
-  const c = document.getElementById('hq-servers');
-  if (!c) return;
+async function _hqServers() {
+  const c = document.getElementById('hq-servers'); if(!c) return;
   try {
-    const res  = await fetch(`${BOT_API}/stats`);
-    const d    = await res.json();
-    const guilds = d.guilds || [];
-    c.innerHTML = guilds.map((g,i) => `
-      <div class="hq-server-row">
-        <div class="hq-server-icon">${g.icon ? `<img src="${g.icon}" alt="">` : g.name.charAt(0)}</div>
-        <div class="hq-server-name">${g.name}</div>
-        <div class="hq-server-meta">👥 ${(g.members||0).toLocaleString()} members</div>
-        <div class="hq-server-meta" style="margin-left:8px;color:rgba(78,255,145,0.3)">#${i+1}</div>
-      </div>`).join('') || '<div class="hq-loading">NO SERVERS FOUND</div>';
-  } catch(e) { c.innerHTML = '<div class="hq-loading">ERROR</div>'; }
+    const d = await (await fetch(`${BOT_API}/stats`)).json();
+    const gs = d.guilds||[];
+    c.innerHTML = gs.length ? gs.map((g,i)=>`
+      <div class="hq-row">
+        <div class="hq-icon">${g.icon?`<img src="${g.icon}" alt="">`:g.name.charAt(0)}</div>
+        <span class="hq-name">${g.name}</span>
+        <span class="hq-meta">👥 ${(g.members||0).toLocaleString()}</span>
+        <span class="hq-meta" style="margin-left:6px;opacity:.4">#${i+1}</span>
+      </div>`).join('') : '<div class="hq-empty">NO SERVERS</div>';
+  } catch { c.innerHTML='<div class="hq-empty">ERROR</div>'; }
 }
 
-async function hqLoadDB() {
-  const c = document.getElementById('hq-db');
-  if (!c) return;
+async function _hqDB() {
   try {
-    const res = await fetch(`${BOT_API}/db/stats`, { headers: {'Authorization':`Bearer ${discordToken}`} });
-    const d   = await res.json();
-    if (d.error) throw new Error(d.error);
-    document.getElementById('hqs-dbdocs-v').textContent = (d.total_documents||0).toLocaleString();
-    c.innerHTML = [
+    const d = await (await fetch(`${BOT_API}/db/stats`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(d.error) throw new Error(d.error);
+    _hqSet('hqs-db', (d.total_documents||0).toLocaleString());
+    _hqSet('hq-dbm', [
       ['USERS',        d.users||0],
       ['GUILDS',       d.guilds||0],
       ['ECONOMY DOCS', d.economy_entries||0],
@@ -1158,162 +1147,116 @@ async function hqLoadDB() {
       ['COLLECTIONS',  d.collections||0],
       ['TOTAL DOCS',   (d.total_documents||0).toLocaleString()],
       ['LAST SYNC',    d.last_sync||'—'],
-    ].map(([k,v]) => `<div class="hq-db-row"><span class="hq-db-key">${k}</span><span class="hq-db-val">${v}</span></div>`).join('');
-  } catch(e) { c.innerHTML = '<div class="hq-loading">DB ERROR</div>'; }
+    ].map(([k,v])=>`<div class="hq-kv"><span class="hq-k">${k}</span><span class="hq-v">${v}</span></div>`).join(''));
+  } catch{ _hqSet('hq-dbm','<div class="hq-empty">DB ERROR</div>'); }
 }
 
-async function hqLoadEco() {
-  const c = document.getElementById('hq-eco');
-  if (!c) return;
+async function _hqEco() {
+  const c = document.getElementById('hq-eco'); if(!c) return;
   try {
-    const res  = await fetch(`${BOT_API}/economy/leaderboard?scope=global`, { headers: {'Authorization':`Bearer ${discordToken}`} });
-    const data = await res.json();
-    if (!data.length) { c.innerHTML = '<div class="hq-loading">NO DATA</div>'; return; }
-    const max = data[0]?.balance || 1;
-    const medals = ['🥇','🥈','🥉'];
-    c.innerHTML = data.slice(0,10).map((u,i) => `
-      <div class="hq-lb-row">
-        <div class="hq-lb-rank">${medals[i]||('#'+(i+1))}</div>
-        <div class="hq-lb-name">${u.username||'Unknown'}</div>
-        <div class="hq-lb-bar-wrap"><div class="hq-lb-bar" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
-        <div class="hq-lb-val">₹${(u.balance||0).toLocaleString()}</div>
+    const data = await (await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(!data.length){c.innerHTML='<div class="hq-empty">NO DATA</div>';return;}
+    const max=data[0]?.balance||1, M=['🥇','🥈','🥉'];
+    c.innerHTML=data.slice(0,10).map((u,i)=>`
+      <div class="hq-lb">
+        <span class="hq-rank">${M[i]||'#'+(i+1)}</span>
+        <span class="hq-uname">${u.username||'Unknown'}</span>
+        <div class="hq-bar-w"><div class="hq-bar" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
+        <span class="hq-val">₹${(u.balance||0).toLocaleString()}</span>
       </div>`).join('');
-  } catch(e) { c.innerHTML = '<div class="hq-loading">ERROR</div>'; }
+  } catch{ c.innerHTML='<div class="hq-empty">ERROR</div>'; }
 }
 
-async function hqLoadXP() {
-  const c = document.getElementById('hq-xp');
-  if (!c) return;
+async function _hqXP() {
+  const c = document.getElementById('hq-xp'); if(!c) return;
   try {
-    const res  = await fetch(`${BOT_API}/levels/leaderboard?scope=global`, { headers: {'Authorization':`Bearer ${discordToken}`} });
-    const data = await res.json();
-    if (!data.length) { c.innerHTML = '<div class="hq-loading">NO DATA</div>'; return; }
-    const max = data[0]?.xp || 1;
-    const medals = ['🥇','🥈','🥉'];
-    c.innerHTML = data.slice(0,10).map((u,i) => `
-      <div class="hq-lb-row">
-        <div class="hq-lb-rank">${medals[i]||('#'+(i+1))}</div>
-        <div class="hq-lb-name">${u.username||'Unknown'}</div>
-        <div class="hq-lb-bar-wrap"><div class="hq-lb-bar" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
-        <div class="hq-lb-val">Lv.${u.level||0}</div>
+    const data = await (await fetch(`${BOT_API}/levels/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(!data.length){c.innerHTML='<div class="hq-empty">NO DATA</div>';return;}
+    const max=data[0]?.xp||1, M=['🥇','🥈','🥉'];
+    c.innerHTML=data.slice(0,10).map((u,i)=>`
+      <div class="hq-lb">
+        <span class="hq-rank">${M[i]||'#'+(i+1)}</span>
+        <span class="hq-uname">${u.username||'Unknown'}</span>
+        <div class="hq-bar-w"><div class="hq-bar" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
+        <span class="hq-val">Lv.${u.level||0}</span>
       </div>`).join('');
-  } catch(e) { c.innerHTML = '<div class="hq-loading">ERROR</div>'; }
+  } catch{ c.innerHTML='<div class="hq-empty">ERROR</div>'; }
 }
 
-const HQ_FEED_ICONS = { ban:'🔨',unban:'🔓',kick:'👢',timeout:'⏱',warn:'⚠️',delete:'🗑️',edit:'✏️',join:'✅',leave:'🚪',voice_join:'🎙️',voice_leave:'🔇',voice_move:'🔀',role_add:'➕',role_remove:'➖',channel_create:'📢',channel_delete:'🗑️',purge:'🧹',bot_start:'🚀',invite_create:'🔗',nick:'✏️',lock:'🔒',unlock:'🔓',slowmode:'🐢' };
-
-async function hqLoadFeed() {
-  const c = document.getElementById('hq-feed');
-  if (!c) return;
+async function _hqFeed() {
+  const c = document.getElementById('hq-feed'); if(!c) return;
   try {
-    const res  = await fetch(`${BOT_API}/audit/log?limit=200`, { headers: {'Authorization':`Bearer ${discordToken}`} });
-    const data = await res.json();
-    const entries = data.entries || [];
-
-    const countEl = document.getElementById('hq-feed-count');
-    if (countEl) countEl.textContent = `${entries.length} entries`;
-    document.getElementById('hqs-logs-v').textContent = entries.length;
-
-    if (!entries.length) { c.innerHTML = '<div class="hq-loading">NO LOG ENTRIES YET</div>'; hqDrawChart([]); return; }
-
-    c.innerHTML = entries.slice(0,50).map(e => {
-      const icon = HQ_FEED_ICONS[e.action] || '📌';
-      const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}) : '—';
-      return `<div class="hq-feed-entry">
-        <div class="hq-feed-icon">${icon}</div>
-        <div class="hq-feed-body">
-          <div class="hq-feed-action">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
-          <div class="hq-feed-meta">BY: ${e.moderator||'System'} ${e.guild_name ? '· '+e.guild_name : ''} ${e.reason ? '· '+e.reason.substring(0,40) : ''}</div>
+    const data = await (await fetch(`${BOT_API}/audit/log?limit=200`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    const entries = data.entries||[];
+    _hqSet('hqs-al', entries.length);
+    const fc = document.getElementById('hq-fc'); if(fc) fc.textContent=entries.length+' entries';
+    if(!entries.length){c.innerHTML='<div class="hq-empty">NO LOG ENTRIES YET</div>';_hqChart([]);return;}
+    c.innerHTML=entries.slice(0,60).map(e=>{
+      const icon=_HQ_ICONS[e.action]||'📌';
+      const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
+      const reason=e.reason?` · ${e.reason.substring(0,35)}`:'';
+      return `<div class="hq-feed">
+        <span class="hq-fa">${icon}</span>
+        <div class="hq-fb">
+          <div class="hq-fac">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
+          <div class="hq-fm">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
         </div>
-        <div class="hq-feed-time">${time}</div>
+        <span class="hq-ft">${time}</span>
       </div>`;
     }).join('');
-
-    hqDrawChart(entries);
-  } catch(e) { c.innerHTML = '<div class="hq-loading">FEED ERROR</div>'; }
+    _hqChart(entries);
+  } catch{ c.innerHTML='<div class="hq-empty">FEED ERROR</div>'; }
 }
 
-function hqDrawChart(entries) {
-  const canvas = document.getElementById('hq-chart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  // Count by action type
-  const counts = {};
-  entries.forEach(e => { counts[e.action] = (counts[e.action]||0) + 1; });
-  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,10);
-  if (!sorted.length) return;
-
-  const labels = sorted.map(([k]) => k.toUpperCase());
-  const values = sorted.map(([,v]) => v);
-
-  // Destroy previous chart if exists
-  if (canvas._chart) { canvas._chart.destroy(); }
-
-  canvas._chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: 'rgba(78,255,145,0.2)',
-        borderColor: '#4eff91',
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
+function _hqChart(entries) {
+  const canvas = document.getElementById('hq-chart'); if(!canvas) return;
+  const counts={};
+  entries.forEach(e=>{ if(e.action) counts[e.action]=(counts[e.action]||0)+1; });
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  if(!sorted.length) return;
+  if(canvas._hqChart) { canvas._hqChart.destroy(); }
+  canvas._hqChart = new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels: sorted.map(([k])=>k.toUpperCase()),
+      datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]
     },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: 'rgba(78,255,145,0.6)', font: { family: 'monospace', size: 10 } }, grid: { color: 'rgba(78,255,145,0.05)' } },
-        y: { ticks: { color: 'rgba(78,255,145,0.6)', font: { family: 'monospace', size: 10 } }, grid: { color: 'rgba(78,255,145,0.05)' } }
+    options:{
+      responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} events`}}},
+      scales:{
+        x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'monospace',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
+        y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'monospace',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
       }
     }
   });
 }
 
 function hqBroadcast() {
-  const m = document.getElementById('hq-broadcast-modal');
-  if (m) m.style.display = 'flex';
+  const m=document.getElementById('hq-bcast-modal'); if(m) m.style.display='flex';
 }
-
-async function hqSendBroadcast() {
-  const msg = document.getElementById('hq-broadcast-msg')?.value?.trim();
-  if (!msg) return showToast('Enter a message first', 'warn');
-  // Log as audit entry
-  showToast('📢 Broadcast logged (implement /broadcast endpoint in bot to send)', 'warn');
-  document.getElementById('hq-broadcast-modal').style.display = 'none';
+function hqSendBroadcast() {
+  const msg=document.getElementById('hq-bcast-txt')?.value?.trim();
+  if(!msg) return showToast('Enter a message','warn');
+  showToast('📢 Broadcast feature — add /broadcast endpoint to bot.py','warn');
+  document.getElementById('hq-bcast-modal').style.display='none';
 }
-
 function hqExportAudit() {
-  if (!allLogEntries.length) return showToast('No audit entries to export', 'warn');
-  const csv = ['action,target,moderator,reason,guild,timestamp',
-    ...allLogEntries.map(e => [e.action,e.target,e.moderator,e.reason,e.guild_name,e.timestamp].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','))
-  ].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `audit_log_${Date.now()}.csv`;
-  a.click();
-  showToast('✅ Audit log exported as CSV');
+  if(!allLogEntries.length) return showToast('No audit entries','warn');
+  const csv=['action,target,moderator,reason,guild,timestamp',
+    ...allLogEntries.map(e=>[e.action,e.target,e.moderator,e.reason,e.guild_name,e.timestamp]
+      .map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`audit_${Date.now()}.csv`; a.click(); showToast('✅ Audit log exported');
 }
-
 async function hqExportEco() {
   try {
-    const res  = await fetch(`${BOT_API}/economy/leaderboard?scope=global`, { headers: {'Authorization':`Bearer ${discordToken}`} });
-    const data = await res.json();
-    if (!data.length) return showToast('No economy data', 'warn');
-    const csv = ['username,user_id,balance,wins,losses',
-      ...data.map(u => `"${u.username}","${u.user_id}","${u.balance}","${u.wins||0}","${u.losses||0}"`)
-    ].join('\n');
-    const blob = new Blob([csv], {type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `economy_${Date.now()}.csv`;
-    a.click();
-    showToast('✅ Economy data exported as CSV');
-  } catch(e) { showToast('❌ Export failed', 'error'); }
+    const data=await (await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(!data.length) return showToast('No economy data','warn');
+    const csv=['username,user_id,balance,wins,losses',
+      ...data.map(u=>`"${u.username}","${u.user_id}","${u.balance}","${u.wins||0}","${u.losses||0}"`)].join('\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download=`economy_${Date.now()}.csv`; a.click(); showToast('✅ Economy exported');
+  } catch{ showToast('❌ Export failed','error'); }
 }
 
 // ══════════════════════════════════════════════════════════════
