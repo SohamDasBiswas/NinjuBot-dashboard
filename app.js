@@ -103,7 +103,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // ── Landing page (index.html) ──────────────────────────────
   if (!isDashboard) {
     fetchHealth();
-    setInterval(fetchHealth, 1000);
+    setInterval(fetchHealth, 30000);
     initReveal();
     return;
   }
@@ -130,7 +130,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   fetchHealth();
-  setInterval(fetchHealth, 1000);
+  setInterval(fetchHealth, 30000);
   initReveal();
 });
 
@@ -769,22 +769,23 @@ let _uptimeSeconds = 0;
 let _uptimeTicker  = null;
 
 function startUptimeTicker(uptimeStr) {
-  // Parse "H:MM:SS" or "HH:MM:SS" into seconds
+  // Parse "H:MM:SS" into total seconds
   const parts = (uptimeStr || '0:00:00').split(':').map(Number);
-  _uptimeSeconds = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+  _uptimeSeconds = (parts[0]||0)*3600 + (parts[1]||0)*60 + (parts[2]||0);
   if (_uptimeTicker) clearInterval(_uptimeTicker);
-  _uptimeTicker = setInterval(() => {
+  function tick() {
     _uptimeSeconds++;
     const h = Math.floor(_uptimeSeconds / 3600);
     const m = Math.floor((_uptimeSeconds % 3600) / 60);
     const s = _uptimeSeconds % 60;
     const str = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    const els = ['d-uptime','uptime-badge','hm-up'];
-    els.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = id === 'uptime-badge' ? 'Uptime: ' + str : str;
-    });
-  }, 1000);
+    const ids = ['d-uptime', 'hm-up'];
+    ids.forEach(id => { const el=document.getElementById(id); if(el) el.textContent=str; });
+    const ub = document.getElementById('uptime-badge');
+    if (ub) ub.textContent = 'Uptime: ' + str;
+  }
+  tick(); // run immediately so there's no 1s delay
+  _uptimeTicker = setInterval(tick, 1000);
 }
 
 async function fetchHealth() {
