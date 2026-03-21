@@ -218,6 +218,8 @@ function showDashboard() {
   loadSettings();
   loadChannels();
   fetchBoostStats();
+  fetchHealth();
+  fetchHealth();  // immediately populate overview stats
 }
 
 function showServerPicker() {
@@ -762,6 +764,29 @@ function showPanel(name, el) {
 // ══════════════════════════════════════════════════════════════
 //  DATA FETCHERS
 // ══════════════════════════════════════════════════════════════
+// Live uptime ticker — increments every second so it feels real-time
+let _uptimeSeconds = 0;
+let _uptimeTicker  = null;
+
+function startUptimeTicker(uptimeStr) {
+  // Parse "H:MM:SS" or "HH:MM:SS" into seconds
+  const parts = (uptimeStr || '0:00:00').split(':').map(Number);
+  _uptimeSeconds = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+  if (_uptimeTicker) clearInterval(_uptimeTicker);
+  _uptimeTicker = setInterval(() => {
+    _uptimeSeconds++;
+    const h = Math.floor(_uptimeSeconds / 3600);
+    const m = Math.floor((_uptimeSeconds % 3600) / 60);
+    const s = _uptimeSeconds % 60;
+    const str = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const els = ['d-uptime','uptime-badge','hm-up'];
+    els.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = id === 'uptime-badge' ? 'Uptime: ' + str : str;
+    });
+  }, 1000);
+}
+
 async function fetchHealth() {
   try {
     const res  = await fetch(`${BOT_API}/health`);
@@ -769,21 +794,25 @@ async function fetchHealth() {
     const fmt  = v => typeof v === 'number' ? v.toLocaleString() : (v||'—');
     ['hm-g','st-g'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=fmt(data.guilds); });
     ['hm-u','st-u'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=fmt(data.users); });
-    const hmup = document.getElementById('hm-up'); if(hmup) hmup.textContent=(data.uptime||'—').split('.')[0];
     const online = data.status==='online';
-    const dot = document.getElementById('status-dot'); const txt = document.getElementById('status-text');
-    const ub  = document.getElementById('uptime-badge');
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
     if (dot) dot.style.background = online ? '#4eff91' : '#faa61a';
     if (txt) txt.textContent = online ? '🟢 Online' : '🟡 Starting…';
-    if (ub)  ub.textContent  = 'Uptime: '+(data.uptime||'—').split('.')[0];
+    const fmt2 = v => typeof v === 'number' ? v.toLocaleString() : (v||'—');
     const dm = {
-      'd-guilds':fmt(data.guilds),'d-users':fmt(data.users),
-      'd-uptime':(data.uptime||'—').split('.')[0],
-      'd-status':online?'🟢 Online':'🟡 Starting',
-      'd-botname':data.bot_name||'—','d-botid':data.bot_id||'—'
+      'd-guilds': fmt2(data.guilds),
+      'd-users':  fmt2(data.users),
+      'd-status': online ? '🟢 Online' : '🟡 Starting',
+      'd-botname': data.bot_name || '—',
     };
     Object.entries(dm).forEach(([id,v]) => { const el=document.getElementById(id); if(el) el.textContent=v; });
-  } catch { const t=document.getElementById('status-text'); if(t) t.textContent='🔴 Offline'; }
+    // Start live uptime ticker synced to real server uptime
+    startUptimeTicker(data.uptime || '0:00:00');
+  } catch {
+    const t=document.getElementById('status-text');
+    if(t) t.textContent='🔴 Offline';
+  }
 }
 
 async function fetchStats() {
