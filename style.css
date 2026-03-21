@@ -332,7 +332,7 @@ section{padding:100px 40px}
 /* ════════════════════════════════════
    DASHBOARD LAYOUT
 ════════════════════════════════════ */
-.db-body{height:100vh;display:flex;overflow:visible}
+.db-body{height:100vh;display:flex;overflow:hidden}
 .sidebar{width:250px;min-width:250px;height:100vh;background:#0a1510;box-shadow:var(--neu-out);display:flex;flex-direction:column;z-index:10;border-right:1px solid rgba(78,255,145,0.15);overflow-y:auto;overflow-x:hidden}
 .sidebar-brand{padding:22px 20px;display:flex;align-items:center;gap:12px;font-family:var(--font-d);font-size:1.3rem;font-weight:800;border-bottom:1px solid rgba(78,255,145,0.08)}
 .sidebar-user{padding:14px 16px;margin:10px 12px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);display:flex;align-items:center;gap:10px;border:1px solid rgba(78,255,145,0.08)}
@@ -357,7 +357,7 @@ section{padding:100px 40px}
 .page-title{font-family:var(--font-d);font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:10px}
 .topbar-r{display:flex;align-items:center;gap:10px}
 .uptime-pill{padding:7px 14px;border-radius:var(--r-sm);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.78rem;font-family:var(--font-m);color:var(--green)}
-.panels{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(78,255,145,0.4) transparent}
+.panels{flex:1;min-height:0;overflow-y:scroll;overflow-x:hidden;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(78,255,145,0.4) transparent}
 .panel{display:none;animation:fadeUp 0.28s var(--ease)}
 .panel.active{display:block}
 
