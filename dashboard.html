@@ -784,26 +784,28 @@
           </div>
         </div>
 
-        <!-- Charts 2x2 grid -->
+        <!-- Charts 2x2 compact grid -->
         <div class="hq__g2" style="margin-bottom:6px">
-          <div class="hq__box">
-            <div class="hq__ttl">📊 ACTION BREAKDOWN <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">top actions</span></div>
-            <canvas id="hq__chart" height="90"></canvas>
+          <div class="hq__box" style="height:160px">
+            <div class="hq__ttl">📊 ACTION BREAKDOWN</div>
+            <div style="height:130px"><canvas id="hq__chart"></canvas></div>
           </div>
-          <div class="hq__box">
-            <div class="hq__ttl">📈 ACTIVITY TIMELINE <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">last 24h</span></div>
-            <canvas id="hq__chart2" height="90"></canvas>
+          <div class="hq__box" style="height:160px">
+            <div class="hq__ttl">📈 TIMELINE <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">last 24h</span></div>
+            <div style="height:130px"><canvas id="hq__chart2"></canvas></div>
           </div>
         </div>
         <div class="hq__g2" style="margin-bottom:6px">
-          <div class="hq__box">
-            <div class="hq__ttl">🌐 GUILD ACTIVITY <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">events/server</span></div>
-            <canvas id="hq__chart4" height="90"></canvas>
+          <div class="hq__box" style="height:160px">
+            <div class="hq__ttl">🌐 GUILD ACTIVITY</div>
+            <div style="height:130px"><canvas id="hq__chart4"></canvas></div>
           </div>
-          <div class="hq__box" style="display:flex;flex-direction:column;align-items:center">
+          <div class="hq__box" style="height:160px;display:flex;flex-direction:column;align-items:center">
             <div class="hq__ttl" style="width:100%">🎯 SEVERITY MIX</div>
-            <canvas id="hq__chart3" height="90" style="max-width:160px"></canvas>
-            <div id="hq__legend" style="display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:4px;justify-content:center"></div>
+            <div style="height:100px;display:flex;align-items:center;justify-content:center">
+              <canvas id="hq__chart3" style="max-width:100px;max-height:100px"></canvas>
+            </div>
+            <div id="hq__legend" style="display:flex;flex-wrap:wrap;gap:2px 8px;justify-content:center;margin-top:2px"></div>
           </div>
         </div>
 
