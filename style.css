@@ -352,16 +352,12 @@ section{padding:100px 40px}
 .back-btn{padding:10px 14px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);font-size:0.8rem;color:var(--tx-2);text-align:center;transition:all var(--t) var(--ease);border:1px solid rgba(78,255,145,0.06)}
 .back-btn:hover{color:var(--green);border-color:var(--green-border)}
 
-.db-main{flex:1;display:flex;flex-direction:column;min-height:0;position:relative;overflow:visible}
-.panels {
-  overflow-y: auto;
-  height: 100%;
-}
+.db-main{flex:1;display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden}
 .topbar{height:64px;min-height:64px;flex-shrink:0;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);box-shadow:var(--neu-out-sm);border-bottom:1px solid rgba(78,255,145,0.07)}
 .page-title{font-family:var(--font-d);font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:10px}
 .topbar-r{display:flex;align-items:center;gap:10px}
 .uptime-pill{padding:7px 14px;border-radius:var(--r-sm);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.78rem;font-family:var(--font-m);color:var(--green)}
-.panels{position:absolute;top:64px;left:0;right:0;bottom:0;overflow-y:auto;overflow-x:hidden;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(78,255,145,0.4) transparent}
+.panels{position:absolute;top:64px;left:0;right:0;bottom:0;overflow-y:scroll;overflow-x:hidden;padding:22px;scrollbar-width:thin;scrollbar-color:rgba(78,255,145,0.4) transparent}
 .panel{display:none;animation:fadeUp 0.28s var(--ease)}
 .panel.active{display:block}
 
@@ -699,9 +695,9 @@ section{padding:100px 40px}
 .hq-btn:hover{background:rgba(78,255,145,0.08);border-color:#4eff91;color:#4eff91;box-shadow:0 0 10px rgba(78,255,145,0.1)}
 
 /* ── Dashboard scrollbar ── */
-.panels::-webkit-scrollbar{width:5px}
-.panels::-webkit-scrollbar-track{background:transparent}
-.panels::-webkit-scrollbar-thumb{background:rgba(78,255,145,0.3);border-radius:3px}
+.panels::-webkit-scrollbar{width:8px}
+.panels::-webkit-scrollbar-track{background:#0a1510}
+.panels::-webkit-scrollbar-thumb{background:rgba(78,255,145,0.5);border-radius:4px}
 .panels::-webkit-scrollbar-thumb:hover{background:#4eff91}
 
 #dashboard-app{flex:1;min-height:0;display:flex;height:100%}
