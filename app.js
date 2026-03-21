@@ -1078,185 +1078,162 @@ function cadminClearLog() {
 // ══════════════════════════════════════════════════════════════
 //  ADMIN HQ
 // ══════════════════════════════════════════════════════════════
+let _hqInt=null;
+const _HQI={ban:'🔨',unban:'🔓',kick:'👢',timeout:'⏱',untimeout:'🔊',warn:'⚠️',purge:'🧹',delete:'🗑️',edit:'✏️',join:'✅',leave:'🚪',nick:'✏️',role_add:'➕',role_remove:'➖',role_create:'🎭',role_delete:'🗑️',role_rename:'🏷️',channel_create:'📢',channel_delete:'🗑️',channel_rename:'📝',voice_join:'🎙️',voice_leave:'🔇',voice_move:'🔀',invite_create:'🔗',invite_delete:'❌',server_rename:'🏠',emoji_add:'😀',slowmode:'🐢',lock:'🔒',unlock:'🔓',bot_start:'🚀'};
+function _hqs(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _hqf(v){return typeof v==='number'?v.toLocaleString():(v||'—');}
 
-let _hqInterval = null;
-const _HQ_ICONS = {ban:'🔨',unban:'🔓',kick:'👢',timeout:'⏱',untimeout:'🔊',warn:'⚠️',purge:'🧹',delete:'🗑️',edit:'✏️',join:'✅',leave:'🚪',nick:'✏️',role_add:'➕',role_remove:'➖',role_create:'🎭',role_delete:'🗑️',role_rename:'🏷️',channel_create:'📢',channel_delete:'🗑️',channel_rename:'📝',voice_join:'🎙️',voice_leave:'🔇',voice_move:'🔀',invite_create:'🔗',invite_delete:'❌',server_rename:'🏠',emoji_add:'😀',emoji_remove:'🗑️',slowmode:'🐢',lock:'🔒',unlock:'🔓',bot_start:'🚀'};
+async function hqLoad(){hqRefreshAll();if(_hqInt)clearInterval(_hqInt);_hqInt=setInterval(hqRefreshAll,30000);}
 
-async function hqLoad() {
-  hqRefreshAll();
-  if (_hqInterval) clearInterval(_hqInterval);
-  _hqInterval = setInterval(hqRefreshAll, 30000);
+async function hqRefreshAll(){
+  const ts=document.getElementById('hq-ts');if(ts)ts.textContent='SYNCING… '+new Date().toLocaleTimeString('en-GB',{hour12:false});
+  const t0=Date.now();
+  await Promise.all([_hqHealth(),_hqServers(),_hqDB(),_hqEco(),_hqXP(),_hqFeed()]);
+  const p=Date.now()-t0;
+  const pe=document.getElementById('hq-ping');if(pe)pe.textContent=`PING: ${p}ms`;
+  if(ts)ts.textContent='LAST SYNC: '+new Date().toLocaleTimeString('en-GB',{hour12:false});
 }
 
-async function hqRefreshAll() {
-  const ts = document.getElementById('hq-ts');
-  if (ts) ts.textContent = 'SYNCING… ' + new Date().toLocaleTimeString('en-GB',{hour12:false});
-  const t0 = Date.now();
-  await Promise.all([_hqHealth(), _hqServers(), _hqDB(), _hqEco(), _hqXP(), _hqFeed()]);
-  const ping = Date.now() - t0;
-  const pel = document.getElementById('hq-ping'); if (pel) pel.textContent = `PING: ${ping}ms`;
-  if (ts) ts.textContent = 'LAST SYNC: ' + new Date().toLocaleTimeString('en-GB',{hour12:false});
+async function _hqHealth(){
+  try{
+    const d=await(await fetch(`${BOT_API}/health`)).json();
+    const online=d.status==='online';
+    _hqs('hqs-g',_hqf(d.guilds));_hqs('hqs-u',_hqf(d.users));_hqs('hqs-up',(d.uptime||'—').split('.')[0]);
+    _hqs('hq-health',[
+      ['STATUS',online?'<span style="color:#4eff91">🟢 ONLINE</span>':'<span style="color:#faa61a">🟡 STARTING</span>'],
+      ['BOT',d.bot_name||'—'],['UPTIME',(d.uptime||'—').split('.')[0]],
+      ['SERVERS',_hqf(d.guilds)],['USERS',_hqf(d.users)],
+    ].map(([k,v])=>`<div class="ahq-hr"><span class="ahq-hk">${k}</span><span class="ahq-hv">${v}</span></div>`).join(''));
+  }catch(e){console.warn('hqHealth',e);}
 }
 
-function _hqSet(id, val) { const el=document.getElementById(id); if(el) el.innerHTML=val; }
-function _hqFmt(v) { return typeof v==='number' ? v.toLocaleString() : (v||'—'); }
-
-async function _hqHealth() {
-  try {
-    const d = await (await fetch(`${BOT_API}/health`)).json();
-    const online = d.status==='online';
-    _hqSet('hqs-g',  _hqFmt(d.guilds));
-    _hqSet('hqs-u',  _hqFmt(d.users));
-    _hqSet('hqs-up', (d.uptime||'—').split('.')[0]);
-    _hqSet('hq-health', [
-      ['STATUS',   online?'<span style="color:#4eff91">🟢 ONLINE</span>':'<span style="color:#faa61a">🟡 STARTING</span>'],
-      ['BOT NAME', d.bot_name||'—'],
-      ['UPTIME',   (d.uptime||'—').split('.')[0]],
-      ['SERVERS',  _hqFmt(d.guilds)],
-      ['USERS',    _hqFmt(d.users)],
-      ['STATUS',   online?'OPERATIONAL':'STARTING UP'],
-    ].map(([k,v])=>`<div class="hq-hr"><span class="hq-hk">${k}</span><span class="hq-hv">${v}</span></div>`).join(''));
-  } catch{}
+async function _hqServers(){
+  const c=document.getElementById('hq-servers');if(!c)return;
+  try{
+    const d=await(await fetch(`${BOT_API}/stats`)).json();
+    const gs=d.guilds||[];
+    c.innerHTML=gs.length?gs.map((g,i)=>`
+      <div class="ahq-sr">
+        <div class="ahq-icon">${g.icon?`<img src="${g.icon}" alt="">`:(g.name||'?').charAt(0)}</div>
+        <span class="ahq-sname">${g.name}</span>
+        <span class="ahq-smeta">👥 ${(g.members||0).toLocaleString()}</span>
+        <span class="ahq-smeta" style="margin-left:6px;opacity:.4">#${i+1}</span>
+      </div>`).join(''):'<div class="ahq-empty">NO SERVERS</div>';
+  }catch{c.innerHTML='<div class="ahq-empty">ERROR LOADING</div>';}
 }
 
-async function _hqServers() {
-  const c = document.getElementById('hq-servers'); if(!c) return;
-  try {
-    const d = await (await fetch(`${BOT_API}/stats`)).json();
-    const gs = d.guilds||[];
-    c.innerHTML = gs.length ? gs.map((g,i)=>`
-      <div class="hq-row">
-        <div class="hq-icon">${g.icon?`<img src="${g.icon}" alt="">`:g.name.charAt(0)}</div>
-        <span class="hq-name">${g.name}</span>
-        <span class="hq-meta">👥 ${(g.members||0).toLocaleString()}</span>
-        <span class="hq-meta" style="margin-left:6px;opacity:.4">#${i+1}</span>
-      </div>`).join('') : '<div class="hq-empty">NO SERVERS</div>';
-  } catch { c.innerHTML='<div class="hq-empty">ERROR</div>'; }
+async function _hqDB(){
+  try{
+    const d=await(await fetch(`${BOT_API}/db/stats`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(d.error)throw new Error(d.error);
+    _hqs('hqs-db',(d.total_documents||0).toLocaleString());
+    _hqs('hq-dbm',[
+      ['USERS',d.users||0],['GUILDS',d.guilds||0],
+      ['ECONOMY',d.economy_entries||0],['XP',d.xp_entries||0],
+      ['COLLECTIONS',d.collections||0],['TOTAL DOCS',(d.total_documents||0).toLocaleString()],
+      ['LAST SYNC',d.last_sync||'—'],
+    ].map(([k,v])=>`<div class="ahq-kv"><span class="ahq-kk">${k}</span><span class="ahq-vv">${v}</span></div>`).join(''));
+  }catch{_hqs('hq-dbm','<div class="ahq-empty">DB ERROR — check /db/stats endpoint</div>');}
 }
 
-async function _hqDB() {
-  try {
-    const d = await (await fetch(`${BOT_API}/db/stats`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(d.error) throw new Error(d.error);
-    _hqSet('hqs-db', (d.total_documents||0).toLocaleString());
-    _hqSet('hq-dbm', [
-      ['USERS',        d.users||0],
-      ['GUILDS',       d.guilds||0],
-      ['ECONOMY DOCS', d.economy_entries||0],
-      ['XP DOCS',      d.xp_entries||0],
-      ['COLLECTIONS',  d.collections||0],
-      ['TOTAL DOCS',   (d.total_documents||0).toLocaleString()],
-      ['LAST SYNC',    d.last_sync||'—'],
-    ].map(([k,v])=>`<div class="hq-kv"><span class="hq-k">${k}</span><span class="hq-v">${v}</span></div>`).join(''));
-  } catch{ _hqSet('hq-dbm','<div class="hq-empty">DB ERROR</div>'); }
-}
-
-async function _hqEco() {
-  const c = document.getElementById('hq-eco'); if(!c) return;
-  try {
-    const data = await (await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(!data.length){c.innerHTML='<div class="hq-empty">NO DATA</div>';return;}
-    const max=data[0]?.balance||1, M=['🥇','🥈','🥉'];
+async function _hqEco(){
+  const c=document.getElementById('hq-eco');if(!c)return;
+  try{
+    const data=await(await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(!data.length){c.innerHTML='<div class="ahq-empty">NO ECONOMY DATA</div>';return;}
+    const max=data[0]?.balance||1,M=['🥇','🥈','🥉'];
     c.innerHTML=data.slice(0,10).map((u,i)=>`
-      <div class="hq-lb">
-        <span class="hq-rank">${M[i]||'#'+(i+1)}</span>
-        <span class="hq-uname">${u.username||'Unknown'}</span>
-        <div class="hq-bar-w"><div class="hq-bar" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
-        <span class="hq-val">₹${(u.balance||0).toLocaleString()}</span>
+      <div class="ahq-lb">
+        <span class="ahq-lrank">${M[i]||'#'+(i+1)}</span>
+        <span class="ahq-lname">${u.username||'Unknown'}</span>
+        <div class="ahq-bw"><div class="ahq-bb" style="width:${Math.round((u.balance/max)*100)}%"></div></div>
+        <span class="ahq-lval">₹${(u.balance||0).toLocaleString()}</span>
       </div>`).join('');
-  } catch{ c.innerHTML='<div class="hq-empty">ERROR</div>'; }
+  }catch{c.innerHTML='<div class="ahq-empty">ERROR</div>';}
 }
 
-async function _hqXP() {
-  const c = document.getElementById('hq-xp'); if(!c) return;
-  try {
-    const data = await (await fetch(`${BOT_API}/levels/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(!data.length){c.innerHTML='<div class="hq-empty">NO DATA</div>';return;}
-    const max=data[0]?.xp||1, M=['🥇','🥈','🥉'];
+async function _hqXP(){
+  const c=document.getElementById('hq-xp');if(!c)return;
+  try{
+    const data=await(await fetch(`${BOT_API}/levels/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(!data.length){c.innerHTML='<div class="ahq-empty">NO XP DATA</div>';return;}
+    const max=data[0]?.xp||1,M=['🥇','🥈','🥉'];
     c.innerHTML=data.slice(0,10).map((u,i)=>`
-      <div class="hq-lb">
-        <span class="hq-rank">${M[i]||'#'+(i+1)}</span>
-        <span class="hq-uname">${u.username||'Unknown'}</span>
-        <div class="hq-bar-w"><div class="hq-bar" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
-        <span class="hq-val">Lv.${u.level||0}</span>
+      <div class="ahq-lb">
+        <span class="ahq-lrank">${M[i]||'#'+(i+1)}</span>
+        <span class="ahq-lname">${u.username||'Unknown'}</span>
+        <div class="ahq-bw"><div class="ahq-bb" style="width:${Math.round((u.xp/max)*100)}%"></div></div>
+        <span class="ahq-lval">Lv.${u.level||0}</span>
       </div>`).join('');
-  } catch{ c.innerHTML='<div class="hq-empty">ERROR</div>'; }
+  }catch{c.innerHTML='<div class="ahq-empty">ERROR</div>';}
 }
 
-async function _hqFeed() {
-  const c = document.getElementById('hq-feed'); if(!c) return;
-  try {
-    const data = await (await fetch(`${BOT_API}/audit/log?limit=200`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    const entries = data.entries||[];
-    _hqSet('hqs-al', entries.length);
-    const fc = document.getElementById('hq-fc'); if(fc) fc.textContent=entries.length+' entries';
-    if(!entries.length){c.innerHTML='<div class="hq-empty">NO LOG ENTRIES YET</div>';_hqChart([]);return;}
+async function _hqFeed(){
+  const c=document.getElementById('hq-feed');if(!c)return;
+  try{
+    const data=await(await fetch(`${BOT_API}/audit/log?limit=200`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    const entries=data.entries||[];
+    _hqs('hqs-al',entries.length);
+    const fc=document.getElementById('hq-fc');if(fc)fc.textContent=entries.length+' entries';
+    if(!entries.length){c.innerHTML='<div class="ahq-empty">NO LOG ENTRIES YET — mod actions will appear here</div>';_hqChart([]);return;}
     c.innerHTML=entries.slice(0,60).map(e=>{
-      const icon=_HQ_ICONS[e.action]||'📌';
+      const icon=_HQI[e.action]||'📌';
       const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
-      const reason=e.reason?` · ${e.reason.substring(0,35)}`:'';
-      return `<div class="hq-feed">
-        <span class="hq-fa">${icon}</span>
-        <div class="hq-fb">
-          <div class="hq-fac">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
-          <div class="hq-fm">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
+      const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
+      return `<div class="ahq-fe">
+        <span class="ahq-fico">${icon}</span>
+        <div class="ahq-fbody">
+          <div class="ahq-fact">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
+          <div class="ahq-fmeta">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
         </div>
-        <span class="hq-ft">${time}</span>
+        <span class="ahq-ftime">${time}</span>
       </div>`;
     }).join('');
     _hqChart(entries);
-  } catch{ c.innerHTML='<div class="hq-empty">FEED ERROR</div>'; }
+  }catch(e){console.error('hqFeed',e);c.innerHTML='<div class="ahq-empty">FEED ERROR: '+e.message+'</div>';}
 }
 
-function _hqChart(entries) {
-  const canvas = document.getElementById('hq-chart'); if(!canvas) return;
+function _hqChart(entries){
+  const canvas=document.getElementById('hq-chart');if(!canvas)return;
   const counts={};
-  entries.forEach(e=>{ if(e.action) counts[e.action]=(counts[e.action]||0)+1; });
+  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
   const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  if(!sorted.length) return;
-  if(canvas._hqChart) { canvas._hqChart.destroy(); }
-  canvas._hqChart = new Chart(canvas.getContext('2d'),{
+  if(!sorted.length){canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);return;}
+  if(canvas._hqc){canvas._hqc.destroy();}
+  canvas._hqc=new Chart(canvas.getContext('2d'),{
     type:'bar',
-    data:{
-      labels: sorted.map(([k])=>k.toUpperCase()),
-      datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]
-    },
-    options:{
-      responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} events`}}},
-      scales:{
-        x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'monospace',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
-        y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'monospace',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
-      }
-    }
+    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
+      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
+    }}
   });
 }
 
-function hqBroadcast() {
-  const m=document.getElementById('hq-bcast-modal'); if(m) m.style.display='flex';
-}
-function hqSendBroadcast() {
+function hqBroadcast(){const m=document.getElementById('hq-bcast-modal');if(m)m.style.display='flex';}
+function hqSendBroadcast(){
   const msg=document.getElementById('hq-bcast-txt')?.value?.trim();
-  if(!msg) return showToast('Enter a message','warn');
-  showToast('📢 Broadcast feature — add /broadcast endpoint to bot.py','warn');
+  if(!msg)return showToast('Enter a message','warn');
+  showToast('📢 Add /broadcast endpoint to bot.py to send to servers','warn');
   document.getElementById('hq-bcast-modal').style.display='none';
 }
-function hqExportAudit() {
-  if(!allLogEntries.length) return showToast('No audit entries','warn');
+function hqExportAudit(){
+  if(!allLogEntries.length)return showToast('No audit entries','warn');
   const csv=['action,target,moderator,reason,guild,timestamp',
     ...allLogEntries.map(e=>[e.action,e.target,e.moderator,e.reason,e.guild_name,e.timestamp]
       .map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`audit_${Date.now()}.csv`; a.click(); showToast('✅ Audit log exported');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`audit_${Date.now()}.csv`;a.click();showToast('✅ Audit log exported');
 }
-async function hqExportEco() {
-  try {
-    const data=await (await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
-    if(!data.length) return showToast('No economy data','warn');
+async function hqExportEco(){
+  try{
+    const data=await(await fetch(`${BOT_API}/economy/leaderboard?scope=global`,{headers:{'Authorization':`Bearer ${discordToken}`}})).json();
+    if(!data.length)return showToast('No economy data','warn');
     const csv=['username,user_id,balance,wins,losses',
       ...data.map(u=>`"${u.username}","${u.user_id}","${u.balance}","${u.wins||0}","${u.losses||0}"`)].join('\n');
-    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-    a.download=`economy_${Date.now()}.csv`; a.click(); showToast('✅ Economy exported');
-  } catch{ showToast('❌ Export failed','error'); }
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download=`economy_${Date.now()}.csv`;a.click();showToast('✅ Economy exported');
+  }catch{showToast('❌ Export failed','error');}
 }
 
 // ══════════════════════════════════════════════════════════════
