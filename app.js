@@ -103,7 +103,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // ── Landing page (index.html) ──────────────────────────────
   if (!isDashboard) {
     fetchHealth();
-    setInterval(fetchHealth, 30000);
+    setInterval(fetchHealth, 1000);
     initReveal();
     return;
   }
