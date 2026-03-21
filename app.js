@@ -1255,78 +1255,56 @@ async function hq_feed(){
 }
 
 function hq_chart(entries){
-  const mk=(id)=>{
-    const c=document.getElementById(id);
-    if(!c)return null;
-    if(c._c){c._c.destroy();c._c=null;}
-    return c;
-  };
+  const mk=(id)=>{const c=document.getElementById(id);if(!c)return null;if(c._c){c._c.destroy();c._c=null;}return c;};
   const F={family:'"Courier New",monospace',size:9};
-  const G='#4eff91';
-  const grd='rgba(78,255,145,.06)';
-  const tc='rgba(78,255,145,.5)';
+  const G='#4eff91',grd='rgba(78,255,145,.06)',tc='rgba(78,255,145,.5)';
   const TIP={backgroundColor:'#0a1510',borderColor:G,borderWidth:1,titleColor:G,bodyColor:'#d0ffe0',titleFont:F,bodyFont:F};
+  const BASE={responsive:true,maintainAspectRatio:false,animation:{duration:700}};
 
-  /* ── Chart 1: Action bar ── */
+  /* Chart 1 — Action bar */
   const c1=mk('hq__chart');
   if(c1){
     const cnt={};
     entries.forEach(e=>{const a=e.action||e.type||e.event;if(a)cnt[a]=(cnt[a]||0)+1;});
-    const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,8);
     if(rows.length){
-      const gd=c1.getContext('2d').createLinearGradient(0,0,0,120);
-      gd.addColorStop(0,'rgba(78,255,145,.4)');gd.addColorStop(1,'rgba(78,255,145,.03)');
+      const gd=c1.getContext('2d').createLinearGradient(0,0,0,100);
+      gd.addColorStop(0,'rgba(78,255,145,.45)');gd.addColorStop(1,'rgba(78,255,145,.04)');
       c1._c=new Chart(c1.getContext('2d'),{type:'bar',data:{
         labels:rows.map(([k])=>k.replace(/_/g,' ').toUpperCase()),
-        datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.6)'}]
-      },options:{responsive:true,animation:{duration:700},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
-        scales:{x:{ticks:{color:tc,font:F,maxRotation:30},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
-    } else {
-      const ctx=c1.getContext('2d');ctx.fillStyle='rgba(78,255,145,.2)';ctx.font='11px Courier New';ctx.fillText('NO DATA YET',c1.width/2-40,c1.height/2);
+        datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.65)'}]
+      },options:{...BASE,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
+        scales:{x:{ticks:{color:tc,font:F,maxRotation:25},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
     }
   }
 
-  /* ── Chart 2: Timeline line chart (last 24h by hour) ── */
+  /* Chart 2 — Timeline */
   const c2=mk('hq__chart2');
   if(c2){
-    const now=Date.now();
-    const buckets=new Array(24).fill(0);
-    let hasTime=false;
+    const now=Date.now(),buckets=new Array(24).fill(0);
+    let hasT=false;
     entries.forEach(e=>{
       const ts=e.timestamp||e.created_at||e.time||e.date;
-      if(!ts)return;
-      const d=new Date(ts);
-      if(isNaN(d))return;
-      hasTime=true;
-      const hr=Math.floor((now-d.getTime())/3600000);
+      if(!ts)return; const d=new Date(ts); if(isNaN(d))return;
+      hasT=true; const hr=Math.floor((now-d.getTime())/3600000);
       if(hr>=0&&hr<24)buckets[23-hr]++;
     });
-    // fallback: spread entries evenly if no timestamps
-    if(!hasTime&&entries.length){
-      const per=Math.ceil(entries.length/24);
-      for(let i=0;i<24;i++)buckets[i]=Math.max(0,Math.floor(entries.length/24)+Math.round((Math.random()-0.5)*per*0.5));
-    }
-    const labels=Array.from({length:24},(_,i)=>{
-      const h=new Date(now-(23-i)*3600000);
-      return i%4===0?h.getHours().toString().padStart(2,'0')+'h':'';
-    });
-    const gd2=c2.getContext('2d').createLinearGradient(0,0,0,130);
-    gd2.addColorStop(0,'rgba(78,255,145,.25)');gd2.addColorStop(1,'rgba(78,255,145,.0)');
+    if(!hasT&&entries.length)entries.forEach((_,i)=>buckets[i%24]++);
+    const labels=Array.from({length:24},(_,i)=>i%6===0?new Date(now-(23-i)*3600000).getHours()+'h':'');
+    const gd2=c2.getContext('2d').createLinearGradient(0,0,0,100);
+    gd2.addColorStop(0,'rgba(78,255,145,.3)');gd2.addColorStop(1,'rgba(78,255,145,.0)');
     c2._c=new Chart(c2.getContext('2d'),{type:'line',data:{
-      labels,datasets:[{data:buckets,borderColor:G,backgroundColor:gd2,borderWidth:1.5,pointRadius:2,pointBackgroundColor:G,tension:0.35,fill:true}]
-    },options:{responsive:true,animation:{duration:900},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`⏱ ${i.label||i.dataIndex+'h ago'}`,label:i=>`EVENTS: ${i.raw}`}}},
+      labels,datasets:[{data:buckets,borderColor:G,backgroundColor:gd2,borderWidth:1.5,pointRadius:1,pointBackgroundColor:G,tension:0.35,fill:true}]
+    },options:{...BASE,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`⏱ ${i.label||i.dataIndex+'h'}`,label:i=>`EVENTS: ${i.raw}`}}},
       scales:{x:{ticks:{color:tc,font:{family:'"Courier New"',size:7}},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F,stepSize:1},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
   }
 
-  /* ── Chart 3: Severity doughnut ── */
+  /* Chart 3 — Severity doughnut */
   const c3=mk('hq__chart3');
   if(c3){
-    const HIGH=['ban','kick','unban','delete'];
-    const MED=['mute','timeout','warn','muted'];
-    const LOW=['join','leave','bot_start','connect'];
+    const HIGH=['ban','kick','unban','delete'],MED=['mute','timeout','warn'],LOW=['join','leave','bot_start','connect'];
     const cnt={h:0,m:0,l:0,i:0};
-    entries.forEach(e=>{
-      const a=(e.action||e.type||'').toLowerCase();
+    entries.forEach(e=>{const a=(e.action||e.type||'').toLowerCase();
       if(HIGH.some(x=>a.includes(x)))cnt.h++;
       else if(MED.some(x=>a.includes(x)))cnt.m++;
       else if(LOW.some(x=>a.includes(x)))cnt.l++;
@@ -1336,32 +1314,26 @@ function hq_chart(entries){
     const clrs=['#ff4f4f','#fbbf24',G,'rgba(78,255,145,.35)'];
     const bgs=['rgba(255,79,79,.2)','rgba(251,191,36,.2)','rgba(78,255,145,.18)','rgba(78,255,145,.06)'];
     c3._c=new Chart(c3.getContext('2d'),{type:'doughnut',data:{
-      labels:['HIGH','MED','LOW','INFO'],
-      datasets:[{data:vals,backgroundColor:bgs,borderColor:clrs,borderWidth:1.5,hoverOffset:4}]
-    },options:{responsive:true,cutout:'62%',animation:{duration:1000,animateRotate:true},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`${i.label}`,label:i=>`${i.raw} events`}}}}});
+      labels:['HIGH','MED','LOW','INFO'],datasets:[{data:vals,backgroundColor:bgs,borderColor:clrs,borderWidth:1.5,hoverOffset:3}]
+    },options:{...BASE,cutout:'65%',plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>i.label,label:i=>`${i.raw} events`}}}}});
     const leg=document.getElementById('hq__legend');
-    if(leg)leg.innerHTML=['HIGH','MED','LOW','INFO'].map((l,i)=>`<span style="font-family:monospace;font-size:.52rem;color:${clrs[i]};display:flex;align-items:center;gap:2px"><span style="width:5px;height:5px;border-radius:50%;background:${clrs[i]};flex-shrink:0;display:inline-block"></span>${l}:${vals[i]}</span>`).join('');
+    if(leg)leg.innerHTML=['HIGH','MED','LOW','INFO'].map((l,i)=>`<span style="font-family:monospace;font-size:.5rem;color:${clrs[i]};display:flex;align-items:center;gap:2px"><span style="width:5px;height:5px;border-radius:50%;background:${clrs[i]};flex-shrink:0;display:inline-block"></span>${l}:${vals[i]}</span>`).join('');
   }
 
-  /* ── Chart 4: Guild horizontal bar ── */
+  /* Chart 4 — Guild horizontal bar */
   const c4=mk('hq__chart4');
   if(c4){
     const gc={};
-    entries.forEach(e=>{
-      const g=e.guild_name||e.server_name||e.guild||e.guild_id||'Unknown';
-      gc[g]=(gc[g]||0)+1;
-    });
-    const rows=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    entries.forEach(e=>{const g=e.guild_name||e.server_name||e.guild||e.guild_id||'Unknown';gc[g]=(gc[g]||0)+1;});
+    const rows=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,5);
     if(rows.length){
       const gd4=c4.getContext('2d').createLinearGradient(300,0,0,0);
-      gd4.addColorStop(0,'rgba(78,255,145,.45)');gd4.addColorStop(1,'rgba(78,255,145,.08)');
+      gd4.addColorStop(0,'rgba(78,255,145,.5)');gd4.addColorStop(1,'rgba(78,255,145,.08)');
       c4._c=new Chart(c4.getContext('2d'),{type:'bar',data:{
-        labels:rows.map(([k])=>k.length>16?k.slice(0,14)+'…':k),
-        datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd4,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.65)'}]
-      },options:{indexAxis:'y',responsive:true,animation:{duration:800},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`🌐 ${i.label}`,label:i=>`EVENTS: ${i.raw}`}}},
+        labels:rows.map(([k])=>k.length>14?k.slice(0,12)+'…':k),
+        datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd4,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.7)'}]
+      },options:{indexAxis:'y',...BASE,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`🌐 ${i.label}`,label:i=>`EVENTS: ${i.raw}`}}},
         scales:{x:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:{family:'"Courier New"',size:8}},grid:{color:'transparent'},border:{color:'rgba(78,255,145,.2)'}}}}});
-    } else {
-      const ctx=c4.getContext('2d');ctx.fillStyle='rgba(78,255,145,.2)';ctx.font='11px Courier New';ctx.fillText('NO DATA YET',c4.width/2-40,c4.height/2);
     }
   }
 }
