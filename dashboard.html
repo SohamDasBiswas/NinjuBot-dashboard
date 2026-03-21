@@ -8,7 +8,7 @@
 <title>NinjuBot — Control Panel</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="db-body" style="overflow:visible">
+<body class="db-body">
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -71,7 +71,7 @@
 </div>
 
 <!-- ════════════ MAIN DASHBOARD ════════════ -->
-<div id="dashboard-app" style="display:none;width:100%;height:100vh;overflow:visible">
+<div id="dashboard-app" style="display:none;width:100%;height:100vh;overflow:visible;flex-direction:row">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -129,7 +129,7 @@
 </aside>
 
 <!-- MAIN -->
-<main class="db-main" style="overflow:visible;height:100vh">
+<main class="db-main" style="flex:1;min-width:0;overflow:hidden;height:100vh">
   <div class="topbar">
     <h1 class="page-title" id="page-title">Overview</h1>
     <div class="topbar-r">
@@ -140,7 +140,7 @@
     </div>
   </div>
 
-  <div class="panels" style="height:calc(100vh - 64px);max-height:calc(100vh - 64px);overflow-y:scroll !important;overflow-x:hidden;flex:none">
+  <div class="panels" style="height:calc(100vh - 64px);overflow-y:scroll;overflow-x:hidden;flex:none;display:block">
 
     <!-- ══════ OVERVIEW ══════ -->
     <div id="panel-overview" class="panel active">
