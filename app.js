@@ -753,6 +753,9 @@ function showPanel(name, el) {
   const panel = document.getElementById('panel-' + name);
   if (panel) panel.classList.add('active');
   if (el)   el.classList.add('active');
+  // Always scroll the panels container back to top when switching panels
+  const panelsEl = document.querySelector('.panels');
+  if (panelsEl) panelsEl.scrollTop = 0;
   const titles = {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
