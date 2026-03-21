@@ -669,7 +669,7 @@ function logPage(dir) {
   renderLog();
 }
 
-const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓' };
+const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓', bot_start:'🚀' };
 const PER_PAGE  = 20;
 
 function renderLog() {
