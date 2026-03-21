@@ -332,7 +332,7 @@ section{padding:100px 40px}
 /* ════════════════════════════════════
    DASHBOARD LAYOUT
 ════════════════════════════════════ */
-.db-body{height:100vh;display:flex;overflow:hidden}
+.db-body{height:100vh;display:flex;overflow:visible}
 .sidebar{width:250px;min-width:250px;height:100vh;background:#0a1510;box-shadow:var(--neu-out);display:flex;flex-direction:column;z-index:10;border-right:1px solid rgba(78,255,145,0.15);overflow-y:auto;overflow-x:hidden}
 .sidebar-brand{padding:22px 20px;display:flex;align-items:center;gap:12px;font-family:var(--font-d);font-size:1.3rem;font-weight:800;border-bottom:1px solid rgba(78,255,145,0.08)}
 .sidebar-user{padding:14px 16px;margin:10px 12px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);display:flex;align-items:center;gap:10px;border:1px solid rgba(78,255,145,0.08)}

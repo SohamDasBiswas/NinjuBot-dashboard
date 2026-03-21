@@ -798,29 +798,5 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
-<script>
-(function(){
-  function fixScroll(){
-    var app    = document.getElementById('dashboard-app');
-    var panels = document.querySelector('.panels');
-    var topbar = document.querySelector('.topbar');
-    if(app){
-      app.style.setProperty('overflow','visible','important');
-    }
-    if(panels && topbar){
-      var h = window.innerHeight - topbar.getBoundingClientRect().height;
-      panels.style.setProperty('height', h+'px', 'important');
-      panels.style.setProperty('max-height', h+'px', 'important');
-      panels.style.setProperty('overflow-y', 'scroll', 'important');
-      panels.style.setProperty('flex', 'none', 'important');
-    }
-  }
-  document.addEventListener('DOMContentLoaded', fixScroll);
-  window.addEventListener('load', fixScroll);
-  window.addEventListener('resize', fixScroll);
-  // Run repeatedly to catch dynamic show/hide of dashboard
-  setInterval(fixScroll, 500);
-})();
-</script>
 </body>
 </html>
