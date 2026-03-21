@@ -652,137 +652,160 @@
 
     </div>
     <!-- ══════ ADMIN HQ ══════ -->
-    <div id="panel-admin-hq" class="panel" style="background:transparent;box-shadow:none;padding:0">
+    <div id="panel-admin-hq" class="panel">
+    <div id="ahq">
 
       <style>
-        #panel-admin-hq{--g:#4eff91;--gd:rgba(78,255,145,0.08);--gb:rgba(78,255,145,0.18);--bg:#08120d;--bg2:#0d1a11;font-family:monospace}
-        .hq-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-        .hq-grid-3{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
-        .hq-box{background:var(--bg);border:1px solid var(--gb);border-radius:12px;padding:16px;position:relative;overflow:hidden}
-        .hq-box::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent)}
-        .hq-title{font-size:.65rem;font-weight:700;color:var(--g);letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-        .hq-live-dot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:hqblink 1.5s infinite;box-shadow:0 0 6px var(--g)}
-        @keyframes hqblink{0%,100%{opacity:1}50%{opacity:.2}}
-        .hq-stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
-        .hq-stat{background:var(--bg);border:1px solid var(--gb);border-radius:10px;padding:14px 10px;text-align:center;position:relative;overflow:hidden}
-        .hq-stat::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent)}
-        .hq-sv{font-size:1.5rem;font-weight:700;color:var(--g);text-shadow:0 0 12px rgba(78,255,145,.4);line-height:1.1}
-        .hq-sk{font-size:.58rem;color:rgba(78,255,145,.45);letter-spacing:2px;margin-top:5px}
-        .hq-scroll{overflow-y:auto;max-height:230px}
-        .hq-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;margin-bottom:3px;border:1px solid rgba(78,255,145,.05);background:rgba(78,255,145,.015);transition:background .15s}
-        .hq-row:hover{background:rgba(78,255,145,.05);border-color:rgba(78,255,145,.15)}
-        .hq-icon{width:30px;height:30px;border-radius:7px;background:rgba(78,255,145,.1);border:1px solid var(--gb);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--g);flex-shrink:0;overflow:hidden}
-        .hq-icon img{width:100%;height:100%;object-fit:cover;border-radius:6px}
-        .hq-name{font-size:.75rem;color:#d0ffe0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .hq-meta{font-size:.62rem;color:rgba(78,255,145,.4);white-space:nowrap}
-        .hq-kv{display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(78,255,145,.05);font-size:.72rem}
-        .hq-kv:last-child{border-bottom:none}
-        .hq-k{color:rgba(78,255,145,.55)}
-        .hq-v{color:var(--g);font-weight:700}
-        .hq-lb{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;margin-bottom:3px;border:1px solid rgba(78,255,145,.04)}
-        .hq-rank{font-size:.65rem;color:rgba(78,255,145,.4);width:22px;text-align:right;flex-shrink:0}
-        .hq-uname{font-size:.72rem;color:#d0ffe0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .hq-bar-w{width:70px;height:3px;background:rgba(78,255,145,.1);border-radius:2px;flex-shrink:0}
-        .hq-bar{height:3px;background:var(--g);border-radius:2px;box-shadow:0 0 4px var(--g)}
-        .hq-val{font-size:.68rem;color:var(--g);font-weight:700;width:65px;text-align:right;flex-shrink:0}
-        .hq-feed{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border-left:2px solid rgba(78,255,145,.2);background:rgba(78,255,145,.015)}
-        .hq-fa{font-size:.75rem;flex-shrink:0;margin-top:1px}
-        .hq-fb{flex:1;min-width:0}
-        .hq-fac{font-size:.7rem;color:#d0ffe0;font-weight:600}
-        .hq-fm{font-size:.6rem;color:rgba(78,255,145,.4);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .hq-ft{font-size:.58rem;color:rgba(78,255,145,.25);flex-shrink:0;white-space:nowrap}
-        .hq-hr{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(78,255,145,.025);border:1px solid rgba(78,255,145,.06)}
-        .hq-hk{font-size:.7rem;color:rgba(78,255,145,.55)}
-        .hq-hv{font-size:.7rem;color:var(--g);font-weight:700}
-        .hq-btn{padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.18);color:rgba(78,255,145,.75);font-family:monospace;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:left;width:100%;display:block;margin-bottom:5px}
-        .hq-btn:hover{background:rgba(78,255,145,.07);border-color:var(--g);color:var(--g);box-shadow:0 0 8px rgba(78,255,145,.1)}
-        .hq-empty{font-size:.7rem;color:rgba(78,255,145,.3);padding:20px;text-align:center;animation:hqblink 2s infinite}
+      #ahq *{box-sizing:border-box}
+      #ahq{font-family:'Courier New',monospace;color:#4eff91;--g:#4eff91;--dim:rgba(78,255,145,0.12);--bd:rgba(78,255,145,0.2);--bg:#07100a;--bg2:#0b1a0e}
+      #ahq .r{display:flex;gap:12px;margin-bottom:12px}
+      #ahq .r>.c{flex:1;min-width:0}
+      #ahq .r>.c2{flex:2;min-width:0}
+      #ahq .box{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:16px;height:100%;position:relative;overflow:hidden}
+      #ahq .box::after{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.6}
+      #ahq .ttl{font-size:.62rem;letter-spacing:2px;color:var(--g);margin-bottom:12px;display:flex;align-items:center;gap:8px;font-weight:700}
+      #ahq .dot{width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:ap 1.5s infinite}
+      @keyframes ap{0%,100%{opacity:1}50%{opacity:.15}}
+      #ahq .sc{overflow-y:auto;max-height:220px}
+      #ahq .em{font-size:.68rem;color:rgba(78,255,145,.3);padding:24px;text-align:center;animation:ap 2s infinite}
+      /* stat strip */
+      #ahq .ss{display:flex;gap:10px;margin-bottom:12px}
+      #ahq .sc-{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:14px 8px;text-align:center;position:relative;overflow:hidden}
+      #ahq .sc-::after{content:'';position:absolute;top:0;left:5%;right:5%;height:1px;background:var(--g);opacity:.4}
+      #ahq .sv{font-size:1.4rem;font-weight:700;color:var(--g);text-shadow:0 0 14px rgba(78,255,145,.5);line-height:1.1}
+      #ahq .sk{font-size:.55rem;color:rgba(78,255,145,.4);letter-spacing:2px;margin-top:4px}
+      /* server row */
+      #ahq .sr{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;margin-bottom:3px;border:1px solid rgba(78,255,145,.05);background:rgba(78,255,145,.015);cursor:default;transition:background .15s}
+      #ahq .sr:hover{background:rgba(78,255,145,.05);border-color:rgba(78,255,145,.15)}
+      #ahq .si{width:28px;height:28px;border-radius:6px;background:rgba(78,255,145,.1);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;overflow:hidden}
+      #ahq .si img{width:100%;height:100%;object-fit:cover;border-radius:5px}
+      #ahq .sn{font-size:.73rem;color:#d0ffe0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      #ahq .sm{font-size:.6rem;color:rgba(78,255,145,.4);white-space:nowrap}
+      /* kv */
+      #ahq .kv{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid rgba(78,255,145,.05);font-size:.7rem}
+      #ahq .kv:last-child{border-bottom:none}
+      #ahq .kk{color:rgba(78,255,145,.5)}
+      #ahq .vv{color:var(--g);font-weight:700}
+      /* lb */
+      #ahq .lb{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border:1px solid rgba(78,255,145,.04)}
+      #ahq .lr{font-size:.63rem;color:rgba(78,255,145,.4);width:20px;text-align:right;flex-shrink:0}
+      #ahq .ln{font-size:.7rem;color:#d0ffe0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      #ahq .bw{width:60px;height:3px;background:rgba(78,255,145,.1);border-radius:2px;flex-shrink:0}
+      #ahq .bb{height:3px;background:var(--g);border-radius:2px;box-shadow:0 0 4px var(--g)}
+      #ahq .lv{font-size:.65rem;color:var(--g);font-weight:700;width:60px;text-align:right;flex-shrink:0}
+      /* feed */
+      #ahq .fe{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border-left:2px solid rgba(78,255,145,.2);background:rgba(78,255,145,.012)}
+      #ahq .fi{font-size:.72rem;flex-shrink:0;margin-top:1px}
+      #ahq .fb{flex:1;min-width:0}
+      #ahq .fa{font-size:.68rem;color:#d0ffe0;font-weight:600}
+      #ahq .fm{font-size:.58rem;color:rgba(78,255,145,.38);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      #ahq .ft{font-size:.56rem;color:rgba(78,255,145,.22);flex-shrink:0;white-space:nowrap}
+      /* health */
+      #ahq .hr{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(78,255,145,.02);border:1px solid rgba(78,255,145,.06)}
+      #ahq .hk{font-size:.68rem;color:rgba(78,255,145,.5)}
+      #ahq .hv{font-size:.68rem;color:var(--g);font-weight:700}
+      /* btn */
+      #ahq .qb{width:100%;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.18);color:rgba(78,255,145,.7);font-family:monospace;font-size:.68rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:left;display:block;margin-bottom:5px}
+      #ahq .qb:hover{background:rgba(78,255,145,.07);border-color:var(--g);color:var(--g);box-shadow:0 0 10px rgba(78,255,145,.1)}
       </style>
 
-      <!-- Header bar -->
-      <div style="background:#08120d;border:1px solid #4eff91;border-radius:12px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 30px rgba(78,255,145,.06)">
+      <!-- Header -->
+      <div style="background:#07100a;border:1px solid #4eff91;border-radius:12px;padding:13px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 30px rgba(78,255,145,.06)">
         <div style="display:flex;align-items:center;gap:12px">
-          <div style="font-size:1.2rem">💻</div>
+          <span style="font-size:1.1rem">💻</span>
           <div>
-            <div style="font-size:.9rem;font-weight:700;color:#4eff91;letter-spacing:3px">NINJUBOT // ADMIN_HQ</div>
-            <div style="font-size:.6rem;color:rgba(78,255,145,.4);margin-top:2px;letter-spacing:1px" id="hq-ts">SYSTEM READY</div>
+            <div style="font-size:.85rem;font-weight:700;letter-spacing:3px;color:#4eff91">NINJUBOT // ADMIN_HQ</div>
+            <div style="font-size:.58rem;color:rgba(78,255,145,.4);margin-top:2px;letter-spacing:1px" id="hq-ts">SYSTEM READY</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <span style="font-size:.65rem;color:rgba(78,255,145,.5)" id="hq-ping">PING: —ms</span>
-          <button class="btn-sm-o" onclick="hqRefreshAll()" style="font-family:monospace;font-size:.72rem;letter-spacing:1px">⟳ REFRESH</button>
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="font-size:.62rem;color:rgba(78,255,145,.45)" id="hq-ping">PING: —ms</span>
+          <button class="btn-sm-o" onclick="hqRefreshAll()" style="font-family:monospace;font-size:.7rem;letter-spacing:1px">⟳ REFRESH</button>
         </div>
       </div>
 
       <!-- Stat strip -->
-      <div class="hq-stat-row">
-        <div class="hq-stat"><div class="hq-sv" id="hqs-g">—</div><div class="hq-sk">SERVERS</div></div>
-        <div class="hq-stat"><div class="hq-sv" id="hqs-u">—</div><div class="hq-sk">USERS</div></div>
-        <div class="hq-stat"><div class="hq-sv" id="hqs-up">—</div><div class="hq-sk">UPTIME</div></div>
-        <div class="hq-stat"><div class="hq-sv" id="hqs-db">—</div><div class="hq-sk">DB DOCS</div></div>
-        <div class="hq-stat"><div class="hq-sv" id="hqs-al">—</div><div class="hq-sk">AUDIT LOGS</div></div>
+      <div class="ss">
+        <div class="sc-"><div class="sv" id="hqs-g">—</div><div class="sk">SERVERS</div></div>
+        <div class="sc-"><div class="sv" id="hqs-u">—</div><div class="sk">USERS</div></div>
+        <div class="sc-"><div class="sv" id="hqs-up" style="font-size:1rem">—</div><div class="sk">UPTIME</div></div>
+        <div class="sc-"><div class="sv" id="hqs-db">—</div><div class="sk">DB DOCS</div></div>
+        <div class="sc-"><div class="sv" id="hqs-al">—</div><div class="sk">AUDIT LOGS</div></div>
       </div>
 
-      <!-- Row 1: servers + db -->
-      <div class="hq-grid-2">
-        <div class="hq-box">
-          <div class="hq-title"><div class="hq-live-dot"></div>🌐 SERVER ROSTER</div>
-          <div class="hq-scroll" id="hq-servers"><div class="hq-empty">FETCHING…</div></div>
+      <!-- Row 1 -->
+      <div class="r">
+        <div class="c">
+          <div class="box">
+            <div class="ttl"><div class="dot"></div>🌐 SERVER ROSTER</div>
+            <div class="sc" id="hq-servers"><div class="em">FETCHING…</div></div>
+          </div>
         </div>
-        <div class="hq-box">
-          <div class="hq-title">🗄️ DATABASE MATRIX</div>
-          <div id="hq-dbm"><div class="hq-empty">CONNECTING…</div></div>
-        </div>
-      </div>
-
-      <!-- Row 2: eco + xp -->
-      <div class="hq-grid-2">
-        <div class="hq-box">
-          <div class="hq-title">💰 ECONOMY GLOBAL TOP 10</div>
-          <div class="hq-scroll" id="hq-eco"><div class="hq-empty">LOADING…</div></div>
-        </div>
-        <div class="hq-box">
-          <div class="hq-title">📈 XP GLOBAL TOP 10</div>
-          <div class="hq-scroll" id="hq-xp"><div class="hq-empty">LOADING…</div></div>
-        </div>
-      </div>
-
-      <!-- Row 3: feed + health+actions -->
-      <div class="hq-grid-3">
-        <div class="hq-box">
-          <div class="hq-title"><div class="hq-live-dot"></div>📋 LIVE AUDIT FEED <span style="margin-left:auto;font-size:.6rem;color:rgba(78,255,145,.35)" id="hq-fc">0 entries</span></div>
-          <div class="hq-scroll" style="max-height:300px" id="hq-feed"><div class="hq-empty">AWAITING EVENTS…</div></div>
-        </div>
-        <div class="hq-box" style="display:flex;flex-direction:column;gap:0">
-          <div class="hq-title">⚡ BOT HEALTH</div>
-          <div id="hq-health"><div class="hq-empty">SCANNING…</div></div>
-          <div class="hq-title" style="margin-top:14px">🔧 QUICK OPS</div>
-          <button class="hq-btn" onclick="hqBroadcast()">📢 Broadcast Message</button>
-          <button class="hq-btn" onclick="hqExportAudit()">📥 Export Audit CSV</button>
-          <button class="hq-btn" onclick="hqExportEco()">📥 Export Economy CSV</button>
-          <button class="hq-btn" onclick="showPanel('currency-admin',document.querySelector('.sl[onclick*=currency-admin]'))">💸 Currency Manager →</button>
-          <button class="hq-btn" onclick="showPanel('mongodb',document.querySelector('.sl[onclick*=mongodb]'))">🗄️ DB Stats →</button>
-        </div>
-      </div>
-
-      <!-- Row 4: chart -->
-      <div class="hq-box">
-        <div class="hq-title">📊 AUDIT ACTIVITY BREAKDOWN <span style="margin-left:auto;font-size:.6rem;color:rgba(78,255,145,.35)">Last 200 entries</span></div>
-        <canvas id="hq-chart" height="70"></canvas>
-      </div>
-
-      <!-- Broadcast modal -->
-      <div id="hq-bcast-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:center;justify-content:center">
-        <div style="background:#08120d;border:1px solid #4eff91;border-radius:14px;padding:24px;width:480px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
-          <div style="font-size:.85rem;font-weight:700;color:#4eff91;letter-spacing:2px;margin-bottom:14px">📢 BROADCAST</div>
-          <textarea id="hq-bcast-txt" class="f-input" placeholder="Message to broadcast to all servers..." style="height:90px;resize:vertical;font-family:monospace;margin-bottom:12px;width:100%"></textarea>
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn-sm-o" onclick="document.getElementById('hq-bcast-modal').style.display='none'">Cancel</button>
-            <button class="btn-sm" onclick="hqSendBroadcast()" style="font-family:monospace;letter-spacing:1px">SEND</button>
+        <div class="c">
+          <div class="box">
+            <div class="ttl">🗄️ DATABASE MATRIX</div>
+            <div id="hq-dbm"><div class="em">CONNECTING…</div></div>
           </div>
         </div>
       </div>
 
+      <!-- Row 2 -->
+      <div class="r">
+        <div class="c">
+          <div class="box">
+            <div class="ttl">💰 ECONOMY GLOBAL TOP 10</div>
+            <div class="sc" id="hq-eco"><div class="em">LOADING…</div></div>
+          </div>
+        </div>
+        <div class="c">
+          <div class="box">
+            <div class="ttl">📈 XP GLOBAL TOP 10</div>
+            <div class="sc" id="hq-xp"><div class="em">LOADING…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="r">
+        <div class="c2">
+          <div class="box">
+            <div class="ttl"><div class="dot"></div>📋 LIVE AUDIT FEED <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)" id="hq-fc">0 entries</span></div>
+            <div class="sc" style="max-height:280px" id="hq-feed"><div class="em">AWAITING EVENTS…</div></div>
+          </div>
+        </div>
+        <div class="c">
+          <div class="box" style="display:flex;flex-direction:column">
+            <div class="ttl">⚡ BOT HEALTH</div>
+            <div id="hq-health"><div class="em">SCANNING…</div></div>
+            <div class="ttl" style="margin-top:14px">🔧 QUICK OPS</div>
+            <button class="qb" onclick="hqBroadcast()">📢 Broadcast Message</button>
+            <button class="qb" onclick="hqExportAudit()">📥 Export Audit CSV</button>
+            <button class="qb" onclick="hqExportEco()">📥 Export Economy CSV</button>
+            <button class="qb" onclick="showPanel('currency-admin',null)">💸 Currency Manager →</button>
+            <button class="qb" onclick="showPanel('mongodb',null)">🗄️ DB Stats →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: chart -->
+      <div style="background:#07100a;border:1px solid rgba(78,255,145,.2);border-radius:12px;padding:16px;position:relative;overflow:hidden;margin-bottom:4px">
+        <div style="font-family:monospace;font-size:.62rem;letter-spacing:2px;color:#4eff91;margin-bottom:12px;font-weight:700">📊 AUDIT ACTIVITY BREAKDOWN</div>
+        <canvas id="hq-chart" height="65"></canvas>
+      </div>
+
+      <!-- Broadcast modal -->
+      <div id="hq-bcast-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
+        <div style="background:#07100a;border:1px solid #4eff91;border-radius:14px;padding:24px;width:460px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
+          <div style="font-family:monospace;font-size:.8rem;font-weight:700;color:#4eff91;letter-spacing:2px;margin-bottom:14px">📢 BROADCAST</div>
+          <textarea id="hq-bcast-txt" class="f-input" placeholder="Message to all servers..." style="height:80px;resize:vertical;font-family:monospace;margin-bottom:12px;width:100%"></textarea>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm-o" onclick="document.getElementById('hq-bcast-modal').style.display='none'">Cancel</button>
+            <button class="btn-sm" onclick="hqSendBroadcast()" style="font-family:monospace">SEND</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
     </div>
 
   </div><!-- /panels -->
