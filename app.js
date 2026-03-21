@@ -630,35 +630,47 @@ async function fetchBoostStats() {
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
 
-// These are bot system events — NOT server mod actions, never show them
-const SYSTEM_ACTIONS = new Set([
-  'bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready'
-]);
+const SYSTEM_ACTIONS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready']);
 
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
   c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
+
+  const headers = { 'Authorization': `Bearer ${discordToken}` };
+
   try {
-    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
-    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
-      headers: { 'Authorization': `Bearer ${discordToken}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error('failed');
+    let entries = [];
 
-    // Strictly exclude bot system events — only keep real server mod actions
-    allLogEntries = (data.entries || []).filter(e => !SYSTEM_ACTIONS.has(e.action));
+    // Try Discord native audit log first (real server events from Discord)
+    if (currentGuild) {
+      try {
+        const r = await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`, { headers });
+        if (r.ok) {
+          const d = await r.json();
+          entries = d.entries || [];
+        }
+      } catch {}
+    }
 
-    // Update badge count
+    // Fall back to MongoDB bot log (filters out system noise)
+    if (!entries.length) {
+      const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+      const r = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        entries = (d.entries || []).filter(e => !SYSTEM_ACTIONS.has(e.action));
+      }
+    }
+
+    allLogEntries = entries;
     const badge = document.getElementById('log-badge');
     if (badge) badge.textContent = allLogEntries.length;
-
     renderLog();
-  } catch {
+
+  } catch (err) {
     c.innerHTML = `<div class="loading-state">
       <p>❌ Audit log not available.</p>
-      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Make sure <code style="color:var(--green)">GET /audit/log</code> is available on your bot API.</p>
       <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
     </div>`;
   }
@@ -702,14 +714,7 @@ function renderLog() {
   const slice     = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
 
   if (!slice.length) {
-    c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:12px;padding:48px">
-      <span style="font-size:2rem">🛡️</span>
-      <p style="font-weight:700;color:var(--tx)">No server moderation events yet</p>
-      <p style="font-size:0.8rem;color:var(--tx-3);max-width:420px;text-align:center">
-        This log shows bans, kicks, mutes, warns, role changes and other mod actions performed in <strong style="color:var(--green)">${currentGuild ? currentGuild.name : 'this server'}</strong>.<br><br>
-        Events will appear here once moderators perform actions in the server.
-      </p>
-    </div>`;
+    c.innerHTML = `<div class="loading-state"><p>No log entries found.</p></div>`;
     if (pg) pg.style.display = 'none';
     return;
   }
