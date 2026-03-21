@@ -130,7 +130,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   fetchHealth();
-  setInterval(fetchHealth, 30000);
+  setInterval(fetchHealth, 1000);
   initReveal();
 });
 
