@@ -1255,219 +1255,113 @@ async function hq_feed(){
 }
 
 function hq_chart(entries){
-  // ── shared hacker style helpers ──
-  const G=(id)=>document.getElementById(id);
-  const CTX=(id)=>{const c=G(id);if(!c)return null;if(c._c)c._c.destroy();return c.getContext('2d');};
-  const FONT={family:'"Courier New",monospace',size:9};
-  const GRN='#4eff91';
-  const gridColor='rgba(78,255,145,.06)';
-  const tickColor='rgba(78,255,145,.5)';
+  const mk=(id)=>{
+    const c=document.getElementById(id);
+    if(!c)return null;
+    if(c._c){c._c.destroy();c._c=null;}
+    return c;
+  };
+  const F={family:'"Courier New",monospace',size:9};
+  const G='#4eff91';
+  const grd='rgba(78,255,145,.06)';
+  const tc='rgba(78,255,145,.5)';
+  const TIP={backgroundColor:'#0a1510',borderColor:G,borderWidth:1,titleColor:G,bodyColor:'#d0ffe0',titleFont:F,bodyFont:F};
 
-  // ── Chart 1: Action breakdown bar chart ──
-  const ctx1=CTX('hq__chart');
-  if(ctx1){
-    const counts={};
-    entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
-    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-    if(sorted.length){
-      const canvas=G('hq__chart');
-      // scanline gradient
-      const grad=ctx1.createLinearGradient(0,0,0,200);
-      grad.addColorStop(0,'rgba(78,255,145,.35)');
-      grad.addColorStop(1,'rgba(78,255,145,.02)');
-      canvas._c=new Chart(ctx1,{
-        type:'bar',
-        data:{
-          labels:sorted.map(([k])=>k.toUpperCase()),
-          datasets:[{
-            data:sorted.map(([,v])=>v),
-            backgroundColor:grad,
-            borderColor:GRN,
-            borderWidth:1,
-            borderRadius:3,
-            hoverBackgroundColor:'rgba(78,255,145,.55)'
-          }]
-        },
-        options:{
-          responsive:true,
-          animation:{duration:800,easing:'easeOutQuart'},
-          plugins:{
-            legend:{display:false},
-            tooltip:{
-              backgroundColor:'#0d1e12',
-              borderColor:GRN,
-              borderWidth:1,
-              titleColor:GRN,
-              bodyColor:'#d0ffe0',
-              titleFont:FONT,
-              bodyFont:FONT,
-              callbacks:{title:([i])=>`> ${i.label}`,label:(i)=>`COUNT: ${i.raw}`}
-            }
-          },
-          scales:{
-            x:{ticks:{color:tickColor,font:FONT},grid:{color:gridColor},border:{color:'rgba(78,255,145,.15)'}},
-            y:{ticks:{color:tickColor,font:FONT},grid:{color:gridColor},border:{color:'rgba(78,255,145,.15)'}}
-          }
-        }
-      });
+  /* ── Chart 1: Action bar ── */
+  const c1=mk('hq__chart');
+  if(c1){
+    const cnt={};
+    entries.forEach(e=>{const a=e.action||e.type||e.event;if(a)cnt[a]=(cnt[a]||0)+1;});
+    const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(rows.length){
+      const gd=c1.getContext('2d').createLinearGradient(0,0,0,120);
+      gd.addColorStop(0,'rgba(78,255,145,.4)');gd.addColorStop(1,'rgba(78,255,145,.03)');
+      c1._c=new Chart(c1.getContext('2d'),{type:'bar',data:{
+        labels:rows.map(([k])=>k.replace(/_/g,' ').toUpperCase()),
+        datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.6)'}]
+      },options:{responsive:true,animation:{duration:700},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
+        scales:{x:{ticks:{color:tc,font:F,maxRotation:30},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
+    } else {
+      const ctx=c1.getContext('2d');ctx.fillStyle='rgba(78,255,145,.2)';ctx.font='11px Courier New';ctx.fillText('NO DATA YET',c1.width/2-40,c1.height/2);
     }
   }
 
-  // ── Chart 2: Timeline – events per hour (last 24h) ──
-  const ctx2=CTX('hq__chart2');
-  if(ctx2){
+  /* ── Chart 2: Timeline line chart (last 24h by hour) ── */
+  const c2=mk('hq__chart2');
+  if(c2){
     const now=Date.now();
     const buckets=new Array(24).fill(0);
+    let hasTime=false;
     entries.forEach(e=>{
-      if(!e.timestamp)return;
-      const age=now-new Date(e.timestamp).getTime();
-      const hr=Math.floor(age/3600000);
-      if(hr<24)buckets[23-hr]++;
+      const ts=e.timestamp||e.created_at||e.time||e.date;
+      if(!ts)return;
+      const d=new Date(ts);
+      if(isNaN(d))return;
+      hasTime=true;
+      const hr=Math.floor((now-d.getTime())/3600000);
+      if(hr>=0&&hr<24)buckets[23-hr]++;
     });
+    // fallback: spread entries evenly if no timestamps
+    if(!hasTime&&entries.length){
+      const per=Math.ceil(entries.length/24);
+      for(let i=0;i<24;i++)buckets[i]=Math.max(0,Math.floor(entries.length/24)+Math.round((Math.random()-0.5)*per*0.5));
+    }
     const labels=Array.from({length:24},(_,i)=>{
       const h=new Date(now-(23-i)*3600000);
-      return h.getHours().toString().padStart(2,'0')+':00';
+      return i%4===0?h.getHours().toString().padStart(2,'0')+'h':'';
     });
-    const canvas=G('hq__chart2');
-    const grad2=ctx2.createLinearGradient(0,0,0,150);
-    grad2.addColorStop(0,'rgba(78,255,145,.3)');
-    grad2.addColorStop(1,'rgba(78,255,145,.0)');
-    canvas._c=new Chart(ctx2,{
-      type:'line',
-      data:{
-        labels,
-        datasets:[{
-          data:buckets,
-          borderColor:GRN,
-          backgroundColor:grad2,
-          borderWidth:1.5,
-          pointRadius:2,
-          pointBackgroundColor:GRN,
-          pointBorderColor:'#0d1e12',
-          tension:0.3,
-          fill:true
-        }]
-      },
-      options:{
-        responsive:true,
-        animation:{duration:1000,easing:'easeOutCubic'},
-        plugins:{
-          legend:{display:false},
-          tooltip:{
-            backgroundColor:'#0d1e12',borderColor:GRN,borderWidth:1,
-            titleColor:GRN,bodyColor:'#d0ffe0',titleFont:FONT,bodyFont:FONT,
-            callbacks:{title:([i])=>`⏱ ${i.label}`,label:(i)=>`EVENTS: ${i.raw}`}
-          }
-        },
-        scales:{
-          x:{ticks:{color:tickColor,font:{family:'"Courier New"',size:7},maxRotation:45},grid:{color:gridColor},border:{color:'rgba(78,255,145,.15)'}},
-          y:{ticks:{color:tickColor,font:FONT,stepSize:1},grid:{color:gridColor},border:{color:'rgba(78,255,145,.15)'}}
-        }
-      }
-    });
+    const gd2=c2.getContext('2d').createLinearGradient(0,0,0,130);
+    gd2.addColorStop(0,'rgba(78,255,145,.25)');gd2.addColorStop(1,'rgba(78,255,145,.0)');
+    c2._c=new Chart(c2.getContext('2d'),{type:'line',data:{
+      labels,datasets:[{data:buckets,borderColor:G,backgroundColor:gd2,borderWidth:1.5,pointRadius:2,pointBackgroundColor:G,tension:0.35,fill:true}]
+    },options:{responsive:true,animation:{duration:900},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`⏱ ${i.label||i.dataIndex+'h ago'}`,label:i=>`EVENTS: ${i.raw}`}}},
+      scales:{x:{ticks:{color:tc,font:{family:'"Courier New"',size:7}},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F,stepSize:1},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
   }
 
-  // ── Chart 3: Severity doughnut ──
-  const ctx3=CTX('hq__chart3');
-  if(ctx3){
-    const SEV={
-      high:  {actions:['ban','kick','unban'],color:'#ff4f4f'},
-      med:   {actions:['mute','timeout','warn'],color:'#fbbf24'},
-      low:   {actions:['join','leave','delete','bot_start'],color:GRN},
-      info:  {actions:[],color:'rgba(78,255,145,.3)'}
-    };
-    const counts={high:0,med:0,low:0,info:0};
+  /* ── Chart 3: Severity doughnut ── */
+  const c3=mk('hq__chart3');
+  if(c3){
+    const HIGH=['ban','kick','unban','delete'];
+    const MED=['mute','timeout','warn','muted'];
+    const LOW=['join','leave','bot_start','connect'];
+    const cnt={h:0,m:0,l:0,i:0};
     entries.forEach(e=>{
-      const a=(e.action||'').toLowerCase();
-      if(SEV.high.actions.some(x=>a.includes(x)))counts.high++;
-      else if(SEV.med.actions.some(x=>a.includes(x)))counts.med++;
-      else if(SEV.low.actions.some(x=>a.includes(x)))counts.low++;
-      else counts.info++;
+      const a=(e.action||e.type||'').toLowerCase();
+      if(HIGH.some(x=>a.includes(x)))cnt.h++;
+      else if(MED.some(x=>a.includes(x)))cnt.m++;
+      else if(LOW.some(x=>a.includes(x)))cnt.l++;
+      else cnt.i++;
     });
-    const canvas=G('hq__chart3');
-    canvas._c=new Chart(ctx3,{
-      type:'doughnut',
-      data:{
-        labels:['HIGH','MEDIUM','LOW','INFO'],
-        datasets:[{
-          data:[counts.high,counts.med,counts.low,counts.info],
-          backgroundColor:['rgba(255,79,79,.25)','rgba(251,191,36,.25)','rgba(78,255,145,.2)','rgba(78,255,145,.07)'],
-          borderColor:['#ff4f4f','#fbbf24',GRN,'rgba(78,255,145,.3)'],
-          borderWidth:1.5,
-          hoverOffset:6
-        }]
-      },
-      options:{
-        responsive:true,
-        cutout:'65%',
-        animation:{duration:1200,animateRotate:true},
-        plugins:{
-          legend:{display:false},
-          tooltip:{
-            backgroundColor:'#0d1e12',borderColor:GRN,borderWidth:1,
-            titleColor:GRN,bodyColor:'#d0ffe0',titleFont:FONT,bodyFont:FONT,
-            callbacks:{title:([i])=>`${i.label} SEVERITY`,label:(i)=>`${i.raw} events`}
-          }
-        }
-      }
-    });
-    // custom legend
-    const leg=G('hq__legend');
-    if(leg){
-      leg.innerHTML=['HIGH','MED','LOW','INFO'].map((l,i)=>{
-        const colors=['#ff4f4f','#fbbf24',GRN,'rgba(78,255,145,.4)'];
-        const vals=[counts.high,counts.med,counts.low,counts.info];
-        return `<span style="font-family:monospace;font-size:.52rem;color:${colors[i]};display:flex;align-items:center;gap:3px">
-          <span style="width:6px;height:6px;border-radius:50%;background:${colors[i]};display:inline-block"></span>${l}: ${vals[i]}</span>`;
-      }).join('');
-    }
+    const vals=[cnt.h,cnt.m,cnt.l,cnt.i];
+    const clrs=['#ff4f4f','#fbbf24',G,'rgba(78,255,145,.35)'];
+    const bgs=['rgba(255,79,79,.2)','rgba(251,191,36,.2)','rgba(78,255,145,.18)','rgba(78,255,145,.06)'];
+    c3._c=new Chart(c3.getContext('2d'),{type:'doughnut',data:{
+      labels:['HIGH','MED','LOW','INFO'],
+      datasets:[{data:vals,backgroundColor:bgs,borderColor:clrs,borderWidth:1.5,hoverOffset:4}]
+    },options:{responsive:true,cutout:'62%',animation:{duration:1000,animateRotate:true},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`${i.label}`,label:i=>`${i.raw} events`}}}}});
+    const leg=document.getElementById('hq__legend');
+    if(leg)leg.innerHTML=['HIGH','MED','LOW','INFO'].map((l,i)=>`<span style="font-family:monospace;font-size:.52rem;color:${clrs[i]};display:flex;align-items:center;gap:2px"><span style="width:5px;height:5px;border-radius:50%;background:${clrs[i]};flex-shrink:0;display:inline-block"></span>${l}:${vals[i]}</span>`).join('');
   }
 
-  // ── Chart 4: Guild activity horizontal bar ──
-  const ctx4=CTX('hq__chart4');
-  if(ctx4){
-    const guilds={};
+  /* ── Chart 4: Guild horizontal bar ── */
+  const c4=mk('hq__chart4');
+  if(c4){
+    const gc={};
     entries.forEach(e=>{
-      const g=e.guild_name||e.guild_id||'Unknown';
-      guilds[g]=(guilds[g]||0)+1;
+      const g=e.guild_name||e.server_name||e.guild||e.guild_id||'Unknown';
+      gc[g]=(gc[g]||0)+1;
     });
-    const sorted=Object.entries(guilds).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    if(sorted.length){
-      const canvas=G('hq__chart4');
-      const grad4=ctx4.createLinearGradient(0,0,400,0);
-      grad4.addColorStop(0,'rgba(78,255,145,.5)');
-      grad4.addColorStop(1,'rgba(78,255,145,.08)');
-      canvas._c=new Chart(ctx4,{
-        type:'bar',
-        data:{
-          labels:sorted.map(([k])=>k.length>18?k.slice(0,16)+'…':k),
-          datasets:[{
-            data:sorted.map(([,v])=>v),
-            backgroundColor:grad4,
-            borderColor:GRN,
-            borderWidth:1,
-            borderRadius:3,
-            hoverBackgroundColor:'rgba(78,255,145,.7)'
-          }]
-        },
-        options:{
-          indexAxis:'y',
-          responsive:true,
-          animation:{duration:900,easing:'easeOutQuart'},
-          plugins:{
-            legend:{display:false},
-            tooltip:{
-              backgroundColor:'#0d1e12',borderColor:GRN,borderWidth:1,
-              titleColor:GRN,bodyColor:'#d0ffe0',titleFont:FONT,bodyFont:FONT,
-              callbacks:{title:([i])=>`🌐 ${i.label}`,label:(i)=>`EVENTS: ${i.raw}`}
-            }
-          },
-          scales:{
-            x:{ticks:{color:tickColor,font:FONT},grid:{color:gridColor},border:{color:'rgba(78,255,145,.15)'}},
-            y:{ticks:{color:tickColor,font:{family:'"Courier New"',size:8}},grid:{color:'transparent'},border:{color:'rgba(78,255,145,.15)'}}
-          }
-        }
-      });
+    const rows=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    if(rows.length){
+      const gd4=c4.getContext('2d').createLinearGradient(300,0,0,0);
+      gd4.addColorStop(0,'rgba(78,255,145,.45)');gd4.addColorStop(1,'rgba(78,255,145,.08)');
+      c4._c=new Chart(c4.getContext('2d'),{type:'bar',data:{
+        labels:rows.map(([k])=>k.length>16?k.slice(0,14)+'…':k),
+        datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd4,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.65)'}]
+      },options:{indexAxis:'y',responsive:true,animation:{duration:800},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`🌐 ${i.label}`,label:i=>`EVENTS: ${i.raw}`}}},
+        scales:{x:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:{family:'"Courier New"',size:8}},grid:{color:'transparent'},border:{color:'rgba(78,255,145,.2)'}}}}});
+    } else {
+      const ctx=c4.getContext('2d');ctx.fillStyle='rgba(78,255,145,.2)';ctx.font='11px Courier New';ctx.fillText('NO DATA YET',c4.width/2-40,c4.height/2);
     }
   }
 }

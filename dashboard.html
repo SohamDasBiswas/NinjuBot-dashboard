@@ -784,30 +784,29 @@
           </div>
         </div>
 
-        <!-- Row 4: charts -->
-        <div class="hq__box" style="margin-bottom:6px">
-          <div class="hq__ttl">📊 AUDIT ACTION BREAKDOWN <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Last 200 entries</span></div>
-          <canvas id="hq__chart" height="55"></canvas>
-        </div>
-
+        <!-- Charts Row 1: breakdown + timeline -->
         <div class="hq__g2" style="margin-bottom:6px">
-          <!-- Timeline chart -->
           <div class="hq__box">
-            <div class="hq__ttl">📈 ACTIVITY TIMELINE <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Last 24h</span></div>
-            <canvas id="hq__chart2" height="80"></canvas>
+            <div class="hq__ttl">📊 ACTION BREAKDOWN <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">top actions</span></div>
+            <canvas id="hq__chart" height="90"></canvas>
           </div>
-          <!-- Severity donut -->
-          <div class="hq__box" style="display:flex;flex-direction:column;align-items:center">
-            <div class="hq__ttl" style="width:100%">🎯 ACTION SEVERITY MIX</div>
-            <canvas id="hq__chart3" height="120" style="max-width:200px"></canvas>
-            <div id="hq__legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;justify-content:center"></div>
+          <div class="hq__box">
+            <div class="hq__ttl">📈 ACTIVITY TIMELINE <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">last 24h</span></div>
+            <canvas id="hq__chart2" height="90"></canvas>
           </div>
         </div>
 
-        <!-- Guilds activity heatmap row -->
-        <div class="hq__box" style="margin-bottom:6px">
-          <div class="hq__ttl">🌐 GUILD ACTIVITY RADAR <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Events per server</span></div>
-          <canvas id="hq__chart4" height="55"></canvas>
+        <!-- Charts Row 2: severity + guild -->
+        <div class="hq__g2" style="margin-bottom:6px">
+          <div class="hq__box">
+            <div class="hq__ttl">🌐 GUILD ACTIVITY <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">events/server</span></div>
+            <canvas id="hq__chart4" height="90"></canvas>
+          </div>
+          <div class="hq__box" style="display:flex;flex-direction:column;align-items:center">
+            <div class="hq__ttl" style="width:100%">🎯 SEVERITY MIX</div>
+            <canvas id="hq__chart3" height="90" style="max-width:160px"></canvas>
+            <div id="hq__legend" style="display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:4px;justify-content:center"></div>
+          </div>
         </div>
 
       </div>
