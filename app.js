@@ -629,31 +629,39 @@ async function fetchBoostStats() {
 // ══════════════════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
+
+const SYSTEM_ACTIONS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_ready']);
+
+function cleanName(s){return(s||'').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim()||s||'Unknown';}
+
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
-  try {
-    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
-    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
-      headers: { 'Authorization': `Bearer ${discordToken}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error('failed');
-    allLogEntries = data.entries || [];
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
+  const headers = { 'Authorization': `Bearer ${discordToken}` };
+  let entries = [];
 
-    // Update badge count
-    const badge = document.getElementById('log-badge');
-    if (badge) badge.textContent = allLogEntries.length;
-
-    renderLog();
-  } catch {
-    c.innerHTML = `<div class="loading-state">
-      <p>❌ Audit log not available.</p>
-      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
-      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
-    </div>`;
+  // 1. Discord native audit log
+  if (currentGuild) {
+    try {
+      const r = await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`, { headers });
+      if (r.ok) { const d = await r.json(); if (!d.error) entries = d.entries || []; }
+    } catch {}
   }
+
+  // 2. Fall back to all MongoDB entries
+  if (!entries.length) {
+    try {
+      const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+      const r = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, { headers });
+      if (r.ok) { const d = await r.json(); entries = d.entries || []; }
+    } catch {}
+  }
+
+  allLogEntries = entries.map(e => ({...e, target: cleanName(e.target), moderator: cleanName(e.moderator)}));
+  const badge = document.getElementById('log-badge');
+  if (badge) badge.textContent = allLogEntries.filter(e => !SYSTEM_ACTIONS.has(e.action)).length || allLogEntries.length;
+  renderLog();
 }
 
 function filterLog(filter, btn) {
@@ -1234,31 +1242,31 @@ async function hq_feed(){
   try{
     let entries = [];
 
-    // 1. Try Discord native audit log (needs updated bot.py on Render)
+    // 1. Try Discord native audit log
     if(currentGuild){
       try{
         const r=await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`,
           {headers:{'Authorization':`Bearer ${discordToken}`}});
-        if(r.ok){const d=await r.json();entries=d.entries||[];}
+        if(r.ok){const d=await r.json();if(!d.error)entries=d.entries||[];}
       }catch{}
     }
 
-    // 2. Fall back to ALL MongoDB entries (including bot_start)
+    // 2. Fall back to all MongoDB entries
     if(!entries.length){
-      const data=await(await hq_get('/audit/log?limit=200')).json();
-      entries=data.entries||[];
+      try{
+        const data=await(await hq_get('/audit/log?limit=200')).json();
+        entries=data.entries||[];
+      }catch{}
     }
 
     hq_s('hq__sal',entries.length);
     const fc=document.getElementById('hq__fc');if(fc)fc.textContent=entries.length+' entries';
-
     if(!entries.length){hq_s('hq__feed','<div class="hq__em">NO EVENTS YET</div>');hq_chart([]);return;}
 
     hq_s('hq__feed',entries.slice(0,60).map(e=>{
       const icon=_HQICONS[e.action]||'📌';
       const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
       const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
-      // Strip numeric IDs like (123456789012345678) from names
       const target=(e.target||'?').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim();
       const mod=(e.moderator||'System').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim();
       const label=(e.action||'?').toUpperCase().replace(/_/g,' ');
@@ -1281,35 +1289,20 @@ function hq_chart(entries){
   const counts={};
   entries.forEach(e=>{const a=e.action||e.type;if(a)counts[a]=(counts[a]||0)+1;});
   const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  if(canvas._c)canvas._c.destroy();
-  if(!sorted.length){canvas._c=null;return;}
+  if(canvas._c){canvas._c.destroy();canvas._c=null;}
+  if(!sorted.length)return;
   const ctx=canvas.getContext('2d');
   const gd=ctx.createLinearGradient(0,0,0,160);
-  gd.addColorStop(0,'rgba(78,255,145,.5)');
-  gd.addColorStop(1,'rgba(78,255,145,.04)');
+  gd.addColorStop(0,'rgba(78,255,145,.5)');gd.addColorStop(1,'rgba(78,255,145,.04)');
   canvas._c=new Chart(ctx,{
     type:'bar',
-    data:{
-      labels:sorted.map(([k])=>k.toUpperCase().replace(/_/g,' ')),
-      datasets:[{data:sorted.map(([,v])=>v),backgroundColor:gd,borderColor:'#4eff91',borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.7)'}]
-    },
-    options:{
-      responsive:true,
-      animation:{duration:700},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#0a1510',borderColor:'#4eff91',borderWidth:1,
-          titleColor:'#4eff91',bodyColor:'#d0ffe0',
-          titleFont:{family:'"Courier New"',size:10},bodyFont:{family:'"Courier New"',size:10},
-          callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}
-        }
-      },
-      scales:{
-        x:{ticks:{color:'rgba(78,255,145,.6)',font:{family:'"Courier New"',size:9},maxRotation:30},grid:{color:'rgba(78,255,145,.07)'},border:{color:'rgba(78,255,145,.2)'}},
-        y:{ticks:{color:'rgba(78,255,145,.6)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.07)'},border:{color:'rgba(78,255,145,.2)'}}
-      }
-    }
+    data:{labels:sorted.map(([k])=>k.toUpperCase().replace(/_/g,' ')),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:gd,borderColor:'#4eff91',borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.7)'}]},
+    options:{responsive:true,animation:{duration:700},plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#0a1510',borderColor:'#4eff91',borderWidth:1,titleColor:'#4eff91',bodyColor:'#d0ffe0',
+        titleFont:{family:'"Courier New"',size:10},bodyFont:{family:'"Courier New"',size:10},
+        callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
+      scales:{x:{ticks:{color:'rgba(78,255,145,.6)',font:{family:'"Courier New"',size:9},maxRotation:30},grid:{color:'rgba(78,255,145,.07)'},border:{color:'rgba(78,255,145,.2)'}},
+              y:{ticks:{color:'rgba(78,255,145,.6)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.07)'},border:{color:'rgba(78,255,145,.2)'}}}}
   });
 }
 
