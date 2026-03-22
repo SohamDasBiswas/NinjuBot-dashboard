@@ -2,926 +2,815 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="assets/Ninjubot-nobg.png">
-<link rel="apple-touch-icon" href="assets/Ninjubot-nobg.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NinjuBot — Control Panel</title>
-<link rel="stylesheet" href="style.css">
+<title>NinjuBot — Enhanced Panels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════
+   NINJUBOT ENHANCED DASHBOARD — Design System
+════════════════════════════════════════════════════ */
+:root{
+  --base:#080f0a;--base-up:#0b1a0d;--base-down:#050c07;
+  --surface:#0c1a0f;--surface-hi:#112214;
+  --green:#4eff91;--green-dim:#30d96a;--green-lo:rgba(78,255,145,0.1);
+  --green-lo2:rgba(78,255,145,0.07);--green-border:rgba(78,255,145,0.28);
+  --red:#ff4f4f;--red-lo:rgba(255,79,79,0.12);
+  --yellow:#fbbf24;--ylo-lo:rgba(251,191,36,0.12);
+  --blue:#38bdf8;--blu-lo:rgba(56,189,248,0.12);
+  --neu-out:8px 8px 22px #040c07,-8px -8px 22px #1e3828;
+  --neu-out-sm:4px 4px 11px #040c07,-4px -4px 11px #1e3828;
+  --neu-in:inset 5px 5px 15px #040c07,inset -5px -5px 15px #1e3828;
+  --neu-green:8px 8px 22px #040c07,-8px -8px 22px #1e3828,0 0 0 1px var(--green-border),0 0 32px rgba(78,255,145,0.12);
+  --tx:#d0ffe0;--tx-2:rgba(180,255,210,0.6);--tx-3:rgba(78,255,145,0.35);
+  --font-d:'Exo 2',sans-serif;--font-b:'Outfit',sans-serif;--font-m:'DM Mono',monospace;
+  --r-sm:10px;--r-md:16px;--r-lg:22px;--r-xl:30px;
+  --ease:cubic-bezier(0.4,0,0.2,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+  --t:0.22s;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;font-family:var(--font-b);background:var(--base);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#07100a}
+::-webkit-scrollbar-thumb{background:#2a6e3c;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4eff91}
+
+/* ── Layout shell ── */
+.db-body{display:flex;min-height:100vh}
+.sidebar{width:250px;min-width:250px;height:100vh;position:sticky;top:0;background:#0a1510;border-right:1px solid rgba(78,255,145,0.12);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-brand{padding:22px 20px;display:flex;align-items:center;gap:12px;font-family:var(--font-d);font-size:1.3rem;font-weight:800;border-bottom:1px solid rgba(78,255,145,0.08)}
+.brand-logo{width:38px;height:38px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 20px rgba(78,255,145,0.4),var(--neu-out-sm)}
+.server-chip{margin:10px 12px;padding:10px 14px;border-radius:var(--r-md);background:var(--green-lo);border:1px solid var(--green-border);display:flex;align-items:center;gap:10px;cursor:pointer}
+.server-chip .sc-icon{width:32px;height:32px;border-radius:8px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;color:var(--base-down);flex-shrink:0}
+.server-chip .sc-name{font-size:0.8rem;font-weight:700;color:var(--green)}
+.server-chip .sc-hint{font-size:0.62rem;color:var(--tx-3)}
+.user-chip{margin:0 10px 6px;padding:10px 14px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);display:flex;align-items:center;gap:10px;border:1px solid rgba(78,255,145,0.06)}
+.user-ava{width:34px;height:34px;border-radius:50%;background:var(--green-lo);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--green)}
+.nav-section{padding:14px 14px 4px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(78,255,145,.4);font-family:var(--font-m)}
+.nav-item{display:flex;align-items:center;gap:12px;margin:0 8px 2px;padding:9px 12px;border-radius:var(--r-md);font-size:0.82rem;font-weight:600;color:rgba(180,255,210,.55);cursor:pointer;border:1px solid transparent;transition:all var(--t) var(--ease)}
+.nav-item:hover{color:var(--tx);background:var(--green-lo2);border-color:rgba(78,255,145,0.08)}
+.nav-item.active{color:#4eff91;background:rgba(78,255,145,0.09);border-color:rgba(78,255,145,0.28);box-shadow:0 0 14px rgba(78,255,145,0.07)}
+.nav-divider{height:2px;background:#4eff91;border-radius:2px;margin:10px 14px;box-shadow:0 0 10px #4eff91,0 0 20px rgba(78,255,145,0.3)}
+.sidebar-foot{margin-top:auto;padding:14px 12px;border-top:1px solid rgba(78,255,145,0.08)}
+.status-pill{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.8rem;font-weight:600;color:var(--green)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.35}}
+
+.db-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{height:64px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-bottom:1px solid rgba(78,255,145,0.07);box-shadow:var(--neu-out-sm);flex-shrink:0}
+.page-title{font-family:var(--font-d);font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.uptime-chip{padding:6px 14px;border-radius:var(--r-sm);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.78rem;font-family:var(--font-m);color:var(--green)}
+.add-btn{padding:8px 18px;border-radius:var(--r-sm);background:var(--green);color:var(--base-down);font-size:0.8rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 3px 14px rgba(78,255,145,0.35)}
+.panels{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:24px}
+.tab-bar{display:flex;gap:6px;margin-bottom:4px}
+.tab-btn{padding:8px 18px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;transition:all var(--t) var(--ease)}
+.tab-btn.on{background:var(--green);color:var(--base-down)}
+.tab-btn.off{background:var(--surface);color:var(--tx-2);border:1px solid rgba(78,255,145,0.12)}
+.tab-btn.off:hover{color:var(--green);border-color:var(--green-border)}
+.panel{display:none}
+.panel.active{display:flex;flex-direction:column;gap:20px;animation:fadeUp 0.28s var(--ease)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ════════════════════════════
+   ENHANCED ANTI-NUKE PANEL
+════════════════════════════ */
+
+/* Hero header card */
+.an-hero{
+  border-radius:var(--r-xl);
+  background:linear-gradient(135deg,#0b1d10 0%,#102016 50%,#0d1a12 100%);
+  border:1px solid rgba(78,255,145,0.2);
+  box-shadow:var(--neu-out),0 0 60px rgba(78,255,145,0.05);
+  padding:28px 32px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+}
+.an-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 80% at 0% 50%,rgba(78,255,145,0.06),transparent);
+  pointer-events:none;
+}
+.an-hero::after{
+  content:'';position:absolute;top:0;left:40px;right:40px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(78,255,145,0.5),transparent);
+}
+.an-hero-left{display:flex;align-items:center;gap:20px;z-index:1}
+.an-shield{
+  width:64px;height:64px;border-radius:18px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(78,255,145,0.15),rgba(78,255,145,0.05));
+  border:1px solid rgba(78,255,145,0.35);
+  display:flex;align-items:center;justify-content:center;font-size:1.8rem;
+  box-shadow:0 0 30px rgba(78,255,145,0.2),var(--neu-out-sm);
+  animation:shieldPulse 4s ease-in-out infinite;
+}
+@keyframes shieldPulse{0%,100%{box-shadow:0 0 20px rgba(78,255,145,0.15),var(--neu-out-sm)}50%{box-shadow:0 0 40px rgba(78,255,145,0.35),var(--neu-out-sm)}}
+.an-hero-info h2{font-family:var(--font-d);font-size:1.5rem;font-weight:800;margin-bottom:5px}
+.an-hero-info p{font-size:0.83rem;color:var(--tx-2);font-weight:300;max-width:380px;line-height:1.6}
+.an-hero-right{z-index:1;display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0}
+.an-status-badge{
+  padding:6px 18px;border-radius:999px;font-size:0.72rem;font-weight:800;
+  letter-spacing:1px;text-transform:uppercase;font-family:var(--font-m);
+  display:flex;align-items:center;gap:8px;
+  transition:all 0.3s var(--ease);
+}
+.an-status-badge.off{background:rgba(255,79,79,0.15);color:#ff4f4f;border:1px solid rgba(255,79,79,0.3)}
+.an-status-badge.on{background:rgba(78,255,145,0.15);color:var(--green);border:1px solid var(--green-border);box-shadow:0 0 20px rgba(78,255,145,0.15)}
+.an-badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1.5s ease infinite}
+.an-master-toggle{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:var(--r-md);background:rgba(0,0,0,0.25);border:1px solid rgba(78,255,145,0.12)}
+.an-toggle-label{font-size:0.82rem;font-weight:600;color:var(--tx-2)}
+
+/* Two-column layout */
+.an-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+/* Config card */
+.cfg-card{
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  border:1px solid rgba(78,255,145,0.08);
+  box-shadow:var(--neu-out);
+  overflow:hidden;
+}
+.cfg-card-hdr{
+  padding:20px 24px 16px;
+  border-bottom:1px solid rgba(78,255,145,0.07);
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent);
+  position:relative;
+}
+.cfg-card-hdr::after{
+  content:'';position:absolute;bottom:0;left:24px;right:24px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(78,255,145,0.25),transparent);
+}
+.cfg-card-hdr h3{font-family:var(--font-d);font-size:1rem;font-weight:700}
+.cfg-card-body{padding:20px 24px}
+
+/* Section labels */
+.sec-label{
+  font-size:0.64rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;
+  color:rgba(78,255,145,0.5);font-family:var(--font-m);
+  padding-bottom:10px;border-bottom:1px solid rgba(78,255,145,0.1);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+
+/* Field styles */
+.field{margin-bottom:14px}
+.field-label{display:block;font-size:0.7rem;font-weight:700;color:rgba(78,255,145,0.55);font-family:var(--font-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.f-select{
+  width:100%;padding:11px 14px;border-radius:var(--r-md);
+  background:#060d08;box-shadow:var(--neu-in);
+  border:1px solid rgba(78,255,145,0.12);color:var(--tx);
+  font-family:var(--font-m);font-size:0.82rem;outline:none;
+  cursor:pointer;-webkit-appearance:none;
+  transition:border-color 0.2s;
+}
+.f-select:focus{border-color:var(--green-border);box-shadow:var(--neu-in),0 0 0 2px rgba(78,255,145,0.1)}
+.f-input{
+  width:100%;padding:11px 14px;border-radius:var(--r-md);
+  background:#07100a;box-shadow:var(--neu-in);
+  border:1px solid rgba(78,255,145,0.15);color:var(--tx);
+  font-family:var(--font-m);font-size:0.82rem;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.f-input:focus{border-color:var(--green);box-shadow:var(--neu-in),0 0 0 2px rgba(78,255,145,0.1),0 0 12px rgba(78,255,145,0.06)}
+.f-input::placeholder{color:var(--tx-3)}
+
+/* Toggle rows */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(78,255,145,0.05)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-info{display:flex;flex-direction:column;gap:2px}
+.toggle-name{font-size:0.875rem;font-weight:600}
+.toggle-desc{font-size:0.73rem;color:var(--tx-3)}
+.toggle{position:relative;width:46px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;border-radius:999px;background:rgba(0,0,0,0.4);box-shadow:var(--neu-in);cursor:pointer;transition:background 0.22s}
+.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--tx-3);box-shadow:2px 2px 6px rgba(0,0,0,0.4);transition:all 0.22s var(--spring)}
+.toggle input:checked+.toggle-track{background:rgba(78,255,145,0.18)}
+.toggle input:checked+.toggle-track::after{left:23px;background:var(--green);box-shadow:0 0 12px rgba(78,255,145,0.6)}
+
+/* Whitelist items */
+.wl-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:var(--r-md);
+  background:var(--base-down);box-shadow:var(--neu-in);
+  border:1px solid rgba(78,255,145,0.1);
+  font-size:0.82rem;font-family:var(--font-m);color:var(--green);
+}
+.wl-id{flex:1;color:var(--tx-2)}
+.wl-del{width:26px;height:26px;border-radius:6px;background:var(--red-lo);border:1px solid rgba(255,79,79,0.2);color:var(--red);font-size:0.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 0.15s}
+.wl-del:hover{background:rgba(255,79,79,0.25)}
+.wl-add-row{display:flex;gap:8px;margin-top:10px}
+.wl-add-btn{padding:10px 18px;border-radius:var(--r-md);background:var(--green);color:var(--base-down);font-size:0.8rem;font-weight:700;border:none;cursor:pointer;flex-shrink:0;box-shadow:0 3px 12px rgba(78,255,145,0.3);transition:all 0.18s var(--spring)}
+.wl-add-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(78,255,145,0.45)}
+.wl-empty{padding:18px;text-align:center;font-size:0.78rem;color:var(--tx-3);border:1px dashed rgba(78,255,145,0.12);border-radius:var(--r-md);font-family:var(--font-m)}
+
+/* ── Enhanced Thresholds panel ── */
+.thresholds-card{
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  border:1px solid rgba(78,255,145,0.08);
+  box-shadow:var(--neu-out);
+  overflow:hidden;
+}
+.thresholds-hdr{
+  padding:22px 26px 18px;
+  border-bottom:1px solid rgba(78,255,145,0.07);
+  background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent);
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;
+}
+.thresholds-hdr::after{content:'';position:absolute;bottom:0;left:26px;right:26px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.3),transparent)}
+.thresholds-hdr h3{font-family:var(--font-d);font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.th-period{font-size:0.7rem;color:var(--tx-3);font-family:var(--font-m)}
+.th-desc{font-size:0.78rem;color:var(--tx-2);padding:16px 26px 0;line-height:1.6}
+
+.th-grid{padding:16px 22px 22px;display:flex;flex-direction:column;gap:6px}
+.th-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;border-radius:14px;
+  background:var(--base-down);border:1px solid rgba(78,255,145,0.07);
+  transition:border-color 0.2s,box-shadow 0.2s;
+  box-shadow:inset 3px 3px 8px #040c07,inset -3px -3px 8px #162a1c;
+}
+.th-row:hover{border-color:rgba(78,255,145,0.2);box-shadow:inset 3px 3px 8px #040c07,inset -3px -3px 8px #162a1c,0 0 14px rgba(78,255,145,0.05)}
+.th-left{display:flex;align-items:center;gap:12px}
+.th-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  background:rgba(78,255,145,0.07);border:1px solid rgba(78,255,145,0.15);
+}
+.th-info{}
+.th-name{font-size:0.875rem;font-weight:700;color:var(--tx)}
+.th-sub{font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m);margin-top:1px}
+.th-ctrl{display:flex;align-items:center;gap:0}
+.th-btn{
+  width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;
+  font-size:0.9rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s var(--spring);color:var(--tx-2);
+  background:rgba(78,255,145,0.05);border:1px solid rgba(78,255,145,0.12);
+}
+.th-btn:hover{background:rgba(78,255,145,0.15);color:var(--green);border-color:var(--green-border);transform:scale(1.12)}
+.th-btn:active{transform:scale(0.95)}
+.th-val{
+  width:40px;text-align:center;
+  font-family:var(--font-m);font-size:0.95rem;font-weight:700;color:var(--green);
+  background:transparent;border:none;outline:none;pointer-events:none;
+}
+.th-legend{
+  margin:0 22px 18px;padding:14px 18px;
+  border-radius:var(--r-md);
+  background:linear-gradient(135deg,rgba(255,79,79,0.05),rgba(78,255,145,0.04));
+  border:1px solid rgba(78,255,145,0.1);
+  font-size:0.75rem;color:var(--tx-2);line-height:2;
+  display:flex;gap:20px;flex-wrap:wrap;
+}
+.th-legend-item{display:flex;align-items:center;gap:6px}
+.th-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Save bar */
+.save-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 22px;border-radius:var(--r-lg);
+  background:rgba(78,255,145,0.06);border:1px solid rgba(78,255,145,0.2);
+  box-shadow:0 0 20px rgba(78,255,145,0.06);
+}
+.save-bar-text{font-size:0.875rem;color:var(--tx-2)}
+.save-bar-text strong{color:var(--green)}
+.save-actions{display:flex;gap:8px}
+.btn-reset{padding:9px 18px;border-radius:var(--r-sm);background:var(--surface);box-shadow:var(--neu-out-sm);font-size:0.8rem;font-weight:600;color:var(--tx-2);border:1px solid rgba(78,255,145,0.12);cursor:pointer;transition:all var(--t) var(--ease)}
+.btn-reset:hover{color:var(--green);border-color:var(--green-border)}
+.btn-save{padding:9px 20px;border-radius:var(--r-sm);background:var(--green);color:var(--base-down);font-size:0.8rem;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(78,255,145,0.35);transition:all var(--t) var(--spring)}
+.btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(78,255,145,0.5)}
+
+
+/* ════════════════════════════
+   ENHANCED SERVER BACKUP PANEL
+════════════════════════════ */
+
+/* Banner */
+.backup-banner{
+  border-radius:var(--r-xl);
+  background:linear-gradient(135deg,rgba(255,79,79,0.08),rgba(251,191,36,0.06));
+  border:1px solid rgba(255,79,79,0.2);
+  padding:14px 22px;font-size:0.84rem;color:#ffb3b3;
+  display:flex;align-items:center;gap:12px;
+}
+.backup-banner strong{color:#ff7070}
+.banner-icon{
+  width:34px;height:34px;border-radius:9px;background:rgba(255,79,79,0.12);
+  border:1px solid rgba(255,79,79,0.25);display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+}
+
+/* Create backup hero */
+.backup-create-card{
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  border:1px solid rgba(78,255,145,0.1);
+  box-shadow:var(--neu-out);
+  overflow:hidden;
+}
+.backup-create-hdr{
+  padding:24px 28px 20px;
+  background:linear-gradient(135deg,rgba(78,255,145,0.05),transparent);
+  border-bottom:1px solid rgba(78,255,145,0.08);
+  display:flex;align-items:center;gap:14px;
+  position:relative;
+}
+.backup-create-hdr::after{content:'';position:absolute;bottom:0;left:28px;right:28px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.3),transparent)}
+.backup-hdr-icon{
+  width:50px;height:50px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(78,255,145,0.15),rgba(78,255,145,0.04));
+  border:1px solid rgba(78,255,145,0.3);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  box-shadow:0 0 20px rgba(78,255,145,0.15);
+}
+.backup-hdr-text h3{font-family:var(--font-d);font-size:1.15rem;font-weight:800;margin-bottom:4px}
+.backup-hdr-text p{font-size:0.8rem;color:var(--tx-2)}
+.backup-hdr-text p strong{color:var(--tx)}
+.backup-create-body{padding:24px 28px}
+
+.backup-label-field{margin-bottom:20px}
+.backup-input-group{display:flex;gap:0;border-radius:var(--r-md);overflow:hidden;box-shadow:var(--neu-in);border:1px solid rgba(78,255,145,0.12)}
+.backup-input-icon{width:46px;background:#05100a;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--tx-3);border-right:1px solid rgba(78,255,145,0.1);flex-shrink:0}
+.backup-input{flex:1;padding:12px 16px;background:#07100a;border:none;outline:none;color:var(--tx);font-family:var(--font-m);font-size:0.84rem}
+.backup-input::placeholder{color:var(--tx-3)}
+.backup-input:focus{background:#08130b}
+
+.create-btn{
+  width:100%;padding:15px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,var(--green-dim),var(--green));
+  color:var(--base-down);font-size:0.95rem;font-weight:800;
+  border:none;cursor:pointer;
+  box-shadow:0 6px 24px rgba(78,255,145,0.4),var(--neu-out-sm);
+  transition:all 0.2s var(--spring);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  position:relative;overflow:hidden;
+  letter-spacing:0.3px;
+}
+.create-btn::before{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+  transform:skewX(-20deg);
+  transition:left 0.5s ease;
+}
+.create-btn:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(78,255,145,0.55)}
+.create-btn:hover::before{left:150%}
+.create-btn:active{transform:translateY(0)}
+
+/* What's backed up checklist */
+.backed-list{
+  margin-top:18px;padding:18px 20px;border-radius:var(--r-md);
+  background:var(--base-down);border:1px solid rgba(78,255,145,0.08);
+  box-shadow:inset 3px 3px 8px #040c07,inset -3px -3px 8px #162a1c;
+}
+.backed-title{font-size:0.68rem;font-weight:700;color:rgba(78,255,145,0.5);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--font-m);margin-bottom:10px}
+.backed-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:0.82rem;color:var(--tx-2)}
+.backed-item:not(:last-child){border-bottom:1px solid rgba(78,255,145,0.05)}
+.backed-check{
+  width:20px;height:20px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;
+}
+.backed-check.yes{background:rgba(78,255,145,0.12);border:1px solid rgba(78,255,145,0.3);color:var(--green)}
+.backed-check.no{background:rgba(255,79,79,0.1);border:1px solid rgba(255,79,79,0.25);color:var(--red)}
+
+/* Saved backups panel */
+.saved-card{
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  border:1px solid rgba(78,255,145,0.08);
+  box-shadow:var(--neu-out);
+  overflow:hidden;
+}
+.saved-hdr{
+  padding:22px 26px 18px;
+  background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent);
+  border-bottom:1px solid rgba(78,255,145,0.07);
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;
+}
+.saved-hdr::after{content:'';position:absolute;bottom:0;left:26px;right:26px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.25),transparent)}
+.saved-hdr h3{font-family:var(--font-d);font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.refresh-btn{padding:7px 14px;border-radius:8px;background:var(--surface);box-shadow:var(--neu-out-sm);font-size:0.78rem;font-weight:600;color:var(--tx-2);border:1px solid rgba(78,255,145,0.1);cursor:pointer;transition:all var(--t) var(--ease)}
+.refresh-btn:hover{color:var(--green);border-color:var(--green-border)}
+
+.saved-body{padding:20px 26px}
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;gap:14px;text-align:center;
+}
+.empty-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:rgba(78,255,145,0.05);border:1px solid rgba(78,255,145,0.1);
+  box-shadow:var(--neu-in);
+  display:flex;align-items:center;justify-content:center;font-size:2rem;
+  margin-bottom:6px;
+}
+.empty-title{font-family:var(--font-d);font-size:1rem;font-weight:700;color:var(--tx-2)}
+.empty-sub{font-size:0.78rem;color:var(--tx-3);max-width:220px;line-height:1.7;font-family:var(--font-m)}
+
+/* Backup item (populated state) */
+.backup-item{
+  padding:16px 18px;border-radius:var(--r-md);
+  background:var(--base-down);box-shadow:var(--neu-in);
+  border:1px solid rgba(78,255,145,0.07);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:10px;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.backup-item:hover{border-color:rgba(78,255,145,0.2);box-shadow:var(--neu-in),0 0 12px rgba(78,255,145,0.06)}
+.backup-item-icon{width:40px;height:40px;border-radius:10px;background:rgba(78,255,145,0.08);border:1px solid rgba(78,255,145,0.18);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.backup-item-info{flex:1;min-width:0}
+.backup-item-name{font-size:0.875rem;font-weight:700;color:var(--tx)}
+.backup-item-meta{font-size:0.7rem;color:var(--tx-3);font-family:var(--font-m);margin-top:2px}
+.backup-item-actions{display:flex;gap:6px}
+.bi-btn{padding:7px 12px;border-radius:8px;font-size:0.72rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s var(--spring)}
+.bi-btn.view{background:var(--green-lo);color:var(--green);border:1px solid rgba(78,255,145,0.25)}
+.bi-btn.restore{background:rgba(56,189,248,0.1);color:var(--blue);border:1px solid rgba(56,189,248,0.25)}
+.bi-btn.del{background:var(--red-lo);color:var(--red);border:1px solid rgba(255,79,79,0.2)}
+.bi-btn:hover{transform:scale(1.06)}
+
+/* ── Responsive ── */
+@media(max-width:900px){.an-cols{grid-template-columns:1fr}}
+</style>
 </head>
-<body class="db-body">
-
-<div class="toast-wrap" id="toast-wrap"></div>
-
-<!-- ════════════ OAUTH GATE (shown when not logged in) ════════════ -->
-<div id="oauth-gate" style="width:100%;min-height:100vh;background:var(--base);position:relative;overflow:hidden;display:none">
-  <div class="hglow hg1" style="position:fixed"></div>
-  <div class="hglow hg2" style="position:fixed"></div>
-  <div style="position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(9,17,13,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(78,255,145,0.08);display:flex;align-items:center;padding:0 40px;gap:12px;z-index:10;font-family:var(--font-d);font-size:1.3rem;font-weight:800">
-    <img src="assets/Ninjubot-nobg.png" alt="NinjuBot" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(78,255,145,0.45))">NinjuBot Dashboard
-  </div>
-  <div class="oauth-gate">
-    <img src="assets/Ninjubot-nobg.png" alt="NinjuBot" style="width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 0 22px rgba(78,255,145,0.55));margin-bottom:8px">
-    <div class="oauth-title">Sign in with Discord</div>
-    <p class="oauth-sub">Log in with your Discord account. You'll only see settings for servers where you have <strong>Administrator</strong> permission.</p>
-    <div class="oauth-features">
-      <div class="oauth-feat"><strong>⚙️</strong>Edit bot config per server</div>
-      <div class="oauth-feat"><strong>📊</strong>Live stats & leaderboards</div>
-      <div class="oauth-feat"><strong>🛡️</strong>Full moderation audit logs</div>
-      <div class="oauth-feat"><strong>📺</strong>Stream alert settings</div>
-      <div class="oauth-feat"><strong>🚀</strong>Custom booster cards</div>
-      <div class="oauth-feat"><strong>🗄️</strong>Live data</div>
-    </div>
-    <button class="btn-discord" onclick="startOAuth()">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.101 18.08.114 18.102.132 18.116a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127c-.598.349-1.22.645-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.834 19.834 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03z"/></svg>
-      Login with Discord
-    </button>
-    <p style="font-size:0.72rem;color:var(--tx-3);max-width:380px">
-      This uses Discord OAuth2. Your token is stored in sessionStorage only and is never sent to any third party — only to the Discord API and your own bot at <code style="color:var(--green)">ninjubot.onrender.com</code>.
-    </p>
-  </div>
-</div>
-
-<!-- ════════════ SERVER PICKER (shown after login, before picking server) ════════════ -->
-<div id="server-picker-page" style="width:100%;min-height:100vh;background:var(--base);position:relative;overflow:hidden;display:none">
-  <div class="hglow hg1" style="position:fixed"></div>
-  <div style="position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(9,17,13,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(78,255,145,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 40px;z-index:10">
-      <div style="display:flex;align-items:center;gap:12px;font-family:var(--font-d);font-size:1.3rem;font-weight:800">
-        <img src="assets/Ninjubot-nobg.png" alt="NinjuBot" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(78,255,145,0.45))">NinjuBot Dashboard
-      </div>
-    <div class="nav-user">
-      <img id="sp-avatar" src="" class="nav-avatar" alt="">
-      <span id="sp-username" class="nav-uname"></span>
-      <button class="btn-sm-o" onclick="logout()" style="font-size:0.75rem;padding:6px 12px">Logout</button>
-    </div>
-  </div>
-  <div style="max-width:680px;margin:0 auto;padding:calc(var(--nav-h) + 60px) 40px 60px;position:relative;z-index:1">
-    <div style="text-align:center;margin-bottom:36px">
-      <div style="font-family:var(--font-d);font-size:1.6rem;font-weight:800;margin-bottom:8px">Select a Server</div>
-      <p style="color:var(--tx-2);font-size:0.9rem">Showing servers where you have <strong style="color:var(--green)">Administrator</strong> permission and NinjuBot is present</p>
-    </div>
-    <div class="guild-grid" id="guild-grid">
-      <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div><p>Loading your servers…</p></div>
-    </div>
-    <div style="margin-top:24px;padding:16px 20px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);border:1px solid rgba(78,255,145,0.08);font-size:0.82rem;color:var(--tx-2);display:flex;align-items:center;gap:10px">
-      <span style="font-size:1.1rem">💡</span>
-      Don't see your server? Make sure NinjuBot is added to it first.
-      <a href="https://discord.com/oauth2/authorize?client_id=1483732014380224552&permissions=8&scope=bot%20applications.commands" target="_blank" style="color:var(--green);font-weight:700;white-space:nowrap">Add NinjuBot →</a>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════ MAIN DASHBOARD ════════════ -->
-<div id="dashboard-app" style="display:none;width:100%">
+<body>
+<div class="db-body">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <img src="assets/Ninjubot-nobg.png" alt="NinjuBot" style="width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(78,255,145,0.45))">NinjuBot
+    <div class="brand-logo">🥷</div>
+    NinjuBot
   </div>
-
-  <!-- Current Server -->
-  <div id="current-server" style="padding:10px 12px;margin:6px 10px;border-radius:var(--r-md);background:var(--green-lo);border:1px solid var(--green-border);display:flex;align-items:center;gap:10px;cursor:pointer" onclick="showServerPicker()">
-    <div id="cs-icon" style="width:32px;height:32px;border-radius:8px;background:var(--green-lo);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--green);flex-shrink:0">?</div>
-    <div style="flex:1;min-width:0">
-      <div id="cs-name" style="font-size:0.8rem;font-weight:700;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">No server</div>
-      <div style="font-size:0.65rem;color:var(--tx-3)">Click to switch ↕</div>
-    </div>
+  <div class="server-chip">
+    <div class="sc-icon">S</div>
+    <div><div class="sc-name">SDB</div><div class="sc-hint">Click to switch ↕</div></div>
   </div>
-
-  <!-- Logged-in user -->
-  <div class="sidebar-user" style="margin:0 10px 4px">
-    <img id="s-avatar" src="" class="s-avatar" alt="">
-    <div><div class="s-uname" id="s-username">—</div><div class="s-tag" id="s-tag">—</div></div>
+  <div class="user-chip">
+    <div class="user-ava">👤</div>
+    <div><div style="font-size:0.82rem;font-weight:700">sdb_darkninja</div><div style="font-size:0.7rem;color:var(--tx-3);font-family:var(--font-m)">#0</div></div>
   </div>
-
-  <nav class="sidebar-nav" style="flex:1;padding:6px 10px">
-    <div class="sidebar-section">Overview</div>
-    <div class="sl active" onclick="showPanel('overview',this)"><span class="sl-icon">📊</span> Overview</div>
-    <div class="sl" onclick="showPanel('stats',this)"><span class="sl-icon">📈</span> Live Stats</div>
-    <div class="sl" onclick="showPanel('servers',this)"><span class="sl-icon">🌐</span> Server List</div>
-    <div class="sl" onclick="showPanel('leaderboard',this)"><span class="sl-icon">🏆</span> Leaderboards</div>
-    <div style="height:2px;background:#4eff91;border-radius:2px;margin:12px 6px 6px;box-shadow:0 0 8px #4eff91,0 0 16px rgba(78,255,145,0.3)"></div>
-    <div class="sidebar-section">Config (this server)</div>
-    <div class="sl" onclick="showPanel('cfg-bot',this)"><span class="sl-icon">🤖</span> Bot Settings<span class="dirty-dot" id="dd-bot" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('cfg-levels',this)"><span class="sl-icon">📈</span> XP & Levels<span class="dirty-dot" id="dd-levels" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('cfg-welcome',this)"><span class="sl-icon">👋</span> Welcome / Leave<span class="dirty-dot" id="dd-welcome" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('cfg-streams',this)"><span class="sl-icon">📺</span> Stream Alerts<span class="dirty-dot" id="dd-streams" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('cfg-booster',this)"><span class="sl-icon">🚀</span> Booster Cards<span class="dirty-dot" id="dd-booster" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('cfg-moderation',this)"><span class="sl-icon">🛡️</span> Moderation<span class="dirty-dot" id="dd-moderation" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('cfg-antinuke',this)"><span class="sl-icon">🔰</span> Anti-Nuke<span class="dirty-dot" id="dd-antinuke" style="margin-left:auto"></span></div>
-    <div class="sl" onclick="showPanel('server-backup',this)"><span class="sl-icon">💾</span> Server Backup</div>
-    <div class="sl" onclick="showPanel('audit-log',this)"><span class="sl-icon">📋</span> Audit Log <span class="sl-badge red" id="log-badge">0</span></div>
-    <div id="admin-sidebar-section" style="display:none;flex-direction:column">
-      <div style="height:1px;background:rgba(255,107,107,0.15);margin:6px 4px"></div>
-      <div class="sidebar-section" style="margin-top:4px;color:#ff6b6b">🔐 Admin Only</div>
-      <div class="sl" onclick="showPanel('admin-hq',this)" style="color:#ff6b6b;font-weight:700"><span class="sl-icon">💻</span> Admin HQ</div>
-      <div class="sl" onclick="showPanel('mongodb',this)"><span class="sl-icon">🗄️</span> DB Stats</div>
-      <div class="sl" onclick="showPanel('currency-admin',this)"><span class="sl-icon">💸</span> Currency Manager</div>
-      <div class="sl" onclick="showPanel('cfg-economy',this)"><span class="sl-icon">💰</span> Economy Config</div>
-    </div>
-  </nav>
-
+  <div class="nav-section">Overview</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">📊</span> Overview</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">📈</span> Live Stats</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">🌐</span> Server List</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">🏆</span> Leaderboards</div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">Config (this server)</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">🤖</span> Bot Settings</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">📈</span> XP &amp; Levels</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">👋</span> Welcome / Leave</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">📺</span> Stream Alerts</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">🚀</span> Booster Cards</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">🛡️</span> Moderation</div>
+  <div class="nav-item active" id="tab-antinuke" onclick="switchTab('antinuke')"><span style="width:20px;text-align:center">🔰</span> Anti-Nuke</div>
+  <div class="nav-item" id="tab-backup" onclick="switchTab('backup')"><span style="width:20px;text-align:center">💾</span> Server Backup</div>
+  <div class="nav-item"><span style="width:20px;text-align:center">📋</span> Audit Log <span style="margin-left:auto;font-size:0.6rem;padding:2px 7px;border-radius:999px;background:var(--red-lo);color:var(--red);border:1px solid rgba(255,79,79,.25)">3</span></div>
   <div class="sidebar-foot">
-    <div class="bot-status-pill">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text" style="font-size:0.82rem">Checking…</span>
-    </div>
-    <button class="back-btn" onclick="logout()">Logout & Exit</button>
+    <div class="status-pill"><div class="sdot"></div> Online</div>
   </div>
 </aside>
 
 <!-- MAIN -->
 <main class="db-main">
   <div class="topbar">
-    <h1 class="page-title" id="page-title">Overview</h1>
+    <h1 class="page-title" id="page-title-display">🔰 Anti-Nuke</h1>
     <div class="topbar-r">
-      <div class="uptime-pill" id="uptime-badge">Uptime: —</div>
-      <img id="tb-avatar" src="" class="nav-avatar" style="width:30px;height:30px" alt="">
-      <span id="tb-username" style="font-size:0.82rem;font-weight:600;color:var(--tx-2)"></span>
-      <a href="https://discord.com/oauth2/authorize?client_id=1483732014380224552&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn-sm">+ Add to Server</a>
+      <div class="uptime-chip">Uptime: 4:40:28</div>
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--green-lo);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:0.85rem">👤</div>
+      <span style="font-size:0.82rem;font-weight:600;color:var(--tx-2)">sdb_darkninja</span>
+      <button class="add-btn">+ Add to Server</button>
     </div>
   </div>
 
   <div class="panels">
 
-    <!-- ══════ OVERVIEW ══════ -->
-    <div id="panel-overview" class="panel active">
-      <div class="db-stats-row">
-        <div class="dsc"><div class="dsc-icon">🌐</div><div><div class="dsc-val" id="d-guilds">—</div><div class="dsc-lbl">Servers</div></div></div>
-        <div class="dsc"><div class="dsc-icon">👥</div><div><div class="dsc-val" id="d-users">—</div><div class="dsc-lbl">Total Users</div></div></div>
-        <div class="dsc"><div class="dsc-icon">⏱️</div><div><div class="dsc-val" id="d-uptime">—</div><div class="dsc-lbl">Uptime</div></div></div>
-        <div class="dsc"><div class="dsc-icon">✅</div><div><div class="dsc-val" id="d-status">—</div><div class="dsc-lbl">Status</div></div></div>
-      </div>
-      <div class="db-row">
-        <div class="db-card">
-          <h3>🤖 Bot Info</h3>
-          <div class="info-list">
-            <div class="info-row"><span>Bot Name</span><strong id="d-botname">—</strong></div>
-            <div class="info-row"><span>Creator</span><strong>sdb_darkninja</strong></div>
-            <div class="info-row"><span>Selected Server</span><strong id="d-servername">—</strong></div>
-            <div class="info-row"><span>Framework</span><strong>discord.py 2.x</strong></div>
-            
-          </div>
-        </div>
-        <div class="db-card">
-          <h3>⚡ Quick Actions</h3>
-          <div class="quick-grid">
-            <a href="https://discord.com/oauth2/authorize?client_id=1483732014380224552&permissions=8&scope=bot%20applications.commands" target="_blank" class="qa"><span>➕</span> Add to Server</a>
-            <a href="https://top.gg/bot/1483732014380224552/vote" target="_blank" class="qa"><span>⬆️</span> Vote on Top.gg</a>
-            <div class="qa" onclick="showPanel('audit-log',document.querySelector('.sl[onclick*=audit-log]'))"><span>📋</span> Audit Log</div>
-            <div class="qa" onclick="showPanel('cfg-bot',document.querySelector('.sl[onclick*=cfg-bot]'))"><span>⚙️</span> Bot Settings</div>
-          </div>
-        </div>
-      </div>
-      <div class="db-row full">
-        <div class="db-card">
-          <h3>📦 Module Status</h3>
-          <div class="mod-grid">
-            <div class="mod"><div class="mod-ico">🎵</div><div class="mod-name">Music</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">🤖</div><div class="mod-name">AI</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">💰</div><div class="mod-name">Economy</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">📈</div><div class="mod-name">Levels</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">📺</div><div class="mod-name">Stream Alerts</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">🚀</div><div class="mod-name">Booster Cards</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">🛡️</div><div class="mod-name">Moderation</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">🎭</div><div class="mod-name">Truth or Dare</div><div class="mod-badge on">Active</div></div>
-            <div class="mod"><div class="mod-ico">🎮</div><div class="mod-name">Fun & Games</div><div class="mod-badge on">Active</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- ══════════ ANTI-NUKE PANEL ══════════ -->
+    <div id="panel-antinuke" class="panel active">
 
-    <!-- ══════ STATS ══════ -->
-    <div id="panel-stats" class="panel">
-      <div class="db-row full">
-        <div class="db-card">
-          <div class="card-hdr"><h3>📈 Live Bot Stats</h3><button class="btn-sm-o" onclick="fetchStats()">🔄 Refresh</button></div>
-          <div id="live-stats-display"><div class="loading-state"><div class="spinner"></div><p>Fetching…</p></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════ SERVER LIST ══════ -->
-    <div id="panel-servers" class="panel">
-      <div class="db-row full">
-        <div class="db-card">
-          <div class="card-hdr"><h3>🌐 Server List</h3><button class="btn-sm-o" onclick="fetchServerList()">🔄 Refresh</button></div>
-          <div id="servers-list"><div class="loading-state"><div class="spinner"></div><p>Loading…</p></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════ LEADERBOARDS ══════ -->
-            <div id="panel-leaderboard" class="panel">
-      <!-- Tab switcher -->
-      <div style="display:flex;gap:10px;margin-bottom:18px;align-items:center">
-        <button id="lb-tab-server" class="btn-sm" onclick="switchLbTab('server')" style="min-width:130px">🏠 This Server</button>
-        <button id="lb-tab-global" class="btn-sm-o" onclick="switchLbTab('global')" style="min-width:130px">🌐 Global</button>
-        <span id="lb-scope-label" style="font-size:0.72rem;color:var(--tx-3);font-family:var(--font-m);margin-left:4px">Showing: This Server</span>
-      </div>
-      <div class="db-row">
-        <div class="db-card">
-          <div class="card-hdr"><h3>💰 Economy Top 10 <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3><button class="btn-sm-o" onclick="fetchEconomy()">🔄</button></div>
-          <div id="eco-leaderboard"><div class="loading-state"><div class="spinner"></div></div></div>
-        </div>
-        <div class="db-card">
-          <div class="card-hdr"><h3>📈 XP Top 10 <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3><button class="btn-sm-o" onclick="fetchLevels()">🔄</button></div>
-          <div id="levels-leaderboard"><div class="loading-state"><div class="spinner"></div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════ BOT SETTINGS ══════ -->
-    <div id="panel-cfg-bot" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">⚙️ Command Settings</div>
-            <div class="field"><label class="field-label">Command Prefix</label><input type="text" id="cfg-prefix" class="f-input" placeholder="-" maxlength="5" oninput="markDirty('bot')"></div>
-            <div class="field"><label class="field-label">Bot Nickname</label><input type="text" id="cfg-botname-edit" class="f-input" placeholder="NinjuBot" oninput="markDirty('bot')"></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">🤖 AI Settings</div>
-            <div class="field"><label class="field-label">AI Model (OpenRouter)</label><input type="text" id="cfg-ai-model" class="f-input" placeholder="deepseek/deepseek-chat" oninput="markDirty('bot')"></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">AI Commands Enabled</div><div class="toggle-desc">-ask, -roast, -compliment</div></div><label class="toggle"><input type="checkbox" id="cfg-ai-enabled" checked onchange="markDirty('bot')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Hinglish Mode</div><div class="toggle-desc">AI responds in Hinglish</div></div><label class="toggle"><input type="checkbox" id="cfg-hinglish" checked onchange="markDirty('bot')"><span class="toggle-track"></span></label></div>
+      <!-- Hero header -->
+      <div class="an-hero">
+        <div class="an-hero-left">
+          <div class="an-shield">🔰</div>
+          <div class="an-hero-info">
+            <h2>Anti-Nuke</h2>
+            <p>Protect your server from mass bans, channel deletions, and role destruction. Triggers instantly when thresholds are exceeded.</p>
           </div>
         </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🎵 Music</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Music Enabled</div><div class="toggle-desc">Allow /play and music commands</div></div><label class="toggle"><input type="checkbox" id="cfg-music-enabled" checked onchange="markDirty('bot')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">24/7 Mode Default</div><div class="toggle-desc">Stay in VC after queue ends</div></div><label class="toggle"><input type="checkbox" id="cfg-247" onchange="markDirty('bot')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Max Queue Size</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-max-queue" min="10" max="500" value="100" oninput="document.getElementById('cfg-max-queue-val').textContent=this.value;markDirty('bot')"><span class="range-val" id="cfg-max-queue-val">100</span></div></div>
-            <div class="field"><label class="field-label">Default Volume</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-default-vol" min="1" max="100" value="70" oninput="document.getElementById('cfg-default-vol-val').textContent=this.value+'%';markDirty('bot')"><span class="range-val" id="cfg-default-vol-val">70%</span></div></div>
+        <div class="an-hero-right">
+          <div class="an-status-badge off" id="an-badge"><div class="an-badge-dot"></div><span id="an-badge-text">DISABLED</span></div>
+          <div class="an-master-toggle">
+            <span class="an-toggle-label">Enable Anti-Nuke</span>
+            <label class="toggle" style="margin-left:12px">
+              <input type="checkbox" id="an-main-toggle" onchange="handleAnToggle(this)">
+              <span class="toggle-track"></span>
+            </label>
           </div>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Bot Settings</strong> for <strong id="save-server-bot">this server</strong></span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('bot')">💾 Save</button></div></div>
-    </div>
 
-    <!-- ══════ ECONOMY SETTINGS ══════ -->
-    <div id="panel-cfg-economy" class="panel">
+      <!-- Two column config -->
+      <div class="an-cols">
 
-      <div class="db-row" style="position:relative">
-        <div class="db-card">
-          <!-- info banner -->
-          <div style="background:rgba(78,255,145,0.06);border:1px solid var(--green-border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:18px;font-size:0.78rem;color:var(--tx-2);display:flex;align-items:center;gap:10px">
-            <span>🌐</span><span>Economy is <strong style="color:var(--green)">global</strong> — these settings apply across all servers and can only be changed by the bot owner.</span>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">💰 Daily Reward <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
-            <div class="field-row">
-              <div class="field"><label class="field-label">Min Daily Coins</label><input type="number" id="cfg-daily-min" class="f-input" placeholder="100" disabled style="opacity:0.5;cursor:not-allowed"></div>
-              <div class="field"><label class="field-label">Max Daily Coins</label><input type="number" id="cfg-daily-max" class="f-input" placeholder="300" disabled style="opacity:0.5;cursor:not-allowed"></div>
+        <!-- Left: Punishment + Alert + Whitelist -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- Punishment -->
+          <div class="cfg-card">
+            <div class="cfg-card-hdr">
+              <span style="font-size:1.1rem">⚖️</span>
+              <h3>Punishment</h3>
             </div>
-            <div class="field"><label class="field-label">Daily Cooldown (hours)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-daily-cd" min="1" max="48" value="24" disabled style="opacity:0.5;cursor:not-allowed"><span class="range-val" id="cfg-daily-cd-val">24h</span></div></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">💼 Work Command <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
-            <div class="field-row">
-              <div class="field"><label class="field-label">Min Work Reward</label><input type="number" id="cfg-work-min" class="f-input" placeholder="50" disabled style="opacity:0.5;cursor:not-allowed"></div>
-              <div class="field"><label class="field-label">Max Work Reward</label><input type="number" id="cfg-work-max" class="f-input" placeholder="200" disabled style="opacity:0.5;cursor:not-allowed"></div>
+            <div class="cfg-card-body">
+              <div class="sec-label">⚡ Action when triggered</div>
+              <div class="field">
+                <label class="field-label">Punishment type</label>
+                <select class="f-select">
+                  <option value="ban">🔨 Ban</option>
+                  <option value="kick">👢 Kick</option>
+                  <option value="strip">🗑️ Strip Roles</option>
+                </select>
+              </div>
             </div>
-            <div class="field"><label class="field-label">Work Cooldown (minutes)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-work-cd" min="5" max="240" value="60" disabled style="opacity:0.5;cursor:not-allowed"><span class="range-val" id="cfg-work-cd-val">60m</span></div></div>
           </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🎰 Gambling <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Gambling Enabled</div><div class="toggle-desc">-gamble, -slots, -roulette, -blackjack</div></div><label class="toggle"><input type="checkbox" id="cfg-gambling" checked disabled><span class="toggle-track" style="opacity:0.5"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Min Bet</label><input type="number" id="cfg-gamble-min" class="f-input" placeholder="10" disabled style="opacity:0.5;cursor:not-allowed"></div>
-            <div class="field"><label class="field-label">Max Bet (0 = unlimited)</label><input type="number" id="cfg-gamble-max" class="f-input" placeholder="0" disabled style="opacity:0.5;cursor:not-allowed"></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">💸 Starting Balance <span style="font-size:0.65rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.25);padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px">Read Only</span></div>
-            <div class="field"><label class="field-label">New User Starting Coins</label><input type="number" id="cfg-start-balance" class="f-input" placeholder="500" disabled style="opacity:0.5;cursor:not-allowed"><span class="field-hint">Managed globally by the bot owner</span></div>
-          </div>
-        </div>
-      </div>
-      <!-- Save bar hidden for non-admins, shown for admin -->
-      <div class="save-bar" id="eco-save-bar" style="display:none"><span class="save-bar-text">Saves <strong>Economy</strong> global config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('economy')">💾 Save</button></div></div>
-    </div>
 
-    <!-- ══════ LEVELS SETTINGS ══════ -->
-    <div id="panel-cfg-levels" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">⭐ XP Gain</div>
-            <div class="field-row">
-              <div class="field"><label class="field-label">Min XP / Message</label><input type="number" id="cfg-xp-min" class="f-input" placeholder="15" oninput="markDirty('levels')"></div>
-              <div class="field"><label class="field-label">Max XP / Message</label><input type="number" id="cfg-xp-max" class="f-input" placeholder="25" oninput="markDirty('levels')"></div>
+          <!-- Alert Channel -->
+          <div class="cfg-card">
+            <div class="cfg-card-hdr">
+              <span style="font-size:1.1rem">📢</span>
+              <h3>Alert Channel</h3>
             </div>
-            <div class="field"><label class="field-label">XP Cooldown (seconds)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-xp-cd" min="5" max="300" value="60" oninput="document.getElementById('cfg-xp-cd-val').textContent=this.value+'s';markDirty('levels')"><span class="range-val" id="cfg-xp-cd-val">60s</span></div></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">XP System Enabled</div><div class="toggle-desc">Toggle XP tracking entirely</div></div><label class="toggle"><input type="checkbox" id="cfg-xp-enabled" checked onchange="markDirty('levels')"><span class="toggle-track"></span></label></div>
+            <div class="cfg-card-body">
+              <div class="sec-label">📍 Send alerts to</div>
+              <div class="field">
+                <label class="field-label">Channel</label>
+                <select class="f-select">
+                  <option value="">— Disabled —</option>
+                  <option value="1">#mod-alerts</option>
+                  <option value="2">#admin-logs</option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🏆 Level Up</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Level Up Announcements</div><div class="toggle-desc">Send message when user levels up</div></div><label class="toggle"><input type="checkbox" id="cfg-levelup-msg" checked onchange="markDirty('levels')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Level Up Message</label><input type="text" id="cfg-levelup-text" class="f-input" placeholder="🎉 {user} reached level {level}!" oninput="markDirty('levels')"><span class="field-hint">Use <code>{user}</code> and <code>{level}</code></span></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">📊 XP Multiplier</div>
-            <div class="field"><label class="field-label">Global XP Multiplier (event boost)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-xp-mult" min="0.5" max="5" step="0.5" value="1" oninput="document.getElementById('cfg-xp-mult-val').textContent=this.value+'×';markDirty('levels')"><span class="range-val" id="cfg-xp-mult-val">1×</span></div></div>
-            <div class="field"><label class="field-label">XP for Level 1 (base)</label><input type="number" id="cfg-level-base" class="f-input" placeholder="100" oninput="markDirty('levels')"><span class="field-hint">Scales ×1.5 per level</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>XP & Levels</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('levels')">💾 Save</button></div></div>
-    </div>
 
-    <!-- ══════ WELCOME / LEAVE ══════ -->
-    <div id="panel-cfg-welcome" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">👋 Welcome Messages</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Welcome Messages</div><div class="toggle-desc">Send when a new member joins</div></div><label class="toggle"><input type="checkbox" id="cfg-welcome-enabled" checked onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Welcome Channel ID</label><select id="cfg-welcome-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Welcome Message</label><input type="text" id="cfg-welcome-msg" class="f-input" placeholder="Welcome {user} to {server}! 🎉" oninput="markDirty('welcome')"><span class="field-hint">Placeholders: <code>{user}</code> <code>{server}</code> <code>{count}</code></span></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">🎨 Welcome Card Style</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Send Welcome Image Card</div><div class="toggle-desc">Stylized image card instead of plain text</div></div><label class="toggle"><input type="checkbox" id="cfg-welcome-card" checked onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Card Background</label>
-              <select id="cfg-welcome-bg" class="f-select" onchange="markDirty('welcome')">
-                <option value="forest">🌲 Forest Green</option>
-                <option value="midnight">🌌 Midnight</option>
-                <option value="sunset">🌅 Sunset</option>
-                <option value="ocean">🌊 Ocean</option>
-                <option value="custom">🎨 Custom Color</option>
-              </select>
+          <!-- Whitelist -->
+          <div class="cfg-card" style="flex:1">
+            <div class="cfg-card-hdr">
+              <span style="font-size:1.1rem">✅</span>
+              <h3>Whitelist</h3>
             </div>
-            <div class="field"><label class="field-label">Card Accent Color</label><input type="color" id="cfg-welcome-color" class="f-input" value="#4eff91" style="height:44px;padding:4px" onchange="markDirty('welcome')"></div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🚪 Leave Messages</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Leave Messages</div><div class="toggle-desc">Send when a member leaves</div></div><label class="toggle"><input type="checkbox" id="cfg-leave-enabled" onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Leave Channel ID</label><select id="cfg-leave-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Leave Message</label><input type="text" id="cfg-leave-msg" class="f-input" placeholder="Goodbye {user}!" oninput="markDirty('welcome')"></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">👋 Welcome Card Preview</div>
-            <div style="border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--neu-out);border:1px solid var(--green-border);background:linear-gradient(135deg,#0e2a1a,#122016);padding:20px;display:flex;align-items:center;gap:14px">
-              <div style="width:52px;height:52px;border-radius:50%;background:var(--green-lo);border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">👤</div>
-              <div>
-                <div style="font-size:0.68rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Welcome to the server!</div>
-                <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:800">New Member</div>
-                <div style="font-size:0.75rem;color:var(--tx-3);margin-top:2px">You are member #1,234</div>
+            <div class="cfg-card-body">
+              <div class="sec-label">🔐 Trusted users — never punished</div>
+              <p style="font-size:0.78rem;color:var(--tx-2);margin-bottom:12px;line-height:1.6">Add yourself <strong style="color:var(--green)">before</strong> enabling to avoid accidental punishment.</p>
+
+              <div id="wl-list">
+                <div class="wl-empty">No users whitelisted.</div>
+              </div>
+
+              <div class="wl-add-row" style="margin-top:12px">
+                <input type="text" class="f-input" placeholder="User ID" id="wl-input" style="flex:1">
+                <button class="wl-add-btn" onclick="addWl()">Add</button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('welcome')">💾 Save</button></div></div>
-    </div>
 
-    <!-- ══════ STREAM ALERTS ══════ -->
-    <div id="panel-cfg-streams" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">📺 YouTube Alerts</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">YouTube Live Alerts</div><div class="toggle-desc">Ping when a new stream goes live</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-alerts" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">YouTube Upload Alerts</div><div class="toggle-desc">Ping when a new video is uploaded</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-uploads" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">YouTube Channel ID</label><input type="text" id="cfg-yt-channel-id" class="f-input" placeholder="UCxxxxxxxxxxxxxxxxxxxxxxxx" oninput="markDirty('streams')"><span class="field-hint">From youtube.com/@channel → About → Share Channel</span></div>
-            <div class="field"><label class="field-label">Alert Discord Channel ID</label><select id="cfg-yt-alert-channel" class="f-select" onchange="markDirty('streams')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Alert Message</label><input type="text" id="cfg-yt-alert-msg" class="f-input" placeholder="🔴 {streamer} is LIVE! {url}" oninput="markDirty('streams')"><span class="field-hint">Placeholders: <code>{streamer}</code> <code>{title}</code> <code>{url}</code> <code>{role}</code></span></div>
+        <!-- Right: Thresholds -->
+        <div class="thresholds-card">
+          <div class="thresholds-hdr">
+            <h3>📊 Thresholds <span class="th-period">/ 10s</span></h3>
           </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🎮 Twitch Alerts</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Twitch Live Alerts</div><div class="toggle-desc">Ping when streamer goes live</div></div><label class="toggle"><input type="checkbox" id="cfg-tw-alerts" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Twitch Username</label><input type="text" id="cfg-tw-username" class="f-input" placeholder="sdb_darkninja" oninput="markDirty('streams')"></div>
-            <div class="field"><label class="field-label">Alert Discord Channel ID</label><select id="cfg-tw-alert-channel" class="f-select" onchange="markDirty('streams')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Alert Message</label><input type="text" id="cfg-tw-alert-msg" class="f-input" placeholder="🟣 {streamer} is live on Twitch! {url}" oninput="markDirty('streams')"></div>
+          <p class="th-desc">Fires instantly when a user exceeds these limits within 10 seconds.</p>
+          <div class="th-grid" id="th-grid">
+            <!-- Rows injected by JS -->
           </div>
-          <div class="settings-section">
-            <div class="settings-section-title">📊 Stats VC Channels</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Twitch Stats VC</div><div class="toggle-desc">Live follower/viewer count in VC name</div></div><label class="toggle"><input type="checkbox" id="cfg-tw-statsvc" checked onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">YouTube Stats VC</div><div class="toggle-desc">Live subscriber/view count in VC name</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-statsvc" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
-          </div>
-        </div>
-      </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Stream Alerts</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('streams')">💾 Save</button></div></div>
-    </div>
-
-    <!-- ══════ BOOSTER CARDS ══════ -->
-    <div id="panel-cfg-booster" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🚀 Boost Alert Settings</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Boost Alerts Enabled</div><div class="toggle-desc">Send card when someone boosts the server</div></div><label class="toggle"><input type="checkbox" id="cfg-boost-enabled" checked onchange="markDirty('booster');updateBoostPreview()"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Boost Alert Channel ID</label><select id="cfg-boost-channel" class="f-select" onchange="markDirty('booster')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Boost Message</label><input type="text" id="cfg-boost-msg" class="f-input" placeholder="💎 {user} just boosted {server}!" oninput="markDirty('booster');updateBoostPreview()"><span class="field-hint">Placeholders: <code>{user}</code> <code>{server}</code> <code>{boost_count}</code></span></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">🎨 Card Gradient</div>
-            <div class="gradient-picker" id="gradient-picker">
-              <div class="grad-opt selected" style="background:linear-gradient(135deg,#0e2a1a,#1a5c2e)" data-grad="forest" onclick="selectGrad(this,'forest')"></div>
-              <div class="grad-opt" style="background:linear-gradient(135deg,#1a0a2e,#5c1a8e)" data-grad="purple" onclick="selectGrad(this,'purple')"></div>
-              <div class="grad-opt" style="background:linear-gradient(135deg,#1a0e0e,#5c1a1a)" data-grad="crimson" onclick="selectGrad(this,'crimson')"></div>
-              <div class="grad-opt" style="background:linear-gradient(135deg,#0a1a2e,#1a3a5c)" data-grad="ocean" onclick="selectGrad(this,'ocean')"></div>
-              <div class="grad-opt" style="background:linear-gradient(135deg,#2e1a0a,#5c3a1a)" data-grad="sunset" onclick="selectGrad(this,'sunset')"></div>
-              <div class="grad-opt" style="background:linear-gradient(135deg,#1a1a1a,#3a3a3a)" data-grad="dark" onclick="selectGrad(this,'dark')"></div>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">✨ Accent Color</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px" id="accent-picker">
-              <div class="color-swatch selected" style="background:#4eff91" data-color="#4eff91" onclick="selectAccent(this,'#4eff91')"></div>
-              <div class="color-swatch" style="background:#5865f2" data-color="#5865f2" onclick="selectAccent(this,'#5865f2')"></div>
-              <div class="color-swatch" style="background:#f472b6" data-color="#f472b6" onclick="selectAccent(this,'#f472b6')"></div>
-              <div class="color-swatch" style="background:#fbbf24" data-color="#fbbf24" onclick="selectAccent(this,'#fbbf24')"></div>
-              <div class="color-swatch" style="background:#38bdf8" data-color="#38bdf8" onclick="selectAccent(this,'#38bdf8')"></div>
-              <div class="color-swatch" style="background:#ff4f4f" data-color="#ff4f4f" onclick="selectAccent(this,'#ff4f4f')"></div>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">🎊 Boost Emoji</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="emoji-picker">
-              <div class="emoji-opt selected" data-emoji="💎" onclick="selectEmoji(this,'💎')">💎</div>
-              <div class="emoji-opt" data-emoji="🚀" onclick="selectEmoji(this,'🚀')">🚀</div>
-              <div class="emoji-opt" data-emoji="⭐" onclick="selectEmoji(this,'⭐')">⭐</div>
-              <div class="emoji-opt" data-emoji="🎉" onclick="selectEmoji(this,'🎉')">🎉</div>
-              <div class="emoji-opt" data-emoji="👑" onclick="selectEmoji(this,'👑')">👑</div>
-              <div class="emoji-opt" data-emoji="🔥" onclick="selectEmoji(this,'🔥')">🔥</div>
-            </div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">👁️ Live Preview</div>
-            <div id="boost-card-preview" style="border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--neu-out-lg);background:linear-gradient(135deg,#0e2a1a,#1a5c2e);padding:28px;display:flex;flex-direction:column;gap:16px;border:1px solid rgba(78,255,145,0.3)">
-              <div style="display:flex;align-items:center;gap:12px">
-                <div style="font-size:2rem" id="bp-emoji">💎</div>
-                <div>
-                  <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(78,255,145,0.7)">Server Boost</div>
-                  <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:800" id="bp-msg">💎 {user} just boosted {server}!</div>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;padding:14px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(78,255,145,0.2)">
-                <div style="width:46px;height:46px;border-radius:50%;background:rgba(78,255,145,0.15);border:2px solid rgba(78,255,145,0.5);display:flex;align-items:center;justify-content:center;font-size:1.3rem">👤</div>
-                <div>
-                  <div style="font-size:0.875rem;font-weight:700;">SomeBooster</div>
-                  <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Thank you for the boost! ✨</div>
-                </div>
-                <div style="margin-left:auto;font-size:0.72rem;font-family:var(--font-m);color:rgba(78,255,145,0.7);background:rgba(78,255,145,0.1);padding:4px 10px;border-radius:999px;border:1px solid rgba(78,255,145,0.3)">Boost #12</div>
-              </div>
-            </div>
-          </div>
-          <div class="settings-section" style="margin-top:16px">
-            <div class="settings-section-title">📊 Booster Statistics</div>
-            <div class="stat-mini-grid">
-              <div class="stat-mini"><div class="stat-mini-val" id="boost-total">—</div><div class="stat-mini-lbl">Total Boosts</div></div>
-              <div class="stat-mini"><div class="stat-mini-val" id="boost-unique">—</div><div class="stat-mini-lbl">Boosters</div></div>
-              <div class="stat-mini"><div class="stat-mini-val" id="boost-level">—</div><div class="stat-mini-lbl">Level</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Booster Card</strong> design</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('booster')">💾 Save</button></div></div>
-    </div>
-
-    <!-- ══════ MODERATION SETTINGS ══════ -->
-    <div id="panel-cfg-moderation" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🛡️ Auto-Mod</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Anti-Spam</div><div class="toggle-desc">Auto-timeout users who spam messages</div></div><label class="toggle"><input type="checkbox" id="cfg-antispam" onchange="markDirty('moderation')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Link Filter</div><div class="toggle-desc">Delete messages with unauthorized links</div></div><label class="toggle"><input type="checkbox" id="cfg-linkfilter" onchange="markDirty('moderation')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Profanity Filter</div><div class="toggle-desc">Auto-delete messages with bad words</div></div><label class="toggle"><input type="checkbox" id="cfg-profanity" onchange="markDirty('moderation')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Raid Protection</div><div class="toggle-desc">Auto-lockdown on sudden join spikes</div></div><label class="toggle"><input type="checkbox" id="cfg-raid" onchange="markDirty('moderation')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Spam Threshold (messages / 10s)</label><div class="range-wrap"><input type="range" class="f-range" id="cfg-spam-threshold" min="3" max="20" value="8" oninput="document.getElementById('cfg-spam-threshold-val').textContent=this.value;markDirty('moderation')"><span class="range-val" id="cfg-spam-threshold-val">8</span></div></div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">📋 Mod Logs</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Mod Logs Enabled</div><div class="toggle-desc">Log bans, kicks, timeouts, warns</div></div><label class="toggle"><input type="checkbox" id="cfg-modlog" checked onchange="markDirty('moderation')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Mod Log Channel ID</label><select id="cfg-modlog-channel" class="f-select" onchange="markDirty('moderation')"><option value="">Loading channels…</option></select><span class="field-hint">Right-click channel → Copy ID</span></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">👮 Roles</div>
-            <div class="field"><label class="field-label">Admin Role ID</label><input type="text" id="cfg-admin-role" class="f-input" placeholder="123456789012345678" oninput="markDirty('moderation')"></div>
-            <div class="field"><label class="field-label">Moderator Role ID</label><input type="text" id="cfg-mod-role" class="f-input" placeholder="123456789012345678" oninput="markDirty('moderation')"></div>
-            <div class="field"><label class="field-label">Muted Role ID</label><input type="text" id="cfg-muted-role" class="f-input" placeholder="123456789012345678" oninput="markDirty('moderation')"></div>
-          </div>
-        </div>
-      </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Moderation</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('moderation')">💾 Save</button></div></div>
-    </div>
-
-    <!-- ══════ AUDIT LOG ══════ -->
-    <div id="panel-audit-log" class="panel">
-      <div class="db-row full">
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3>📋 Audit Log <span class="db-badge"><div class="db-live-dot"></div>Live</span></h3>
-            <div style="display:flex;gap:8px">
-              <button class="btn-sm-o" onclick="fetchAuditLog()">🔄 Refresh</button>
-              <button class="btn-sm-o" onclick="exportAuditLog()" style="font-size:0.75rem">⬇ Export</button>
-            </div>
-          </div>
-          <div class="log-filters" id="log-filters">
-            <button class="log-filter-btn active" onclick="filterLog('all',this)">All</button>
-            <button class="log-filter-btn" onclick="filterLog('ban',this)">🔨 Bans</button>
-            <button class="log-filter-btn" onclick="filterLog('kick',this)">👢 Kicks</button>
-            <button class="log-filter-btn" onclick="filterLog('timeout',this)">⏱ Timeouts</button>
-            <button class="log-filter-btn" onclick="filterLog('warn',this)">⚠ Warns</button>
-            <button class="log-filter-btn" onclick="filterLog('delete',this)">🗑 Deletes</button>
-            <button class="log-filter-btn" onclick="filterLog('edit',this)">✏️ Edits</button>
-            <button class="log-filter-btn" onclick="filterLog('join',this)">✅ Joins</button>
-            <button class="log-filter-btn" onclick="filterLog('leave',this)">🚪 Leaves</button>
-            <button class="log-filter-btn" onclick="filterLog('voice_join',this)">🎙 Voice</button>
-            <button class="log-filter-btn" onclick="filterLog('role_add',this)">🎭 Roles</button>
-            <button class="log-filter-btn" onclick="filterLog('channel_create',this)">📢 Channels</button>
-            <button class="log-filter-btn" onclick="filterLog('invite_create',this)">🔗 Invites</button>
-            <button class="log-filter-btn" onclick="filterLog('purge',this)">🧹 Purge</button>
-          </div>
-          <div id="audit-log-list">
-            <div class="loading-state"><div class="spinner"></div><p>Loading audit log…</p></div>
-          </div>
-          <div class="log-pagination" id="log-pagination" style="display:none">
-            <span class="log-page-info" id="log-page-info">Page 1 of 1</span>
-            <div style="display:flex;gap:8px">
-              <button class="btn-sm-o" id="log-prev" onclick="logPage(-1)" disabled>← Prev</button>
-              <button class="btn-sm-o" id="log-next" onclick="logPage(1)">Next →</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════ DB STATS ══════ -->
-    <div id="panel-mongodb" class="panel">
-      <div class="db-row full">
-        <div class="db-card">
-          <div class="card-hdr"><h3>🗄️ Database Overview <span class="db-badge"><div class="db-live-dot"></div>Live</span> <span style="font-size:0.65rem;background:rgba(255,107,107,0.15);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);padding:2px 8px;border-radius:999px;font-weight:700;font-family:var(--font-m)">👑 Admin</span></h3><button class="btn-sm-o" onclick="fetchMongoStats()">🔄 Refresh</button></div>
-          <div id="mongo-display"><div class="loading-state"><div class="spinner"></div><p>Connecting…</p></div></div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- ══════ CURRENCY MANAGER (ADMIN) ══════ -->
-    <div id="panel-currency-admin" class="panel">
-      <div class="db-row">
-
-        <!-- Left: Lookup + Action -->
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3>💸 Currency Manager <span style="font-size:0.65rem;background:rgba(255,107,107,0.15);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);padding:2px 8px;border-radius:999px;font-weight:700;font-family:var(--font-m)">👑 Admin</span></h3>
-          </div>
-
-          <div class="settings-section">
-            <div class="settings-section-title">🔍 Look Up User</div>
-            <div class="field">
-              <label class="field-label">Discord User ID</label>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="cadmin-user-id" class="f-input" placeholder="e.g. 769225445803032617" style="flex:1">
-                <button class="btn-sm-o" onclick="cadminLookup()" style="white-space:nowrap">🔍 Lookup</button>
-              </div>
-              <span class="field-hint">Paste the user's Discord ID</span>
-            </div>
-
-            <!-- User info card (hidden until lookup) -->
-            <div id="cadmin-user-card" style="display:none;background:var(--base-down);border-radius:var(--r-md);padding:14px 16px;border:1px solid var(--green-border);margin-bottom:16px">
-              <div style="display:flex;align-items:center;gap:12px">
-                <img id="cadmin-avatar" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--green)" alt="">
-                <div>
-                  <div id="cadmin-uname" style="font-weight:700;font-size:0.9rem"></div>
-                  <div id="cadmin-uid-display" style="font-size:0.7rem;color:var(--tx-3)"></div>
-                </div>
-                <div style="margin-left:auto;text-align:right">
-                  <div style="font-size:0.7rem;color:var(--tx-3)">Balance</div>
-                  <div id="cadmin-balance" style="font-family:var(--font-d);font-size:1.2rem;font-weight:800;color:var(--green)">₹0</div>
-                  <div id="cadmin-wl" style="font-size:0.68rem;color:var(--tx-3)"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-section-title" style="margin-top:4px">⚡ Action</div>
-            <div class="field">
-              <label class="field-label">Action</label>
-              <select id="cadmin-action" class="f-select" onchange="cadminToggleAmount()">
-                <option value="add">➕ Add Coins</option>
-                <option value="remove">➖ Remove Coins</option>
-                <option value="set">⚙️ Set Balance</option>
-                <option value="reset">🔄 Reset to 0</option>
-              </select>
-            </div>
-            <div class="field" id="cadmin-amount-field">
-              <label class="field-label">Amount</label>
-              <input type="number" id="cadmin-amount" class="f-input" placeholder="e.g. 5000" min="1">
-            </div>
-            <button class="btn-sm" onclick="cadminExecute()" style="width:100%;margin-top:4px">💸 Execute</button>
-          </div>
-        </div>
-
-        <!-- Right: Action Log -->
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3>📋 Action Log</h3>
-            <button class="btn-sm-o" onclick="cadminClearLog()">🗑️ Clear</button>
-          </div>
-          <div id="cadmin-log" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto">
-            <div style="text-align:center;padding:40px;color:var(--tx-3);font-size:0.8rem">No actions yet</div>
+          <div class="th-legend">
+            <div class="th-legend-item"><div class="th-legend-dot" style="background:var(--red)"></div>1 = zero tolerance</div>
+            <div class="th-legend-item"><div class="th-legend-dot" style="background:var(--yellow)"></div>3–5 = moderate</div>
+            <div class="th-legend-item"><div class="th-legend-dot" style="background:var(--green)"></div>Whitelist bots first</div>
           </div>
         </div>
 
       </div>
-    </div>
-    <!-- Broadcast modal -->
-      <div id="hq-broadcast-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center">
-        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:24px;width:500px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,0.2)">
-          <div style="font-family:monospace;color:#4eff91;font-size:0.9rem;margin-bottom:16px;font-weight:700">📢 BROADCAST MESSAGE</div>
-          <textarea id="hq-broadcast-msg" class="f-input" placeholder="Enter message to broadcast to all servers..." style="height:100px;resize:vertical;font-family:monospace;margin-bottom:12px"></textarea>
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn-sm-o" onclick="document.getElementById('hq-broadcast-modal').style.display='none'">Cancel</button>
-            <button class="btn-sm" onclick="hqSendBroadcast()" style="font-family:monospace">BROADCAST</button>
-          </div>
-        </div>
-      </div>
 
-    </div>
-    <!-- ══════ ADMIN HQ ══════ -->
-    <div id="panel-admin-hq" class="panel">
-      <style>
-        .hq__wrap{font-family:"Courier New",monospace;color:#4eff91}
-        .hq__wrap *{box-sizing:border-box}
-        /* header */
-        .hq__hdr{background:#0d1e12;border:1px solid #4eff91;border-radius:12px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 24px rgba(78,255,145,.06)}
-        .hq__htitle{font-size:.85rem;font-weight:700;letter-spacing:3px;color:#4eff91}
-        .hq__hsub{font-size:.58rem;color:rgba(78,255,145,.4);margin-top:2px;letter-spacing:1px}
-        .hq__ping{font-size:.62rem;color:rgba(78,255,145,.4)}
-        .hq__rbtn{padding:6px 14px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.25);color:rgba(78,255,145,.7);font-family:"Courier New",monospace;font-size:.68rem;cursor:pointer;transition:all .15s}
-        .hq__rbtn:hover{background:rgba(78,255,145,.08);border-color:#4eff91;color:#4eff91}
-        /* stat strip */
-        .hq__strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
-        .hq__stat{background:#0d1e12;border:1px solid rgba(78,255,145,.22);border-radius:10px;padding:14px 8px;text-align:center;position:relative;overflow:hidden;transition:border-color .2s}
-        .hq__stat:hover{border-color:#4eff91;box-shadow:0 0 16px rgba(78,255,145,.07)}
-        .hq__stat::before{content:"";position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,#4eff91,transparent)}
-        .hq__sv{font-size:1.5rem;font-weight:700;color:#4eff91;text-shadow:0 0 14px rgba(78,255,145,.45);line-height:1.1}
-        .hq__sk{font-size:.55rem;color:rgba(78,255,145,.4);letter-spacing:2px;margin-top:5px;text-transform:uppercase}
-        /* grid */
-        .hq__g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-        .hq__g21{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
-        /* box */
-        .hq__box{background:#0d1e12;border:1px solid rgba(78,255,145,.18);border-radius:12px;padding:16px;position:relative;overflow:hidden}
-        .hq__box::before{content:"";position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,.5),transparent)}
-        /* title */
-        .hq__ttl{font-size:.62rem;font-weight:700;letter-spacing:2px;color:#4eff91;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-        .hq__dot{width:7px;height:7px;border-radius:50%;background:#4eff91;box-shadow:0 0 6px #4eff91;flex-shrink:0;animation:hq__blink 1.5s infinite}
-        @keyframes hq__blink{0%,100%{opacity:1}50%{opacity:.1}}
-        .hq__sc{overflow-y:auto;max-height:200px}
-        .hq__em{font-size:.68rem;color:rgba(78,255,145,.3);padding:20px;text-align:center}
-        /* server row */
-        .hq__sr{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;margin-bottom:3px;border:1px solid rgba(78,255,145,.05);background:rgba(78,255,145,.015);transition:background .15s}
-        .hq__sr:hover{background:rgba(78,255,145,.06);border-color:rgba(78,255,145,.18)}
-        .hq__ico{width:28px;height:28px;border-radius:6px;background:rgba(78,255,145,.1);border:1px solid rgba(78,255,145,.2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#4eff91;flex-shrink:0;overflow:hidden}
-        .hq__ico img{width:100%;height:100%;object-fit:cover;border-radius:5px}
-        .hq__sn{font-size:.73rem;color:#d0ffe0;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .hq__sm{font-size:.6rem;color:rgba(78,255,145,.4);white-space:nowrap}
-        /* kv */
-        .hq__kv{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid rgba(78,255,145,.05);font-size:.7rem}
-        .hq__kv:last-child{border-bottom:none}
-        .hq__kk{color:rgba(78,255,145,.5)}
-        .hq__vv{color:#4eff91;font-weight:700}
-        /* leaderboard */
-        .hq__lb{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border:1px solid rgba(78,255,145,.04)}
-        .hq__lr{font-size:.63rem;color:rgba(78,255,145,.4);width:20px;text-align:right;flex-shrink:0}
-        .hq__ln{font-size:.7rem;color:#d0ffe0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .hq__bw{width:60px;height:3px;background:rgba(78,255,145,.1);border-radius:2px;flex-shrink:0}
-        .hq__bb{height:3px;background:#4eff91;border-radius:2px;box-shadow:0 0 4px #4eff91}
-        .hq__lv{font-size:.65rem;color:#4eff91;font-weight:700;width:65px;text-align:right;flex-shrink:0}
-        /* feed */
-        .hq__fe{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border-radius:6px;margin-bottom:3px;border-left:2px solid rgba(78,255,145,.2);background:rgba(78,255,145,.012)}
-        .hq__fi{font-size:.72rem;flex-shrink:0;margin-top:1px}
-        .hq__fb{flex:1;min-width:0}
-        .hq__fa{font-size:.68rem;color:#d0ffe0;font-weight:600}
-        .hq__fm{font-size:.58rem;color:rgba(78,255,145,.38);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .hq__ft{font-size:.56rem;color:rgba(78,255,145,.22);flex-shrink:0;white-space:nowrap}
-        /* health */
-        .hq__hr{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(78,255,145,.02);border:1px solid rgba(78,255,145,.06)}
-        .hq__hk{font-size:.68rem;color:rgba(78,255,145,.5)}
-        .hq__hv{font-size:.68rem;color:#4eff91;font-weight:700}
-        /* buttons */
-        .hq__qb{width:100%;padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(78,255,145,.18);color:rgba(78,255,145,.7);font-family:"Courier New",monospace;font-size:.68rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:left;display:block;margin-bottom:5px}
-        .hq__qb:hover{background:rgba(78,255,145,.07);border-color:#4eff91;color:#4eff91;box-shadow:0 0 8px rgba(78,255,145,.1)}
-      </style>
-
-      <div class="hq__wrap">
-
-        <!-- Header -->
-        <div class="hq__hdr">
-          <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:1.1rem">💻</span>
-            <div>
-              <div class="hq__htitle">NINJUBOT // ADMIN_HQ</div>
-              <div class="hq__hsub" id="hq__ts">SYSTEM READY</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px">
-            <span class="hq__ping" id="hq__ping">PING: —ms</span>
-            <button class="hq__rbtn" onclick="hqRefresh()">⟳ REFRESH ALL</button>
-          </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="hq__strip">
-          <div class="hq__stat"><div class="hq__sv" id="hq__sg">—</div><div class="hq__sk">Servers</div></div>
-          <div class="hq__stat"><div class="hq__sv" id="hq__su">—</div><div class="hq__sk">Users</div></div>
-          <div class="hq__stat"><div class="hq__sv" id="hq__sup" style="font-size:1rem">—</div><div class="hq__sk">Uptime</div></div>
-          <div class="hq__stat"><div class="hq__sv" id="hq__sdb">—</div><div class="hq__sk">DB Docs</div></div>
-          <div class="hq__stat"><div class="hq__sv" id="hq__sal">—</div><div class="hq__sk">Audit Logs</div></div>
-        </div>
-
-        <!-- Row 1 -->
-        <div class="hq__g2">
-          <div class="hq__box">
-            <div class="hq__ttl"><div class="hq__dot"></div>🌐 SERVER ROSTER</div>
-            <div class="hq__sc" id="hq__servers"><div class="hq__em">FETCHING…</div></div>
-          </div>
-          <div class="hq__box">
-            <div class="hq__ttl">🗄️ DATABASE MATRIX</div>
-            <div id="hq__dbm"><div class="hq__em">CONNECTING…</div></div>
-          </div>
-        </div>
-
-        <!-- Row 2 -->
-        <div class="hq__g2">
-          <div class="hq__box">
-            <div class="hq__ttl">💰 ECONOMY GLOBAL TOP 10</div>
-            <div class="hq__sc" id="hq__eco"><div class="hq__em">LOADING…</div></div>
-          </div>
-          <div class="hq__box">
-            <div class="hq__ttl">📈 XP GLOBAL TOP 10</div>
-            <div class="hq__sc" id="hq__xp"><div class="hq__em">LOADING…</div></div>
-          </div>
-        </div>
-
-        <!-- Row 3 -->
-        <div class="hq__g21">
-          <div class="hq__box">
-            <div class="hq__ttl"><div class="hq__dot"></div>📋 LIVE AUDIT FEED <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)" id="hq__fc">0 entries</span></div>
-            <div class="hq__sc" style="max-height:300px" id="hq__feed"><div class="hq__em">AWAITING EVENTS…</div></div>
-          </div>
-          <div class="hq__box" style="display:flex;flex-direction:column">
-            <div class="hq__ttl">⚡ BOT HEALTH</div>
-            <div id="hq__health"><div class="hq__em">SCANNING…</div></div>
-            <div class="hq__ttl" style="margin-top:14px">🔧 QUICK OPS</div>
-            <button class="hq__qb" onclick="hqExportAudit()">📥 Export Audit CSV</button>
-            <button class="hq__qb" onclick="hqExportEco()">📥 Export Economy CSV</button>
-            <button class="hq__qb" onclick="showPanel('currency-admin',document.querySelector('.sl[onclick*=currency-admin]'))">💸 Currency Manager →</button>
-            <button class="hq__qb" onclick="showPanel('mongodb',document.querySelector('.sl[onclick*=mongodb]'))">🗄️ DB Stats →</button>
-          </div>
-        </div>
-
-        <!-- Row 4: chart -->
-        <div class="hq__box">
-          <div class="hq__ttl">📊 AUDIT ACTIVITY BREAKDOWN <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Last 200 entries</span></div>
-          <canvas id="hq__chart" height="70"></canvas>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ══════ ANTI-NUKE ══════ -->
-    <div id="panel-cfg-antinuke" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3>🔰 Anti-Nuke</h3>
-            <div id="an-status-pill" style="padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;background:rgba(255,79,79,.15);color:#ff4f4f;border:1px solid rgba(255,79,79,.3)">DISABLED</div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">⚡ Master Switch</div>
-            <div class="toggle-row">
-              <div class="toggle-info"><div class="toggle-name">Enable Anti-Nuke</div><div class="toggle-desc">Punish users who mass-ban, mass-delete channels, etc.</div></div>
-              <label class="toggle"><input type="checkbox" id="an-enabled" onchange="anToggle()"><span class="toggle-track"></span></label>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">⚖️ Punishment</div>
-            <div class="field">
-              <label class="field-label">Action when triggered</label>
-              <select id="an-punishment" class="f-select" onchange="markDirty('antinuke')">
-                <option value="ban">🔨 Ban</option>
-                <option value="kick">👢 Kick</option>
-                <option value="strip">🗑️ Strip roles</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">📢 Alert Channel</div>
-            <div class="field">
-              <label class="field-label">Send alerts to</label>
-              <select id="an-logchannel" class="f-select" onchange="markDirty('antinuke')"><option value="">— Disabled —</option></select>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">✅ Whitelist</div>
-            <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:8px">Never punished. Add yourself before enabling!</p>
-            <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px"></div>
-            <div style="display:flex;gap:8px">
-              <input type="text" id="an-whitelist-input" class="f-input" placeholder="User ID" style="flex:1;min-width:0">
-              <button class="btn-sm" onclick="anWhitelistAdd()" style="flex-shrink:0">Add</button>
-            </div>
-          </div>
-        </div>
-        <div class="db-card">
-          <h3>📊 Thresholds <span style="font-size:.68rem;color:var(--tx-3);font-weight:400">/ 10s</span></h3>
-          <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:12px">Fires instantly when a user exceeds these limits.</p>
-          <div id="an-thresholds" style="display:flex;flex-direction:column;gap:5px"></div>
-          <div style="margin-top:12px;padding:10px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.75rem;color:var(--tx-2);line-height:1.8">
-            🔴 <strong style="color:#ff4f4f">1</strong> = zero tolerance &nbsp;·&nbsp; 🟡 <strong style="color:#fbbf24">3–5</strong> = moderate &nbsp;·&nbsp; 🟢 Whitelist bots first
-          </div>
-        </div>
-      </div>
+      <!-- Save bar -->
       <div class="save-bar">
-        <span class="save-bar-text">Saves <strong>Anti-Nuke</strong> for <strong id="an-guild-name">this server</strong></span>
+        <span class="save-bar-text">Saves <strong>Anti-Nuke</strong> for <strong>SDB</strong></span>
         <div class="save-actions">
-          <button class="btn-sm-o" onclick="anResetDefaults()">↩ Defaults</button>
-          <button class="btn-sm-o" onclick="loadAntiNuke()">↩ Reset</button>
-          <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
+          <button class="btn-reset">↩ Defaults</button>
+          <button class="btn-reset">↩ Reset</button>
+          <button class="btn-save">💾 Save</button>
         </div>
       </div>
-    </div>
 
-    <!-- ══════ SERVER BACKUP ══════ -->
-    <div id="panel-server-backup" class="panel">
-      <div id="backup-owner-warn" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,79,79,.08);border:1px solid rgba(255,79,79,.25);color:#ff6b6b;font-size:.83rem">
-        ⚠️ Only the <strong>server owner</strong> can create or restore backups.
+    </div><!-- /antinuke panel -->
+
+
+    <!-- ══════════ SERVER BACKUP PANEL ══════════ -->
+    <div id="panel-backup" class="panel">
+
+      <!-- Owner warning banner -->
+      <div class="backup-banner">
+        <div class="banner-icon">⚠️</div>
+        <span>Only the <strong>server owner</strong> can create or restore backups.</span>
       </div>
-      <div class="db-row">
-        <div class="db-card">
-          <h3>📸 Create Backup</h3>
-          <p style="font-size:.83rem;color:var(--tx-2);margin-bottom:16px;line-height:1.7">Full snapshot: <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, and permission overwrites.</p>
-          <div class="field">
-            <label class="field-label">Label (optional)</label>
-            <input type="text" id="bk-label" class="f-input" placeholder="e.g. Before restructure…">
+
+      <!-- Two columns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+
+        <!-- Create backup -->
+        <div class="backup-create-card">
+          <div class="backup-create-hdr">
+            <div class="backup-hdr-icon">📸</div>
+            <div class="backup-hdr-text">
+              <h3>Create Backup</h3>
+              <p>Full snapshot: <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, and permission overwrites.</p>
+            </div>
           </div>
-          <button class="btn-sm" onclick="bkCreate()" style="width:100%;margin-top:8px;padding:11px">📸 Create Backup Now</button>
-          <div style="margin-top:14px;padding:12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);font-size:.78rem;color:var(--tx-2);line-height:2">
-            <div style="font-size:.7rem;font-weight:700;color:var(--green);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">What's backed up</div>
-            ✅ All roles (name, color, permissions)<br>
-            ✅ All categories + permission overwrites<br>
-            ✅ All text &amp; voice channels<br>
-            ✅ Server name &amp; settings<br>
-            ❌ Messages and member data
+          <div class="backup-create-body">
+            <div class="backup-label-field">
+              <label class="field-label">Label <span style="color:var(--tx-3)">(optional)</span></label>
+              <div class="backup-input-group">
+                <div class="backup-input-icon">🏷️</div>
+                <input class="backup-input" placeholder="e.g. Before restructure…">
+              </div>
+            </div>
+            <button class="create-btn">
+              <span style="font-size:1.1rem">📸</span>
+              Create Backup Now
+            </button>
+
+            <div class="backed-list">
+              <div class="backed-title">What's backed up</div>
+              <div class="backed-item">
+                <div class="backed-check yes">✓</div>
+                All roles (name, color, permissions)
+              </div>
+              <div class="backed-item">
+                <div class="backed-check yes">✓</div>
+                All categories + permission overwrites
+              </div>
+              <div class="backed-item">
+                <div class="backed-check yes">✓</div>
+                All text &amp; voice channels
+              </div>
+              <div class="backed-item">
+                <div class="backed-check yes">✓</div>
+                Server name &amp; settings
+              </div>
+              <div class="backed-item">
+                <div class="backed-check no">✕</div>
+                <span style="color:var(--tx-3)">Messages and member data</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="db-card">
-          <div class="card-hdr">
+
+        <!-- Saved backups -->
+        <div class="saved-card">
+          <div class="saved-hdr">
             <h3>🗂️ Saved Backups</h3>
-            <button class="btn-sm-o" onclick="bkLoad()" style="font-size:.75rem">🔄 Refresh</button>
+            <button class="refresh-btn">🔄 Refresh</button>
           </div>
-          <div id="bk-list"><div class="loading-state"><div class="spinner"></div><p>Loading…</p></div></div>
+          <div class="saved-body">
+            <!-- Empty state (shown when no backups) -->
+            <div class="empty-state" id="backup-empty">
+              <div class="empty-icon">🗄️</div>
+              <div class="empty-title">No backups yet</div>
+              <div class="empty-sub">Create your first backup to protect your server structure.</div>
+            </div>
+            <!-- Populated backup items (hidden by default, shown for demo when you click Create) -->
+            <div id="backup-items" style="display:none">
+              <div class="backup-item">
+                <div class="backup-item-icon">📦</div>
+                <div class="backup-item-info">
+                  <div class="backup-item-name">Before restructure</div>
+                  <div class="backup-item-meta">24 roles · 18 channels · 6 categories — 2 min ago</div>
+                </div>
+                <div class="backup-item-actions">
+                  <button class="bi-btn view">👁 View</button>
+                  <button class="bi-btn restore">🔄</button>
+                  <button class="bi-btn del">🗑</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
-      <div id="bk-detail" style="display:none;margin-top:14px">
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3 id="bk-detail-title">Backup Preview</h3>
-            <button class="btn-sm-o" onclick="document.getElementById('bk-detail').style.display='none'">✕ Close</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-            <div class="dsc"><div class="dsc-icon">🎭</div><div><div class="dsc-val" id="bk-d-roles">—</div><div class="dsc-lbl">Roles</div></div></div>
-            <div class="dsc"><div class="dsc-icon">📢</div><div><div class="dsc-val" id="bk-d-channels">—</div><div class="dsc-lbl">Channels</div></div></div>
-            <div class="dsc"><div class="dsc-icon">😀</div><div><div class="dsc-val" id="bk-d-emojis">—</div><div class="dsc-lbl">Emojis</div></div></div>
-            <div class="dsc"><div class="dsc-icon">👥</div><div><div class="dsc-val" id="bk-d-members">—</div><div class="dsc-lbl">Members</div></div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">🎭 Roles</div><div id="bk-d-roles-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📢 Channels</div><div id="bk-d-channels-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📁 Categories</div><div id="bk-d-cats-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-          </div>
-        </div>
-      </div>
-      <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
-        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:26px;width:460px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
-          <div style="font-size:.95rem;font-weight:700;color:#4eff91;margin-bottom:8px">🔄 Restoring Server…</div>
-          <div id="bk-restore-status" style="font-size:.8rem;color:var(--tx-2);margin-bottom:12px">Starting…</div>
-          <div style="height:5px;background:rgba(78,255,145,.1);border-radius:999px;overflow:hidden"><div id="bk-restore-bar" style="height:100%;background:#4eff91;border-radius:999px;width:0%;transition:width .5s ease"></div></div>
-          <div id="bk-restore-log" style="margin-top:12px;max-height:150px;overflow-y:auto;font-size:.7rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.6)"></div>
-        </div>
-      </div>
-    </div>
+
+    </div><!-- /backup panel -->
 
   </div><!-- /panels -->
 </main>
-</div><!-- /dashboard-app -->
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="app.js"></script>
+<script>
+// ── Tab switching ──────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  const titles={antinuke:'🔰 Anti-Nuke',backup:'💾 Server Backup'};
+  document.getElementById('page-title-display').textContent=titles[tab];
+}
+
+// ── Anti-Nuke toggle ───────────────────────────────
+function handleAnToggle(cb){
+  const badge=document.getElementById('an-badge');
+  const text=document.getElementById('an-badge-text');
+  if(cb.checked){
+    badge.className='an-status-badge on';
+    text.textContent='ENABLED';
+  } else {
+    badge.className='an-status-badge off';
+    text.textContent='DISABLED';
+  }
+}
+
+// ── Threshold rows ─────────────────────────────────
+const thresholds=[
+  {icon:'🔨',name:'Mass Ban',sub:'Bans · def:2',val:2},
+  {icon:'👢',name:'Mass Kick',sub:'Kicks · def:5',val:5},
+  {icon:'📢',name:'Chan Delete',sub:'Deletes · def:2',val:2},
+  {icon:'📡',name:'Chan Spam',sub:'Creates · def:5',val:5},
+  {icon:'🗑️',name:'Role Delete',sub:'Deletes · def:2',val:2},
+  {icon:'⚡',name:'Role Spam',sub:'Creates · def:5',val:5},
+  {icon:'🔗',name:'Webhooks',sub:'Creates · def:3',val:3},
+  {icon:'✂️',name:'Mass Prune',sub:'Prunes · def:1',val:1},
+  {icon:'📣',name:'@everyone',sub:'Pings · def:2',val:2},
+];
+
+function renderThresholds(){
+  const grid=document.getElementById('th-grid');
+  grid.innerHTML=thresholds.map((t,i)=>`
+    <div class="th-row">
+      <div class="th-left">
+        <div class="th-icon">${t.icon}</div>
+        <div class="th-info">
+          <div class="th-name">${t.name}</div>
+          <div class="th-sub">${t.sub}</div>
+        </div>
+      </div>
+      <div class="th-ctrl">
+        <button class="th-btn" onclick="changeVal(${i},-1)">−</button>
+        <span class="th-val" id="tv-${i}">${t.val}</span>
+        <button class="th-btn" onclick="changeVal(${i},1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+function changeVal(i,d){
+  thresholds[i].val=Math.max(1,Math.min(20,thresholds[i].val+d));
+  document.getElementById('tv-'+i).textContent=thresholds[i].val;
+}
+renderThresholds();
+
+// ── Whitelist ──────────────────────────────────────
+const wlItems=[];
+function addWl(){
+  const input=document.getElementById('wl-input');
+  const id=input.value.trim();
+  if(!id) return;
+  wlItems.push(id);
+  input.value='';
+  renderWl();
+}
+function removeWl(id){
+  const idx=wlItems.indexOf(id);
+  if(idx>-1) wlItems.splice(idx,1);
+  renderWl();
+}
+function renderWl(){
+  const list=document.getElementById('wl-list');
+  if(!wlItems.length){
+    list.innerHTML='<div class="wl-empty">No users whitelisted.</div>';
+    return;
+  }
+  list.innerHTML=wlItems.map(id=>`
+    <div class="wl-item" style="margin-bottom:6px">
+      <span style="font-size:0.85rem">👤</span>
+      <span class="wl-id">${id}</span>
+      <div class="wl-del" onclick="removeWl('${id}')">✕</div>
+    </div>
+  `).join('');
+}
+
+// ── Backup demo ────────────────────────────────────
+document.querySelector('.create-btn').addEventListener('click',function(){
+  const btn=this;
+  btn.textContent='⏳  Creating backup…';
+  btn.style.opacity='0.7';
+  btn.disabled=true;
+  setTimeout(()=>{
+    document.getElementById('backup-empty').style.display='none';
+    document.getElementById('backup-items').style.display='block';
+    btn.innerHTML='<span style="font-size:1.1rem">📸</span> Create Backup Now';
+    btn.style.opacity='1';
+    btn.disabled=false;
+  },1800);
+});
+</script>
 </body>
 </html>
