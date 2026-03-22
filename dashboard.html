@@ -784,10 +784,29 @@
           </div>
         </div>
 
-        <!-- Row 4: chart -->
-        <div class="hq__box">
-          <div class="hq__ttl">📊 AUDIT ACTIVITY BREAKDOWN <span style="margin-left:auto;font-size:.58rem;color:rgba(78,255,145,.3)">Last 200 entries</span></div>
-          <canvas id="hq__chart" height="70"></canvas>
+        <!-- Charts 2x2 -->
+        <div class="hq__g2" style="margin-bottom:6px">
+          <div class="hq__box">
+            <div class="hq__ttl">📊 ACTION BREAKDOWN</div>
+            <canvas id="hq__chart" height="130"></canvas>
+          </div>
+          <div class="hq__box">
+            <div class="hq__ttl">📈 TIMELINE <span style="margin-left:auto;font-size:.5rem;color:rgba(78,255,145,.3)">last 24h</span></div>
+            <canvas id="hq__chart2" height="130"></canvas>
+          </div>
+        </div>
+        <div class="hq__g2" style="margin-bottom:6px">
+          <div class="hq__box">
+            <div class="hq__ttl">🌐 GUILD ACTIVITY</div>
+            <canvas id="hq__chart4" height="130"></canvas>
+          </div>
+          <div class="hq__box" style="display:flex;flex-direction:column">
+            <div class="hq__ttl">🎯 SEVERITY MIX</div>
+            <div style="display:flex;align-items:center;gap:14px;flex:1">
+              <canvas id="hq__chart3" style="width:120px!important;height:120px!important;flex-shrink:0"></canvas>
+              <div id="hq__legend" style="display:flex;flex-direction:column;gap:5px"></div>
+            </div>
+          </div>
         </div>
 
       </div>

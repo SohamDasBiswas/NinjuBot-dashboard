@@ -629,50 +629,31 @@ async function fetchBoostStats() {
 // ══════════════════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
-
-const SYSTEM_ACTIONS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready']);
-
-// Strip numeric Discord IDs from strings like "Username (123456789)"
-function cleanName(str) {
-  if (!str) return 'Unknown';
-  return str.replace(/\s*\(\d{10,20}\)/g, '').replace(/#0$/, '').trim() || str;
-}
-
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
+  try {
+    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error('failed');
+    allLogEntries = data.entries || [];
 
-  const headers = { 'Authorization': `Bearer ${discordToken}` };
-  const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
-  let entries = [];
+    // Update badge count
+    const badge = document.getElementById('log-badge');
+    if (badge) badge.textContent = allLogEntries.length;
 
-  // 1. Try Discord native audit log endpoint
-  if (currentGuild) {
-    try {
-      const r = await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`, { headers });
-      if (r.ok) {
-        const d = await r.json();
-        entries = (d.entries || []).map(e => ({...e, target: cleanName(e.target), moderator: cleanName(e.moderator)}));
-      }
-    } catch {}
+    renderLog();
+  } catch {
+    c.innerHTML = `<div class="loading-state">
+      <p>❌ Audit log not available.</p>
+      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
+      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
+    </div>`;
   }
-
-  // 2. Fall back to MongoDB log — all entries including bot_start
-  if (!entries.length) {
-    try {
-      const r = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, { headers });
-      if (r.ok) {
-        const d = await r.json();
-        entries = (d.entries || []).map(e => ({...e, target: cleanName(e.target), moderator: cleanName(e.moderator)}));
-      }
-    } catch {}
-  }
-
-  allLogEntries = entries;
-  const badge = document.getElementById('log-badge');
-  if (badge) badge.textContent = entries.filter(e => !SYSTEM_ACTIONS.has(e.action)).length || entries.length;
-  renderLog();
 }
 
 function filterLog(filter, btn) {
@@ -688,21 +669,8 @@ function logPage(dir) {
   renderLog();
 }
 
-const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓', bot_start:'🚀',
-  member_ban_add:'🔨', member_ban_remove:'🔓', member_kick:'👢', member_update:'✏️', member_role_update:'🏷️',
-  message_delete:'🗑️', message_bulk_delete:'🧹', channel_update:'📝', role_update:'🏷️',
-  guild_update:'🏠', bot_add:'🤖',
-};
-const ACTION_LABELS = {
-  member_ban_add:'BAN', member_ban_remove:'UNBAN', member_kick:'KICK',
-  member_update:'MEMBER UPDATE', member_role_update:'ROLE CHANGE',
-  message_delete:'MSG DELETE', message_bulk_delete:'PURGE',
-  channel_create:'CHANNEL CREATE', channel_delete:'CHANNEL DELETE', channel_update:'CHANNEL UPDATE',
-  role_create:'ROLE CREATE', role_delete:'ROLE DELETE', role_update:'ROLE UPDATE',
-  invite_create:'INVITE CREATE', invite_delete:'INVITE DELETE',
-  guild_update:'SERVER UPDATE', bot_add:'BOT ADDED', bot_start:'BOT START',
-};
-const PER_PAGE = 20;
+const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓', bot_start:'🚀' };
+const PER_PAGE  = 20;
 
 function renderLog() {
   const c = document.getElementById('audit-log-list');
@@ -710,50 +678,39 @@ function renderLog() {
   if (!c) return;
 
   const multiFilters = {
-    'voice_join':     ['voice_join','voice_leave','voice_move','voice_channel_status_update'],
-    'role_add':       ['role_add','role_remove','role_create','role_delete','role_rename','role_update','member_role_update'],
-    'channel_create': ['channel_create','channel_delete','channel_rename','channel_update'],
+    'voice_join':     ['voice_join','voice_leave','voice_move'],
+    'role_add':       ['role_add','role_remove','role_create','role_delete','role_rename'],
+    'channel_create': ['channel_create','channel_delete','channel_rename'],
     'invite_create':  ['invite_create','invite_delete'],
   };
-
   const filtered = auditLogFilter === 'all'
     ? allLogEntries
-    : allLogEntries.filter(e => {
-        const a = e.action || '';
-        return multiFilters[auditLogFilter]
-          ? multiFilters[auditLogFilter].includes(a)
-          : a === auditLogFilter;
-      });
+    : allLogEntries.filter(e => multiFilters[auditLogFilter]
+        ? multiFilters[auditLogFilter].includes(e.action)
+        : e.action === auditLogFilter);
 
-  const total = Math.ceil(filtered.length / PER_PAGE) || 1;
-  auditLogPage = Math.min(auditLogPage, total);
-  const slice = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
+  const total     = Math.ceil(filtered.length / PER_PAGE) || 1;
+  auditLogPage    = Math.min(auditLogPage, total);
+  const slice     = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
 
   if (!slice.length) {
-    c.innerHTML = `<div class="loading-state"><p style="color:var(--tx-2)">No log entries found for this filter.</p></div>`;
+    c.innerHTML = `<div class="loading-state"><p>No log entries found.</p></div>`;
     if (pg) pg.style.display = 'none';
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => {
-    const action = e.action || 'unknown';
-    const label = ACTION_LABELS[action] || action.toUpperCase().replace(/_/g, ' ');
-    const icon = LOG_ICONS[action] || '📌';
-    const target = cleanName(e.target) || 'Unknown';
-    const mod = cleanName(e.moderator) || 'System';
-    return `
-    <div class="log-entry ${action}">
-      <div class="log-icon">${icon}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => `
+    <div class="log-entry ${e.action||''}">
+      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${action}">${label}</span>
-          <strong>${target}</strong>${e.reason ? ` — ${e.reason}` : ''}
+          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
+          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
         </div>
-        <div class="log-meta">By ${mod}${e.guild_name ? ' in <strong>'+e.guild_name+'</strong>' : ''}</div>
+        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
       </div>
       <div class="log-time">${formatTime(e.timestamp)}</div>
-    </div>`;
-  }).join('')}</div>`;
+    </div>`).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
@@ -1275,43 +1232,102 @@ async function hq_xp(){
 
 async function hq_feed(){
   try{
-    const data=await(await hq_get('/audit/log?limit=200')).json();
-    const entries=data.entries||[];
-    hq_s('hq__sal',entries.length);
-    const fc=document.getElementById('hq__fc');if(fc)fc.textContent=entries.length+' entries';
-    if(!entries.length){hq_s('hq__feed','<div class="hq__em">NO LOG ENTRIES YET</div>');hq_chart([]);return;}
-    hq_s('hq__feed',entries.slice(0,60).map(e=>{
+    // Try Discord native audit log first
+    let entries = [];
+    const gid = currentGuild ? currentGuild.id : null;
+    if(gid){
+      try{
+        const r=await fetch(`${BOT_API}/guild/audit-log?guild_id=${gid}&limit=200`,{headers:{'Authorization':`Bearer ${discordToken}`}});
+        if(r.ok){const d=await r.json();entries=d.entries||[];}
+      }catch{}
+    }
+    // Fall back to MongoDB
+    if(!entries.length){
+      const data=await(await hq_get('/audit/log?limit=200')).json();
+      entries=data.entries||[];
+    }
+    const realEntries=entries.filter(e=>e.action!=='bot_start'&&e.action!=='bot_connect'&&e.action!=='bot_ready');
+    const display=realEntries.length?realEntries:entries;
+    hq_s('hq__sal',display.length);
+    const fc=document.getElementById('hq__fc');if(fc)fc.textContent=display.length+' entries';
+    if(!display.length){hq_s('hq__feed','<div class="hq__em">NO EVENTS YET</div>');hq_chart([]);return;}
+    hq_s('hq__feed',display.slice(0,60).map(e=>{
       const icon=_HQICONS[e.action]||'📌';
       const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
       const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
+      const target=(e.target||'?').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'');
+      const mod=(e.moderator||'System').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'');
+      const action=(e.action||'?').toUpperCase().replace(/_/g,' ');
       return `<div class="hq__fe">
         <span class="hq__fi">${icon}</span>
         <div class="hq__fb">
-          <div class="hq__fa">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
-          <div class="hq__fm">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
+          <div class="hq__fa">[${action}] ${target}</div>
+          <div class="hq__fm">BY: ${mod}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
         </div>
         <span class="hq__ft">${time}</span>
       </div>`;
     }).join(''));
-    hq_chart(entries);
-  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);}
+    hq_chart(display);
+  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);hq_chart([]);}
+}
 }
 
 function hq_chart(entries){
-  const canvas=document.getElementById('hq__chart');if(!canvas)return;
-  const counts={};
-  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  if(!sorted.length)return;
-  if(canvas._c)canvas._c.destroy();
-  canvas._c=new Chart(canvas.getContext('2d'),{
-    type:'bar',
-    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{
-      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
-      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
-    }}
-  });
+  const mk=id=>{const c=document.getElementById(id);if(!c)return null;if(c._c){c._c.destroy();c._c=null;}return c;};
+  const F={family:'"Courier New",monospace',size:10};
+  const G='#4eff91',grd='rgba(78,255,145,.07)',tc='rgba(78,255,145,.6)';
+  const TIP={backgroundColor:'#0a1510',borderColor:G,borderWidth:1,titleColor:G,bodyColor:'#d0ffe0',titleFont:F,bodyFont:F,padding:6};
+
+  // Chart 1 — Action breakdown bar
+  const c1=mk('hq__chart');
+  if(c1){
+    const cnt={};entries.forEach(e=>{const a=e.action||e.type;if(a&&a!=='bot_start')cnt[a]=(cnt[a]||0)+1;});
+    const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,9);
+    if(rows.length){
+      const gd=c1.getContext('2d').createLinearGradient(0,0,0,120);gd.addColorStop(0,'rgba(78,255,145,.5)');gd.addColorStop(1,'rgba(78,255,145,.04)');
+      c1._c=new Chart(c1.getContext('2d'),{type:'bar',data:{labels:rows.map(([k])=>k.replace(/_/g,' ').toUpperCase()),datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.7)'}]},
+        options:{responsive:true,animation:{duration:700},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
+          scales:{x:{ticks:{color:tc,font:F,maxRotation:30},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
+    }
+  }
+
+  // Chart 2 — Timeline
+  const c2=mk('hq__chart2');
+  if(c2){
+    const now=Date.now(),buckets=new Array(24).fill(0);
+    entries.forEach(e=>{const ts=e.timestamp||e.created_at;if(!ts)return;const d=new Date(ts);if(isNaN(d))return;const hr=Math.floor((now-d.getTime())/3600000);if(hr>=0&&hr<24)buckets[23-hr]++;});
+    const labels=Array.from({length:24},(_,i)=>i%4===0?new Date(now-(23-i)*3600000).getHours().toString().padStart(2,'0')+'h':'');
+    const gd2=c2.getContext('2d').createLinearGradient(0,0,0,120);gd2.addColorStop(0,'rgba(78,255,145,.3)');gd2.addColorStop(1,'rgba(78,255,145,.0)');
+    c2._c=new Chart(c2.getContext('2d'),{type:'line',data:{labels,datasets:[{data:buckets,borderColor:G,backgroundColor:gd2,borderWidth:1.5,pointRadius:2,pointBackgroundColor:G,tension:0.35,fill:true}]},
+      options:{responsive:true,animation:{duration:900},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`⏱ ${i.label||i.dataIndex+'h ago'}`,label:i=>`EVENTS: ${i.raw}`}}},
+        scales:{x:{ticks:{color:tc,font:{family:'"Courier New"',size:8}},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F,stepSize:1},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
+  }
+
+  // Chart 3 — Severity doughnut
+  const c3=mk('hq__chart3');
+  if(c3){
+    const HIGH=['ban','kick','unban','member_ban_add','member_kick'],MED=['mute','timeout','warn'],LOW=['join','leave','bot_start','member_update'];
+    const v={h:0,m:0,l:0,i:0};
+    entries.forEach(e=>{const a=(e.action||'').toLowerCase();if(HIGH.some(x=>a.includes(x)))v.h++;else if(MED.some(x=>a.includes(x)))v.m++;else if(LOW.some(x=>a.includes(x)))v.l++;else v.i++;});
+    const vals=[v.h,v.m,v.l,v.i],clrs=['#ff4f4f','#fbbf24',G,'rgba(78,255,145,.35)'];
+    c3._c=new Chart(c3.getContext('2d'),{type:'doughnut',data:{labels:['HIGH','MED','LOW','INFO'],datasets:[{data:vals,backgroundColor:['rgba(255,79,79,.2)','rgba(251,191,36,.2)','rgba(78,255,145,.18)','rgba(78,255,145,.06)'],borderColor:clrs,borderWidth:1.5,hoverOffset:4}]},
+      options:{responsive:false,cutout:'60%',animation:{duration:1000},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>i.label,label:i=>`${i.raw} events`}}}}});
+    const leg=document.getElementById('hq__legend');
+    if(leg)leg.innerHTML=['HIGH','MED','LOW','INFO'].map((l,i)=>`<span style="font-family:monospace;font-size:.58rem;color:${clrs[i]};display:flex;align-items:center;gap:3px"><span style="width:6px;height:6px;border-radius:50%;background:${clrs[i]};display:inline-block;flex-shrink:0"></span>${l}:${vals[i]}</span>`).join('');
+  }
+
+  // Chart 4 — Guild vertical bars
+  const c4=mk('hq__chart4');
+  if(c4){
+    const gc={};entries.forEach(e=>{if(e.action==='bot_start')return;const g=e.guild_name||'Unknown';gc[g]=(gc[g]||0)+1;});
+    const rows=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    if(rows.length){
+      const gd=c4.getContext('2d').createLinearGradient(0,0,0,120);gd.addColorStop(0,'rgba(78,255,145,.55)');gd.addColorStop(1,'rgba(78,255,145,.06)');
+      c4._c=new Chart(c4.getContext('2d'),{type:'bar',data:{labels:rows.map(([k])=>k.length>12?k.slice(0,10)+'…':k),datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.8)'}]},
+        options:{responsive:true,animation:{duration:800},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`🌐 ${i.label}`,label:i=>`EVENTS: ${i.raw}`}}},
+          scales:{x:{ticks:{color:tc,font:{family:'"Courier New"',size:9},maxRotation:20},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
+    }
+  }
 }
 
 function hqExportAudit(){
