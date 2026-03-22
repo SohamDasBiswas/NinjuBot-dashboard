@@ -605,31 +605,57 @@ async function fetchBoostStats() {
 // ══════════════════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
+const _BOT_SYSTEM_EVENTS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready']);
+
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
-  try {
-    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
-    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
-      headers: { 'Authorization': `Bearer ${discordToken}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error('failed');
-    allLogEntries = data.entries || [];
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
+  const headers = { 'Authorization': `Bearer ${discordToken}` };
+  const guildId = currentGuild ? currentGuild.id : null;
+  let entries = [];
 
-    // Update badge count
-    const badge = document.getElementById('log-badge');
-    if (badge) badge.textContent = allLogEntries.length;
-
-    renderLog();
-  } catch {
-    c.innerHTML = `<div class="loading-state">
-      <p>❌ Audit log not available.</p>
-      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
-      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
-    </div>`;
+  // 1. Try the Discord-native endpoint (needs updated bot.py on Render)
+  if (guildId) {
+    try {
+      const r = await fetch(`${BOT_API}/server/audit-log?guild_id=${guildId}&limit=100`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        entries = d.entries || [];
+      }
+    } catch {}
   }
+
+  // 2. Fall back to MongoDB log — but STRICTLY exclude all bot system events
+  if (!entries.length) {
+    try {
+      const gp = guildId ? `&guild_id=${guildId}` : '';
+      const r  = await fetch(`${BOT_API}/audit/log?limit=200${gp}`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        entries = (d.entries || []).filter(e => !_BOT_SYSTEM_EVENTS.has(e.action));
+      }
+    } catch {}
+  }
+
+  allLogEntries = entries;
+  const badge = document.getElementById('log-badge');
+  if (badge) badge.textContent = entries.length;
+
+  if (!entries.length) {
+    c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:10px;padding:40px">
+      <span style="font-size:2rem">🛡️</span>
+      <p style="font-weight:700">No server events yet</p>
+      <p style="font-size:0.8rem;color:var(--tx-3);text-align:center;max-width:360px">
+        Server moderation events (bans, kicks, role changes, etc.) will appear here.<br>
+        Make sure the updated <code style="color:var(--green)">bot.py</code> is deployed on Render.
+      </p>
+      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:4px">🔄 Refresh</button>
+    </div>`;
+    return;
+  }
+
+  renderLog();
 }
 
 function filterLog(filter, btn) {
@@ -675,28 +701,18 @@ function renderLog() {
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => {
-    const action  = e.action || 'unknown';
-    const label   = action.toUpperCase().replace(/_/g,' ');
-    const icon    = LOG_ICONS[action] || '📌';
-    const clean   = s => (s||'').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim() || s || '?';
-    const target  = clean(e.target);
-    const mod     = clean(e.moderator) || 'System';
-    // Show detail (role name, channel rename etc) if present, otherwise reason
-    const extra   = e.detail || e.reason || '';
-    return `
-    <div class="log-entry ${action}">
-      <div class="log-icon">${icon}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => `
+    <div class="log-entry ${e.action||''}">
+      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${action}">${label}</span>
-          <strong>${target}</strong>${extra ? ` — <span style="color:var(--tx-2);font-weight:400">${extra}</span>` : ''}
+          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
+          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
         </div>
-        <div class="log-meta">By ${mod}${e.guild_name ? ' in ' + e.guild_name : ''}</div>
+        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
       </div>
       <div class="log-time">${formatTime(e.timestamp)}</div>
-    </div>`;
-  }).join('')}</div>`;
+    </div>`).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
