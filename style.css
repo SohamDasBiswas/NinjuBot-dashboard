@@ -66,7 +66,7 @@
 /* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:var(--font-b);background:var(--base);color:var(--tx);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{margin:0;font-family:var(--font-b);background:var(--base);color:var(--tx);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;font-family:var(--font-b)}
 ::-webkit-scrollbar{width:5px;height:5px}
@@ -294,7 +294,7 @@ section{padding:100px 40px}
 .ctab{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);color:var(--tx-2);font-size:0.875rem;font-weight:600;border:1px solid transparent;transition:all var(--t) var(--ease);text-align:left}
 .ctab:hover{color:var(--tx);border-color:var(--green-border)}
 .ctab.active{background:var(--green-lo);color:var(--green);border-color:var(--green-border);box-shadow:var(--neu-gsm);transform:translateX(4px)}
-.cpanel{display:none;animation:fadeUp 0.28s var(--ease)}
+.panel{display:none;animation:fadeUp 0.28s var(--ease);margin-top:0}
 .cpanel.active{display:block}
 .cpanel-h{font-family:var(--font-d);font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:20px}
 .cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -352,13 +352,12 @@ section{padding:100px 40px}
 .back-btn{padding:10px 14px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);font-size:0.8rem;color:var(--tx-2);text-align:center;transition:all var(--t) var(--ease);border:1px solid rgba(78,255,145,0.06)}
 .back-btn:hover{color:var(--green);border-color:var(--green-border)}
 
-.db-main{flex:1;display:flex;flex-direction:column;min-height:0}
-.topbar{height:64px;min-height:64px;flex-shrink:0;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);box-shadow:var(--neu-out-sm);border-bottom:1px solid rgba(78,255,145,0.07)}
+.db-main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.topbar{height:64px;min-height:64px;flex-shrink:0;padding:0 24px;margin:0;display:flex;align-items:center;justify-content:space-between;background:var(--surface);box-shadow:var(--neu-out-sm);border-bottom:1px solid rgba(78,255,145,0.07)}
 .page-title{font-family:var(--font-d);font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:10px}
 .topbar-r{display:flex;align-items:center;gap:10px}
 .uptime-pill{padding:7px 14px;border-radius:var(--r-sm);background:var(--base-down);box-shadow:var(--neu-in);font-size:0.78rem;font-family:var(--font-m);color:var(--green)}
-.panels{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:22px;scrollbar-width:none}
-.panel{display:none;animation:fadeUp 0.28s var(--ease)}
+.panels{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 24px 24px;scrollbar-width:none}
 .panel.active{display:block}
 
 /* ════════════ DASHBOARD CARDS ════════════ */
@@ -368,10 +367,10 @@ section{padding:100px 40px}
 .dsc-icon{width:44px;height:44px;border-radius:var(--r-sm);background:var(--green-lo);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
 .dsc-val{font-family:var(--font-m);font-size:1.5rem;font-weight:500;color:var(--green);line-height:1}
 .dsc-lbl{font-size:0.72rem;color:var(--tx-3);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
-.db-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.db-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;margin-top:16px}
 .db-row.full{grid-template-columns:1fr}
 .db-row.thirds{grid-template-columns:1fr 1fr 1fr}
-.db-card{padding:22px 24px;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.06)}
+.db-card{padding:22px 24px;background:var(--surface);border-radius:16px;box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.06)}
 .db-card h3{font-family:var(--font-d);font-size:1rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .card-hdr h3{margin-bottom:0}
