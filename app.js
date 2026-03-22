@@ -1232,102 +1232,43 @@ async function hq_xp(){
 
 async function hq_feed(){
   try{
-    // Try Discord native audit log first
-    let entries = [];
-    const gid = currentGuild ? currentGuild.id : null;
-    if(gid){
-      try{
-        const r=await fetch(`${BOT_API}/guild/audit-log?guild_id=${gid}&limit=200`,{headers:{'Authorization':`Bearer ${discordToken}`}});
-        if(r.ok){const d=await r.json();entries=d.entries||[];}
-      }catch{}
-    }
-    // Fall back to MongoDB
-    if(!entries.length){
-      const data=await(await hq_get('/audit/log?limit=200')).json();
-      entries=data.entries||[];
-    }
-    const realEntries=entries.filter(e=>e.action!=='bot_start'&&e.action!=='bot_connect'&&e.action!=='bot_ready');
-    const display=realEntries.length?realEntries:entries;
-    hq_s('hq__sal',display.length);
-    const fc=document.getElementById('hq__fc');if(fc)fc.textContent=display.length+' entries';
-    if(!display.length){hq_s('hq__feed','<div class="hq__em">NO EVENTS YET</div>');hq_chart([]);return;}
-    hq_s('hq__feed',display.slice(0,60).map(e=>{
+    const data=await(await hq_get('/audit/log?limit=200')).json();
+    const entries=data.entries||[];
+    hq_s('hq__sal',entries.length);
+    const fc=document.getElementById('hq__fc');if(fc)fc.textContent=entries.length+' entries';
+    if(!entries.length){hq_s('hq__feed','<div class="hq__em">NO LOG ENTRIES YET</div>');hq_chart([]);return;}
+    hq_s('hq__feed',entries.slice(0,60).map(e=>{
       const icon=_HQICONS[e.action]||'📌';
       const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
       const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
-      const target=(e.target||'?').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'');
-      const mod=(e.moderator||'System').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'');
-      const action=(e.action||'?').toUpperCase().replace(/_/g,' ');
       return `<div class="hq__fe">
         <span class="hq__fi">${icon}</span>
         <div class="hq__fb">
-          <div class="hq__fa">[${action}] ${target}</div>
-          <div class="hq__fm">BY: ${mod}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
+          <div class="hq__fa">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
+          <div class="hq__fm">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
         </div>
         <span class="hq__ft">${time}</span>
       </div>`;
     }).join(''));
-    hq_chart(display);
-  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);hq_chart([]);}
-}
+    hq_chart(entries);
+  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);}
 }
 
 function hq_chart(entries){
-  const mk=id=>{const c=document.getElementById(id);if(!c)return null;if(c._c){c._c.destroy();c._c=null;}return c;};
-  const F={family:'"Courier New",monospace',size:10};
-  const G='#4eff91',grd='rgba(78,255,145,.07)',tc='rgba(78,255,145,.6)';
-  const TIP={backgroundColor:'#0a1510',borderColor:G,borderWidth:1,titleColor:G,bodyColor:'#d0ffe0',titleFont:F,bodyFont:F,padding:6};
-
-  // Chart 1 — Action breakdown bar
-  const c1=mk('hq__chart');
-  if(c1){
-    const cnt={};entries.forEach(e=>{const a=e.action||e.type;if(a&&a!=='bot_start')cnt[a]=(cnt[a]||0)+1;});
-    const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,9);
-    if(rows.length){
-      const gd=c1.getContext('2d').createLinearGradient(0,0,0,120);gd.addColorStop(0,'rgba(78,255,145,.5)');gd.addColorStop(1,'rgba(78,255,145,.04)');
-      c1._c=new Chart(c1.getContext('2d'),{type:'bar',data:{labels:rows.map(([k])=>k.replace(/_/g,' ').toUpperCase()),datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.7)'}]},
-        options:{responsive:true,animation:{duration:700},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}}},
-          scales:{x:{ticks:{color:tc,font:F,maxRotation:30},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
-    }
-  }
-
-  // Chart 2 — Timeline
-  const c2=mk('hq__chart2');
-  if(c2){
-    const now=Date.now(),buckets=new Array(24).fill(0);
-    entries.forEach(e=>{const ts=e.timestamp||e.created_at;if(!ts)return;const d=new Date(ts);if(isNaN(d))return;const hr=Math.floor((now-d.getTime())/3600000);if(hr>=0&&hr<24)buckets[23-hr]++;});
-    const labels=Array.from({length:24},(_,i)=>i%4===0?new Date(now-(23-i)*3600000).getHours().toString().padStart(2,'0')+'h':'');
-    const gd2=c2.getContext('2d').createLinearGradient(0,0,0,120);gd2.addColorStop(0,'rgba(78,255,145,.3)');gd2.addColorStop(1,'rgba(78,255,145,.0)');
-    c2._c=new Chart(c2.getContext('2d'),{type:'line',data:{labels,datasets:[{data:buckets,borderColor:G,backgroundColor:gd2,borderWidth:1.5,pointRadius:2,pointBackgroundColor:G,tension:0.35,fill:true}]},
-      options:{responsive:true,animation:{duration:900},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`⏱ ${i.label||i.dataIndex+'h ago'}`,label:i=>`EVENTS: ${i.raw}`}}},
-        scales:{x:{ticks:{color:tc,font:{family:'"Courier New"',size:8}},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F,stepSize:1},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
-  }
-
-  // Chart 3 — Severity doughnut
-  const c3=mk('hq__chart3');
-  if(c3){
-    const HIGH=['ban','kick','unban','member_ban_add','member_kick'],MED=['mute','timeout','warn'],LOW=['join','leave','bot_start','member_update'];
-    const v={h:0,m:0,l:0,i:0};
-    entries.forEach(e=>{const a=(e.action||'').toLowerCase();if(HIGH.some(x=>a.includes(x)))v.h++;else if(MED.some(x=>a.includes(x)))v.m++;else if(LOW.some(x=>a.includes(x)))v.l++;else v.i++;});
-    const vals=[v.h,v.m,v.l,v.i],clrs=['#ff4f4f','#fbbf24',G,'rgba(78,255,145,.35)'];
-    c3._c=new Chart(c3.getContext('2d'),{type:'doughnut',data:{labels:['HIGH','MED','LOW','INFO'],datasets:[{data:vals,backgroundColor:['rgba(255,79,79,.2)','rgba(251,191,36,.2)','rgba(78,255,145,.18)','rgba(78,255,145,.06)'],borderColor:clrs,borderWidth:1.5,hoverOffset:4}]},
-      options:{responsive:false,cutout:'60%',animation:{duration:1000},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>i.label,label:i=>`${i.raw} events`}}}}});
-    const leg=document.getElementById('hq__legend');
-    if(leg)leg.innerHTML=['HIGH','MED','LOW','INFO'].map((l,i)=>`<span style="font-family:monospace;font-size:.58rem;color:${clrs[i]};display:flex;align-items:center;gap:3px"><span style="width:6px;height:6px;border-radius:50%;background:${clrs[i]};display:inline-block;flex-shrink:0"></span>${l}:${vals[i]}</span>`).join('');
-  }
-
-  // Chart 4 — Guild vertical bars
-  const c4=mk('hq__chart4');
-  if(c4){
-    const gc={};entries.forEach(e=>{if(e.action==='bot_start')return;const g=e.guild_name||'Unknown';gc[g]=(gc[g]||0)+1;});
-    const rows=Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,7);
-    if(rows.length){
-      const gd=c4.getContext('2d').createLinearGradient(0,0,0,120);gd.addColorStop(0,'rgba(78,255,145,.55)');gd.addColorStop(1,'rgba(78,255,145,.06)');
-      c4._c=new Chart(c4.getContext('2d'),{type:'bar',data:{labels:rows.map(([k])=>k.length>12?k.slice(0,10)+'…':k),datasets:[{data:rows.map(([,v])=>v),backgroundColor:gd,borderColor:G,borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.8)'}]},
-        options:{responsive:true,animation:{duration:800},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:([i])=>`🌐 ${i.label}`,label:i=>`EVENTS: ${i.raw}`}}},
-          scales:{x:{ticks:{color:tc,font:{family:'"Courier New"',size:9},maxRotation:20},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}},y:{ticks:{color:tc,font:F},grid:{color:grd},border:{color:'rgba(78,255,145,.2)'}}}}});
-    }
-  }
+  const canvas=document.getElementById('hq__chart');if(!canvas)return;
+  const counts={};
+  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  if(!sorted.length)return;
+  if(canvas._c)canvas._c.destroy();
+  canvas._c=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
+      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
+    }}
+  });
 }
 
 function hqExportAudit(){
