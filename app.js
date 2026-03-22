@@ -736,18 +736,20 @@ function showPanel(name, el) {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
     'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-booster':'Booster Cards',
-    'cfg-moderation':'Moderation', 'cfg-antinuke':'Anti-Nuke', 'audit-log':'Audit Log', mongodb:'MongoDB Stats'
+    'cfg-moderation':'Moderation', 'cfg-antinuke':'Anti-Nuke', 'server-backup':'Server Backup',
+    'audit-log':'Audit Log', mongodb:'MongoDB Stats'
   };
   const t = document.getElementById('page-title');
   if (t) t.textContent = titles[name] || name;
 
-  if (name === 'stats')       fetchStats();
-  if (name === 'servers')     fetchServerList();
-  if (name === 'leaderboard') { fetchEconomy(); fetchLevels(); }
-  if (name === 'audit-log')   fetchAuditLog();
-  if (name === 'mongodb')     fetchMongoStats();
-  if (name === 'admin-hq')    hqLoad();
+  if (name === 'stats')        fetchStats();
+  if (name === 'servers')      fetchServerList();
+  if (name === 'leaderboard')  { fetchEconomy(); fetchLevels(); }
+  if (name === 'audit-log')    fetchAuditLog();
+  if (name === 'mongodb')      fetchMongoStats();
+  if (name === 'admin-hq')     hqLoad();
   if (name === 'cfg-antinuke') loadAntiNuke();
+  if (name === 'server-backup') bkLoad();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1269,187 +1271,181 @@ async function hqExportEco(){
 }
 
 // ══════════════════════════════════════════════════════════════
-//  ANTI-NUKE PANEL
+//  SERVER BACKUP PANEL
 // ══════════════════════════════════════════════════════════════
 
-const AN_ACTIONS = {
-  ban:            { label:'🔨 Mass Ban',            desc:'Bans in 10s' },
-  kick:           { label:'👢 Mass Kick',           desc:'Kicks in 10s' },
-  channel_delete: { label:'🗑️ Channel Delete',      desc:'Channel deletes in 10s' },
-  channel_create: { label:'📢 Channel Spam',         desc:'Channel creates in 10s' },
-  role_delete:    { label:'🗑️ Role Delete',          desc:'Role deletes in 10s' },
-  role_create:    { label:'🎭 Role Spam',             desc:'Role creates in 10s' },
-  webhook_create: { label:'🔗 Webhook Spam',          desc:'Webhooks created in 10s' },
-  member_prune:   { label:'🚪 Mass Prune',            desc:'Prune triggers in 10s' },
-  everyone_ping:  { label:'📣 @everyone Spam',        desc:'@everyone pings in 10s' },
-};
+let _bkRestoring = false;
 
-const AN_DEFAULTS = {
-  ban:2, kick:3, channel_delete:2, channel_create:5,
-  role_delete:2, role_create:5, webhook_create:3,
-  member_prune:1, everyone_ping:2
-};
-
-let _anCfg = null;
-
-async function loadAntiNuke() {
+async function bkLoad() {
   if (!currentGuild) return;
+
+  // Check if current user is server owner
+  const isOwner = currentGuild.owner_id === currentUser?.id;
+  const warn = document.getElementById('backup-owner-warn');
+  if (warn) warn.style.display = isOwner ? 'none' : 'block';
+
+  const el = document.getElementById('bk-list');
+  if (!el) return;
+  el.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading backups…</p></div>`;
+
   try {
-    const res  = await fetch(`${BOT_API}/antinuke?guild_id=${currentGuild.id}`, {
+    const res  = await fetch(`${BOT_API}/backup/list?guild_id=${currentGuild.id}`, {
       headers: { 'Authorization': `Bearer ${discordToken}` }
     });
-    _anCfg = res.ok ? await res.json() : {
-      enabled: false, punishment: 'ban', whitelist: [], thresholds: {...AN_DEFAULTS}, log_channel: null
-    };
+    const data = res.ok ? await res.json() : { backups: [] };
+    const backups = data.backups || [];
+
+    if (!backups.length) {
+      el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--tx-3);font-size:.85rem">
+        <div style="font-size:2rem;margin-bottom:8px">💾</div>
+        No backups yet. Create your first backup!
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = backups.map(b => `
+      <div style="padding:14px 16px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);display:flex;align-items:center;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.88rem;color:var(--tx);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.label || 'Backup'}</div>
+          <div style="font-size:.72rem;color:var(--tx-3);display:flex;gap:10px;flex-wrap:wrap">
+            <span>🎭 ${b.role_count} roles</span>
+            <span>📢 ${b.channel_count} channels</span>
+            <span>😀 ${b.emoji_count} emojis</span>
+            <span>👥 ${b.member_count} members</span>
+            <span>🕒 ${new Date(b.created_at).toLocaleString()}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn-sm-o" style="font-size:.72rem;padding:5px 10px" onclick="bkPreview('${b.backup_id}')">👁 Preview</button>
+          ${isOwner ? `
+          <button class="btn-sm" style="font-size:.72rem;padding:5px 10px;background:rgba(78,255,145,.15);border-color:rgba(78,255,145,.4)" onclick="bkRestore('${b.backup_id}','${(b.label||'Backup').replace(/'/g,"\\'")}')">🔄 Restore</button>
+          <button class="btn-danger" style="font-size:.72rem;padding:5px 10px" onclick="bkDelete('${b.backup_id}')">🗑</button>
+          ` : ''}
+        </div>
+      </div>`).join('');
   } catch {
-    _anCfg = { enabled: false, punishment: 'ban', whitelist: [], thresholds: {...AN_DEFAULTS}, log_channel: null };
+    el.innerHTML = `<div class="loading-state"><p>❌ Failed to load backups.</p></div>`;
   }
-  _anRender();
 }
 
-function _anRender() {
-  const cfg = _anCfg;
-  if (!cfg) return;
-
-  // Toggle
-  const tog = document.getElementById('an-enabled');
-  if (tog) tog.checked = !!cfg.enabled;
-
-  // Status pill
-  const pill = document.getElementById('an-status-pill');
-  if (pill) {
-    pill.textContent = cfg.enabled ? '🟢 ENABLED' : '🔴 DISABLED';
-    pill.style.background = cfg.enabled ? 'rgba(78,255,145,.15)' : 'rgba(255,79,79,.15)';
-    pill.style.color       = cfg.enabled ? '#4eff91' : '#ff4f4f';
-    pill.style.borderColor = cfg.enabled ? 'rgba(78,255,145,.3)' : 'rgba(255,79,79,.3)';
+async function bkCreate() {
+  if (!currentGuild) return;
+  if (currentGuild.owner_id !== currentUser?.id) {
+    return showToast('Only the server owner can create backups', 'error');
   }
-
-  // Punishment
-  const pun = document.getElementById('an-punishment');
-  if (pun) pun.value = cfg.punishment || 'ban';
-
-  // Log channel
-  const sel = document.getElementById('an-logchannel');
-  if (sel) {
-    const cur = cfg.log_channel || '';
-    Array.from(sel.options).forEach(o => { o.selected = o.value === cur; });
-  }
-
-  // Whitelist
-  const wlEl = document.getElementById('an-whitelist-list');
-  if (wlEl) {
-    const wl = cfg.whitelist || [];
-    wlEl.innerHTML = wl.length
-      ? wl.map(uid => `
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.1)">
-            <span style="font-family:var(--font-m);font-size:.82rem;flex:1"><@${uid}> <span style="color:var(--tx-3);font-size:.72rem">(${uid})</span></span>
-            <button class="btn-danger" style="padding:4px 10px;font-size:.72rem" onclick="anWhitelistRemove('${uid}')">Remove</button>
-          </div>`).join('')
-      : '<div style="color:var(--tx-3);font-size:.8rem;padding:8px 0">No users whitelisted yet.</div>';
-  }
-
-  // Thresholds
-  const tEl = document.getElementById('an-thresholds');
-  if (tEl) {
-    const thresh = cfg.thresholds || AN_DEFAULTS;
-    tEl.innerHTML = Object.entries(AN_ACTIONS).map(([key, {label, desc}]) => {
-      const val = thresh[key] ?? AN_DEFAULTS[key];
-      const def = AN_DEFAULTS[key];
-      return `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.07)">
-          <div>
-            <div style="font-size:.85rem;font-weight:600">${label}</div>
-            <div style="font-size:.7rem;color:var(--tx-3)">${desc} &nbsp;·&nbsp; default: ${def}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-            <button onclick="anThreshAdj('${key}',-1)" style="width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:1rem;cursor:pointer;line-height:1">−</button>
-            <input type="number" id="an-thresh-${key}" value="${val}" min="1" max="20"
-              style="width:52px;text-align:center;padding:5px 4px;border-radius:6px;background:#07100a;border:1px solid rgba(78,255,145,.2);color:#d0ffe0;font-family:'Courier New',monospace;font-size:.95rem;font-weight:700"
-              oninput="markDirty('antinuke')">
-            <button onclick="anThreshAdj('${key}',1)" style="width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:1rem;cursor:pointer;line-height:1">+</button>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  const dirty = document.getElementById('dd-antinuke');
-  if (dirty) dirty.classList.remove('show');
-}
-
-function anToggle() {
-  if (!_anCfg) return;
-  _anCfg.enabled = document.getElementById('an-enabled').checked;
-  const pill = document.getElementById('an-status-pill');
-  if (pill) {
-    pill.textContent = _anCfg.enabled ? '🟢 ENABLED' : '🔴 DISABLED';
-    pill.style.background = _anCfg.enabled ? 'rgba(78,255,145,.15)' : 'rgba(255,79,79,.15)';
-    pill.style.color       = _anCfg.enabled ? '#4eff91' : '#ff4f4f';
-    pill.style.borderColor = _anCfg.enabled ? 'rgba(78,255,145,.3)' : 'rgba(255,79,79,.3)';
-  }
-  markDirty('antinuke');
-}
-
-function anWhitelistAdd() {
-  if (!_anCfg) return;
-  const inp = document.getElementById('an-whitelist-input');
-  if (!inp) return;
-  const raw = inp.value.trim().replace(/[^0-9]/g, '');
-  if (!raw || raw.length < 17) { showToast('Enter a valid Discord user ID', 'warn'); return; }
-  if (!_anCfg.whitelist.includes(raw)) {
-    _anCfg.whitelist.push(raw);
-    _anRender();
-    markDirty('antinuke');
-  }
-  inp.value = '';
-}
-
-function anWhitelistRemove(uid) {
-  if (!_anCfg) return;
-  _anCfg.whitelist = _anCfg.whitelist.filter(u => u !== uid);
-  _anRender();
-  markDirty('antinuke');
-}
-
-function anThreshAdj(key, delta) {
-  const el = document.getElementById(`an-thresh-${key}`);
-  if (!el) return;
-  const newVal = Math.min(20, Math.max(1, parseInt(el.value || 1) + delta));
-  el.value = newVal;
-  markDirty('antinuke');
-}
-
-function anResetDefaults() {
-  Object.entries(AN_DEFAULTS).forEach(([key, val]) => {
-    const el = document.getElementById(`an-thresh-${key}`);
-    if (el) el.value = val;
-  });
-  showToast('Thresholds reset to defaults — click Save to apply', 'warn');
-  markDirty('antinuke');
-}
-
-async function saveAntiNuke() {
-  if (!currentGuild || !_anCfg) return;
-  // Read current values from UI
-  _anCfg.punishment  = document.getElementById('an-punishment')?.value || 'ban';
-  _anCfg.log_channel = document.getElementById('an-logchannel')?.value || null;
-  Object.keys(AN_DEFAULTS).forEach(key => {
-    const el = document.getElementById(`an-thresh-${key}`);
-    if (el) _anCfg.thresholds[key] = parseInt(el.value);
-  });
-
+  const label = document.getElementById('bk-label')?.value.trim() || '';
+  showToast('⏳ Creating backup…');
   try {
-    const res = await fetch(`${BOT_API}/antinuke?guild_id=${currentGuild.id}`, {
+    const res = await fetch(`${BOT_API}/backup/create`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(_anCfg)
+      body: JSON.stringify({ guild_id: currentGuild.id, label })
     });
-    if (res.ok) {
-      showToast('✅ Anti-Nuke settings saved!');
-      const dirty = document.getElementById('dd-antinuke');
-      if (dirty) dirty.classList.remove('show');
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(`✅ Backup created: ${data.backup.label}`);
+      const inp = document.getElementById('bk-label');
+      if (inp) inp.value = '';
+      bkLoad();
     } else {
-      showToast('❌ Failed to save', 'error');
+      showToast(`❌ ${data.error || 'Backup failed'}`, 'error');
     }
+  } catch {
+    showToast('❌ Network error', 'error');
+  }
+}
+
+async function bkPreview(backupId) {
+  const det = document.getElementById('bk-detail');
+  if (!det) return;
+  det.style.display = 'block';
+  det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('bk-detail-title').textContent = 'Loading preview…';
+
+  try {
+    const res  = await fetch(`${BOT_API}/backup/get?guild_id=${currentGuild.id}&backup_id=${backupId}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(`❌ ${data.error}`, 'error'); return; }
+
+    document.getElementById('bk-detail-title').textContent = `📋 ${data.label}`;
+    document.getElementById('bk-d-roles').textContent    = data.role_count;
+    document.getElementById('bk-d-channels').textContent = data.channel_count;
+    document.getElementById('bk-d-emojis').textContent   = data.emoji_count;
+    document.getElementById('bk-d-members').textContent  = data.member_count;
+
+    const prev = data.preview || {};
+    const fmt  = arr => arr.length ? arr.map(n => `<div>• ${n}</div>`).join('') : '<div style="color:var(--tx-3)">None</div>';
+    document.getElementById('bk-d-roles-list').innerHTML    = fmt(prev.roles    || []);
+    document.getElementById('bk-d-channels-list').innerHTML = fmt([...(prev.text_channels||[]), ...(prev.voice_channels||[])]);
+    document.getElementById('bk-d-cats-list').innerHTML     = fmt(prev.categories || []);
+  } catch {
+    showToast('❌ Failed to load preview', 'error');
+  }
+}
+
+async function bkRestore(backupId, label) {
+  if (_bkRestoring) return;
+  if (currentGuild.owner_id !== currentUser?.id) {
+    return showToast('Only the server owner can restore backups', 'error');
+  }
+  if (!confirm(`⚠️ Restore backup "${label}" to this server?\n\nThis will update/recreate all roles and channels to match the backup. Nothing will be deleted.\n\nProceed?`)) return;
+
+  _bkRestoring = true;
+  const modal  = document.getElementById('bk-restore-modal');
+  const status = document.getElementById('bk-restore-status');
+  const bar    = document.getElementById('bk-restore-bar');
+  const log    = document.getElementById('bk-restore-log');
+
+  if (modal)  modal.style.display  = 'flex';
+  if (status) status.textContent   = 'Connecting to bot…';
+  if (bar)    bar.style.width      = '5%';
+  if (log)    log.innerHTML        = '';
+
+  try {
+    const res  = await fetch(`${BOT_API}/backup/restore`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id: currentGuild.id, backup_id: backupId })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      if (bar)    bar.style.width    = '100%';
+      if (status) status.textContent = `✅ Restore complete — ${data.count} items restored`;
+      if (log) log.innerHTML = (data.log || []).map(l =>
+        `<div style="padding:1px 0;border-bottom:1px solid rgba(78,255,145,.05)">> ${l}</div>`
+      ).join('');
+      showToast(`✅ Restore complete — ${data.count} items`, 'success');
+      setTimeout(() => {
+        if (modal) modal.style.display = 'none';
+        _bkRestoring = false;
+      }, 4000);
+    } else {
+      if (status) status.textContent = `❌ ${data.error || 'Restore failed'}`;
+      if (bar)    bar.style.background = '#ff4f4f';
+      showToast(`❌ ${data.error || 'Restore failed'}`, 'error');
+      setTimeout(() => { if (modal) modal.style.display = 'none'; _bkRestoring = false; }, 3000);
+    }
+  } catch (err) {
+    if (status) status.textContent = `❌ Network error: ${err.message}`;
+    showToast('❌ Network error', 'error');
+    setTimeout(() => { if (modal) modal.style.display = 'none'; _bkRestoring = false; }, 3000);
+  }
+}
+
+async function bkDelete(backupId) {
+  if (!confirm('Delete this backup? This cannot be undone.')) return;
+  try {
+    const res = await fetch(`${BOT_API}/backup/delete`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id: currentGuild.id, backup_id: backupId })
+    });
+    const data = await res.json();
+    if (data.success) { showToast('🗑️ Backup deleted'); bkLoad(); }
+    else showToast(`❌ ${data.error || 'Delete failed'}`, 'error');
   } catch {
     showToast('❌ Network error', 'error');
   }
