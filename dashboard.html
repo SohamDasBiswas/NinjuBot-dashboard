@@ -797,122 +797,122 @@
 
     <!-- ══════ ANTI-NUKE ══════ -->
     <div id="panel-cfg-antinuke" class="panel">
-      <div class="db-row" style="align-items:start">
-        <div class="db-card" style="min-width:0;overflow:hidden">
-          <div class="card-hdr">
-            <h3>🔰 Anti-Nuke Protection</h3>
-            <div id="an-status-pill" style="padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;background:rgba(255,79,79,.15);color:#ff4f4f;border:1px solid rgba(255,79,79,.3);white-space:nowrap;flex-shrink:0">DISABLED</div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">⚡ Master Switch</div>
-            <div class="toggle-row">
-              <div class="toggle-info"><div class="toggle-name">Enable Anti-Nuke</div><div class="toggle-desc">Punish users who mass-ban, mass-delete channels, etc.</div></div>
-              <label class="toggle"><input type="checkbox" id="an-enabled" onchange="anToggle()"><span class="toggle-track"></span></label>
+      <div style="max-width:900px">
+        <div class="db-row" style="grid-template-columns:1fr 1fr;align-items:start">
+          <div class="db-card" style="min-width:0">
+            <div class="card-hdr">
+              <h3>🔰 Anti-Nuke</h3>
+              <div id="an-status-pill" style="padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;background:rgba(255,79,79,.15);color:#ff4f4f;border:1px solid rgba(255,79,79,.3);white-space:nowrap">DISABLED</div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">⚡ Master Switch</div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Enable Anti-Nuke</div><div class="toggle-desc">Punish users who mass-ban, mass-delete, etc.</div></div>
+                <label class="toggle"><input type="checkbox" id="an-enabled" onchange="anToggle()"><span class="toggle-track"></span></label>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">⚖️ Punishment</div>
+              <div class="field">
+                <label class="field-label">Action when triggered</label>
+                <select id="an-punishment" class="f-select" onchange="markDirty('antinuke')">
+                  <option value="ban">🔨 Ban</option>
+                  <option value="kick">👢 Kick</option>
+                  <option value="strip">🗑️ Strip roles</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">📢 Alert Channel</div>
+              <div class="field">
+                <label class="field-label">Send alerts to</label>
+                <select id="an-logchannel" class="f-select" onchange="markDirty('antinuke')"><option value="">— Disabled —</option></select>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-title">✅ Whitelist</div>
+              <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:8px">Never punished. Add yourself before enabling!</p>
+              <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px"></div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="an-whitelist-input" class="f-input" placeholder="User ID" style="flex:1;min-width:0">
+                <button class="btn-sm" onclick="anWhitelistAdd()" style="flex-shrink:0">Add</button>
+              </div>
             </div>
           </div>
-          <div class="settings-section">
-            <div class="settings-section-title">⚖️ Punishment</div>
-            <div class="field">
-              <label class="field-label">Action when triggered</label>
-              <select id="an-punishment" class="f-select" onchange="markDirty('antinuke')">
-                <option value="ban">🔨 Ban</option>
-                <option value="kick">👢 Kick</option>
-                <option value="strip">🗑️ Strip roles</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">📢 Alert Channel</div>
-            <div class="field">
-              <label class="field-label">Send alerts to</label>
-              <select id="an-logchannel" class="f-select" onchange="markDirty('antinuke')"><option value="">— Disabled —</option></select>
-            </div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">✅ Whitelist</div>
-            <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:8px">Never punished. Whitelist yourself before enabling!</p>
-            <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px"></div>
-            <div style="display:flex;gap:8px">
-              <input type="text" id="an-whitelist-input" class="f-input" placeholder="User ID" style="flex:1;min-width:0">
-              <button class="btn-sm" onclick="anWhitelistAdd()" style="flex-shrink:0">Add</button>
+          <div class="db-card" style="min-width:0">
+            <h3>📊 Thresholds <span style="font-size:.68rem;color:var(--tx-3);font-weight:400">/ 10s</span></h3>
+            <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:12px">Fires instantly when exceeded.</p>
+            <div id="an-thresholds" style="display:flex;flex-direction:column;gap:5px"></div>
+            <div style="margin-top:12px;padding:10px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.75rem;color:var(--tx-2);line-height:1.8">
+              🔴 <strong style="color:#ff4f4f">1</strong> = zero tolerance &nbsp;·&nbsp; 🟡 <strong style="color:#fbbf24">3–5</strong> = moderate
             </div>
           </div>
         </div>
-        <div class="db-card" style="min-width:0;overflow:hidden">
-          <h3>📊 Thresholds <span style="font-size:.68rem;color:var(--tx-3);font-weight:400">per 10s</span></h3>
-          <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:12px">Punishment fires when a user exceeds these limits.</p>
-          <div id="an-thresholds" style="display:flex;flex-direction:column;gap:5px"></div>
-          <div style="margin-top:12px;padding:10px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.76rem;color:var(--tx-2);line-height:1.8">
-            🔴 <strong style="color:#ff4f4f">1</strong> = zero tolerance &nbsp;·&nbsp; 🟡 <strong style="color:#fbbf24">3–5</strong> = moderate
+        <div class="save-bar">
+          <span class="save-bar-text">Saves <strong>Anti-Nuke</strong> for <strong id="an-guild-name">this server</strong></span>
+          <div class="save-actions">
+            <button class="btn-sm-o" onclick="anResetDefaults()">↩ Defaults</button>
+            <button class="btn-sm-o" onclick="loadAntiNuke()">↩ Reset</button>
+            <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
           </div>
-        </div>
-      </div>
-      <div class="save-bar">
-        <span class="save-bar-text">Saves <strong>Anti-Nuke</strong> for <strong id="an-guild-name">this server</strong></span>
-        <div class="save-actions">
-          <button class="btn-sm-o" onclick="anResetDefaults()">↩ Defaults</button>
-          <button class="btn-sm-o" onclick="loadAntiNuke()">↩ Reset</button>
-          <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
         </div>
       </div>
     </div>
 
     <!-- ══════ SERVER BACKUP ══════ -->
     <div id="panel-server-backup" class="panel">
-      <div id="backup-owner-warn" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,79,79,.08);border:1px solid rgba(255,79,79,.25);color:#ff6b6b;font-size:.83rem">
-        ⚠️ Only the <strong>server owner</strong> can create or restore backups.
-      </div>
-      <div class="db-row" style="align-items:start">
-        <div class="db-card" style="min-width:0">
-          <h3>📸 Create Backup</h3>
-          <p style="font-size:.83rem;color:var(--tx-2);margin-bottom:16px;line-height:1.7">Full snapshot: <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, and <strong>permission overwrites</strong>.</p>
-          <div class="field">
-            <label class="field-label">Label (optional)</label>
-            <input type="text" id="bk-label" class="f-input" placeholder="e.g. Before restructure…">
+      <div style="max-width:900px">
+        <div id="backup-owner-warn" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,79,79,.08);border:1px solid rgba(255,79,79,.25);color:#ff6b6b;font-size:.83rem">
+          ⚠️ Only the <strong>server owner</strong> can create or restore backups.
+        </div>
+        <div class="db-row" style="grid-template-columns:1fr 1fr;align-items:start">
+          <div class="db-card" style="min-width:0">
+            <h3>📸 Create Backup</h3>
+            <p style="font-size:.83rem;color:var(--tx-2);margin-bottom:16px;line-height:1.7">Full snapshot: <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, permission overwrites.</p>
+            <div class="field">
+              <label class="field-label">Label (optional)</label>
+              <input type="text" id="bk-label" class="f-input" placeholder="e.g. Before restructure…">
+            </div>
+            <button class="btn-sm" onclick="bkCreate()" style="width:100%;margin-top:8px;padding:11px">📸 Create Backup Now</button>
+            <div style="margin-top:14px;padding:12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);font-size:.78rem;color:var(--tx-2);line-height:1.9">
+              <div style="font-size:.7rem;font-weight:700;color:var(--green);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">What's backed up</div>
+              ✅ Roles · ✅ Channels · ✅ Categories<br>✅ Permission overwrites · ❌ Messages
+            </div>
           </div>
-          <button class="btn-sm" onclick="bkCreate()" style="width:100%;margin-top:8px;padding:11px;font-size:.88rem">📸 Create Backup Now</button>
-          <div style="margin-top:16px;padding:12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);font-size:.78rem;color:var(--tx-2);line-height:1.9">
-            <div style="font-size:.7rem;font-weight:700;color:var(--green);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">What gets backed up</div>
-            ✅ All roles (name, color, permissions)<br>
-            ✅ Categories + permission overwrites<br>
-            ✅ All text &amp; voice channels<br>
-            ✅ Server name &amp; settings<br>
-            ❌ Messages and member data
+          <div class="db-card" style="min-width:0">
+            <div class="card-hdr">
+              <h3>🗂️ Saved Backups</h3>
+              <button class="btn-sm-o" onclick="bkLoad()">🔄</button>
+            </div>
+            <div id="bk-list"><div class="loading-state"><div class="spinner"></div><p>Loading…</p></div></div>
           </div>
         </div>
-        <div class="db-card" style="min-width:0">
-          <div class="card-hdr">
-            <h3>🗂️ Saved Backups</h3>
-            <button class="btn-sm-o" onclick="bkLoad()">🔄 Refresh</button>
-          </div>
-          <div id="bk-list"><div class="loading-state"><div class="spinner"></div><p>Loading…</p></div></div>
-        </div>
-      </div>
-      <div id="bk-detail" style="display:none;margin-top:14px">
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3 id="bk-detail-title">Backup Preview</h3>
-            <button class="btn-sm-o" onclick="document.getElementById('bk-detail').style.display='none'">✕ Close</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-            <div class="dsc"><div class="dsc-icon">🎭</div><div><div class="dsc-val" id="bk-d-roles">—</div><div class="dsc-lbl">Roles</div></div></div>
-            <div class="dsc"><div class="dsc-icon">📢</div><div><div class="dsc-val" id="bk-d-channels">—</div><div class="dsc-lbl">Channels</div></div></div>
-            <div class="dsc"><div class="dsc-icon">😀</div><div><div class="dsc-val" id="bk-d-emojis">—</div><div class="dsc-lbl">Emojis</div></div></div>
-            <div class="dsc"><div class="dsc-icon">👥</div><div><div class="dsc-val" id="bk-d-members">—</div><div class="dsc-lbl">Members</div></div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">🎭 Roles</div><div id="bk-d-roles-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📢 Channels</div><div id="bk-d-channels-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📁 Categories</div><div id="bk-d-cats-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
+        <div id="bk-detail" style="display:none;margin-top:14px">
+          <div class="db-card">
+            <div class="card-hdr">
+              <h3 id="bk-detail-title">Backup Preview</h3>
+              <button class="btn-sm-o" onclick="document.getElementById('bk-detail').style.display='none'">✕</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+              <div class="dsc"><div class="dsc-icon">🎭</div><div><div class="dsc-val" id="bk-d-roles">—</div><div class="dsc-lbl">Roles</div></div></div>
+              <div class="dsc"><div class="dsc-icon">📢</div><div><div class="dsc-val" id="bk-d-channels">—</div><div class="dsc-lbl">Channels</div></div></div>
+              <div class="dsc"><div class="dsc-icon">😀</div><div><div class="dsc-val" id="bk-d-emojis">—</div><div class="dsc-lbl">Emojis</div></div></div>
+              <div class="dsc"><div class="dsc-icon">👥</div><div><div class="dsc-val" id="bk-d-members">—</div><div class="dsc-lbl">Members</div></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+              <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">🎭 Roles</div><div id="bk-d-roles-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
+              <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📢 Channels</div><div id="bk-d-channels-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
+              <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📁 Categories</div><div id="bk-d-cats-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
+            </div>
           </div>
         </div>
       </div>
       <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
         <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:26px;width:460px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
-          <div style="font-size:.95rem;font-weight:700;color:#4eff91;margin-bottom:8px">🔄 Restoring Server…</div>
-          <div id="bk-restore-status" style="font-size:.8rem;color:var(--tx-2);margin-bottom:14px">Starting…</div>
+          <div style="font-size:.95rem;font-weight:700;color:#4eff91;margin-bottom:8px">🔄 Restoring…</div>
+          <div id="bk-restore-status" style="font-size:.8rem;color:var(--tx-2);margin-bottom:12px">Starting…</div>
           <div style="height:5px;background:rgba(78,255,145,.1);border-radius:999px;overflow:hidden"><div id="bk-restore-bar" style="height:100%;background:#4eff91;border-radius:999px;width:0%;transition:width .5s ease"></div></div>
-          <div id="bk-restore-log" style="margin-top:12px;max-height:160px;overflow-y:auto;font-size:.7rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.6);display:flex;flex-direction:column;gap:2px"></div>
+          <div id="bk-restore-log" style="margin-top:12px;max-height:150px;overflow-y:auto;font-size:.7rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.6)"></div>
         </div>
       </div>
     </div>
