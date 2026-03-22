@@ -1232,42 +1232,84 @@ async function hq_xp(){
 
 async function hq_feed(){
   try{
-    const data=await(await hq_get('/audit/log?limit=200')).json();
-    const entries=data.entries||[];
+    let entries = [];
+
+    // 1. Try Discord native audit log (needs updated bot.py on Render)
+    if(currentGuild){
+      try{
+        const r=await fetch(`${BOT_API}/guild/audit-log?guild_id=${currentGuild.id}&limit=100`,
+          {headers:{'Authorization':`Bearer ${discordToken}`}});
+        if(r.ok){const d=await r.json();entries=d.entries||[];}
+      }catch{}
+    }
+
+    // 2. Fall back to ALL MongoDB entries (including bot_start)
+    if(!entries.length){
+      const data=await(await hq_get('/audit/log?limit=200')).json();
+      entries=data.entries||[];
+    }
+
     hq_s('hq__sal',entries.length);
     const fc=document.getElementById('hq__fc');if(fc)fc.textContent=entries.length+' entries';
-    if(!entries.length){hq_s('hq__feed','<div class="hq__em">NO LOG ENTRIES YET</div>');hq_chart([]);return;}
+
+    if(!entries.length){hq_s('hq__feed','<div class="hq__em">NO EVENTS YET</div>');hq_chart([]);return;}
+
     hq_s('hq__feed',entries.slice(0,60).map(e=>{
       const icon=_HQICONS[e.action]||'📌';
       const time=e.timestamp?new Date(e.timestamp).toLocaleTimeString('en-GB',{hour12:false}):'—';
       const reason=e.reason?` · ${e.reason.substring(0,40)}`:'';
+      // Strip numeric IDs like (123456789012345678) from names
+      const target=(e.target||'?').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim();
+      const mod=(e.moderator||'System').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim();
+      const label=(e.action||'?').toUpperCase().replace(/_/g,' ');
       return `<div class="hq__fe">
         <span class="hq__fi">${icon}</span>
         <div class="hq__fb">
-          <div class="hq__fa">[${(e.action||'?').toUpperCase()}] ${e.target||'?'}</div>
-          <div class="hq__fm">BY: ${e.moderator||'System'}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
+          <div class="hq__fa">[${label}] ${target}</div>
+          <div class="hq__fm">BY: ${mod}${e.guild_name?' · '+e.guild_name:''}${reason}</div>
         </div>
         <span class="hq__ft">${time}</span>
       </div>`;
     }).join(''));
     hq_chart(entries);
-  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);}
+  }catch(e){hq_s('hq__feed',`<div class="hq__em">ERROR: ${e.message}</div>`);hq_chart([]);}
+}
 }
 
 function hq_chart(entries){
   const canvas=document.getElementById('hq__chart');if(!canvas)return;
   const counts={};
-  entries.forEach(e=>{if(e.action)counts[e.action]=(counts[e.action]||0)+1;});
+  entries.forEach(e=>{const a=e.action||e.type;if(a)counts[a]=(counts[a]||0)+1;});
   const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  if(!sorted.length)return;
   if(canvas._c)canvas._c.destroy();
-  canvas._c=new Chart(canvas.getContext('2d'),{
+  if(!sorted.length){canvas._c=null;return;}
+  const ctx=canvas.getContext('2d');
+  const gd=ctx.createLinearGradient(0,0,0,160);
+  gd.addColorStop(0,'rgba(78,255,145,.5)');
+  gd.addColorStop(1,'rgba(78,255,145,.04)');
+  canvas._c=new Chart(ctx,{
     type:'bar',
-    data:{labels:sorted.map(([k])=>k.toUpperCase()),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'rgba(78,255,145,.15)',borderColor:'#4eff91',borderWidth:1,borderRadius:4,hoverBackgroundColor:'rgba(78,255,145,.3)'}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{
-      x:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}},
-      y:{ticks:{color:'rgba(78,255,145,.55)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.04)'}}
-    }}
+    data:{
+      labels:sorted.map(([k])=>k.toUpperCase().replace(/_/g,' ')),
+      datasets:[{data:sorted.map(([,v])=>v),backgroundColor:gd,borderColor:'#4eff91',borderWidth:1,borderRadius:3,hoverBackgroundColor:'rgba(78,255,145,.7)'}]
+    },
+    options:{
+      responsive:true,
+      animation:{duration:700},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0a1510',borderColor:'#4eff91',borderWidth:1,
+          titleColor:'#4eff91',bodyColor:'#d0ffe0',
+          titleFont:{family:'"Courier New"',size:10},bodyFont:{family:'"Courier New"',size:10},
+          callbacks:{title:([i])=>`> ${i.label}`,label:i=>`COUNT: ${i.raw}`}
+        }
+      },
+      scales:{
+        x:{ticks:{color:'rgba(78,255,145,.6)',font:{family:'"Courier New"',size:9},maxRotation:30},grid:{color:'rgba(78,255,145,.07)'},border:{color:'rgba(78,255,145,.2)'}},
+        y:{ticks:{color:'rgba(78,255,145,.6)',font:{family:'"Courier New"',size:9}},grid:{color:'rgba(78,255,145,.07)'},border:{color:'rgba(78,255,145,.2)'}}
+      }
+    }
   });
 }
 
