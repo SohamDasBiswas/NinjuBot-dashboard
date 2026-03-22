@@ -614,16 +614,12 @@ async function fetchAuditLog() {
   const headers = { 'Authorization': `Bearer ${discordToken}` };
   const guildId = currentGuild ? currentGuild.id : null;
   let entries = [];
-
-  // 1. Try Discord-native endpoint
   if (guildId) {
     try {
       const r = await fetch(`${BOT_API}/server/audit-log?guild_id=${guildId}&limit=100`, { headers });
       if (r.ok) { const d = await r.json(); entries = d.entries || []; }
     } catch {}
   }
-
-  // 2. Fallback to MongoDB — ALWAYS filter bot system events
   if (!entries.length) {
     try {
       const gp = guildId ? `&guild_id=${guildId}` : '';
@@ -634,16 +630,13 @@ async function fetchAuditLog() {
       }
     } catch {}
   }
-
   allLogEntries = entries;
   const badge = document.getElementById('log-badge');
   if (badge) badge.textContent = entries.length;
-
   if (!entries.length) {
     c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:10px;padding:40px;text-align:center">
-      <span style="font-size:2rem">🛡️</span>
-      <p style="font-weight:700">No server events yet</p>
-      <p style="font-size:0.8rem;color:var(--tx-3);max-width:360px">Deploy the updated <code style="color:var(--green)">bot.py</code> on Render to see Discord server audit logs here.</p>
+      <span style="font-size:2rem">🛡️</span><p style="font-weight:700">No server events yet</p>
+      <p style="font-size:0.8rem;color:var(--tx-3);max-width:360px">Deploy the updated <code style="color:var(--green)">bot.py</code> on Render to see real Discord audit logs.</p>
       <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:6px">🔄 Refresh</button>
     </div>`;
     return;
@@ -668,23 +661,24 @@ const LOG_ICONS = {
   ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊',
   warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️',
   role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️',
-  channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️',
-  voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌',
-  server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒',
-  unlock:'🔓', bot_start:'🚀',
-  // Discord native
-  member_ban_add:'🔨', member_ban_remove:'🔓', member_kick:'👢', member_update:'✏️',
-  member_role_update:'🏷️', member_disconnect:'🔇', member_move:'🔀',
+  channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝',
+  voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀',
+  invite_create:'🔗', invite_delete:'❌', server_rename:'🏠',
+  emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓',
+  member_ban_add:'🔨', member_ban_remove:'🔓', member_kick:'👢',
+  member_update:'✏️', member_role_update:'🏷️',
+  member_disconnect:'🔇', member_move:'🔀',
   message_delete:'🗑️', message_bulk_delete:'🧹', message_pin:'📌',
   channel_update:'📝', role_update:'🏷️', role_create:'🎭', role_delete:'🗑️',
-  guild_update:'🏠', bot_add:'🤖', invite_create:'🔗', invite_delete:'❌',
+  guild_update:'🏠', bot_add:'🤖',
+  member_join:'✅', member_leave:'🚪', member_prune:'🚪',
 };
 
-// Human-readable labels
 const ACTION_LABEL = {
   member_ban_add:'BAN', member_ban_remove:'UNBAN', member_kick:'KICK',
   member_update:'MEMBER UPDATE', member_role_update:'ROLE CHANGE',
   member_disconnect:'VOICE KICK', member_move:'VOICE MOVE',
+  member_join:'JOIN', member_leave:'LEAVE', member_prune:'PRUNE',
   message_delete:'MSG DELETE', message_bulk_delete:'BULK DELETE', message_pin:'MSG PINNED',
   channel_create:'CHANNEL CREATE', channel_delete:'CHANNEL DELETE', channel_update:'CHANNEL UPDATE',
   role_create:'ROLE CREATED', role_delete:'ROLE DELETED', role_update:'ROLE MODIFIED',
@@ -692,14 +686,10 @@ const ACTION_LABEL = {
   invite_create:'INVITE CREATE', invite_delete:'INVITE DELETE',
 };
 
-const PER_PAGE = 20;
-
-// Strip IDs and #0 from names
 function cleanEntry(s) {
   return (s||'').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim() || s || 'Unknown';
 }
 
-// Make target display smarter based on action type
 function formatTarget(action, target) {
   const t = cleanEntry(target);
   if (['role_create','role_delete','role_update','member_role_update'].includes(action))
@@ -711,24 +701,36 @@ function formatTarget(action, target) {
   return `<strong>${t}</strong>`;
 }
 
+const PER_PAGE = 20;
+
 function renderLog() {
   const c = document.getElementById('audit-log-list');
   const pg = document.getElementById('log-pagination');
   if (!c) return;
 
+  // Maps each filter button value → all matching action names (old + Discord native)
   const multiFilters = {
-    'voice_join':     ['voice_join','voice_leave','voice_move','member_disconnect','member_move'],
-    'role_add':       ['role_add','role_remove','role_create','role_delete','role_rename','role_update','member_role_update'],
-    'channel_create': ['channel_create','channel_delete','channel_rename','channel_update'],
-    'invite_create':  ['invite_create','invite_delete'],
+    'ban':            ['ban', 'member_ban_add'],
+    'kick':           ['kick', 'member_kick'],
+    'timeout':        ['timeout', 'untimeout', 'member_update'],
+    'warn':           ['warn'],
+    'delete':         ['delete', 'message_delete', 'message_bulk_delete'],
+    'edit':           ['edit', 'message_pin'],
+    'join':           ['join', 'member_join'],
+    'leave':          ['leave', 'member_leave', 'member_prune', 'member_kick', 'member_ban_add'],
+    'voice_join':     ['voice_join', 'voice_leave', 'voice_move', 'member_disconnect', 'member_move'],
+    'role_add':       ['role_add', 'role_remove', 'role_create', 'role_delete', 'role_rename', 'role_update', 'member_role_update'],
+    'channel_create': ['channel_create', 'channel_delete', 'channel_rename', 'channel_update'],
+    'invite_create':  ['invite_create', 'invite_delete'],
+    'purge':          ['purge', 'message_bulk_delete'],
   };
+
   const filtered = auditLogFilter === 'all'
     ? allLogEntries
     : allLogEntries.filter(e => {
-        const a = e.action||'';
-        return multiFilters[auditLogFilter]
-          ? multiFilters[auditLogFilter].includes(a)
-          : a === auditLogFilter;
+        const a = e.action || '';
+        const map = multiFilters[auditLogFilter];
+        return map ? map.includes(a) : a === auditLogFilter;
       });
 
   const total = Math.ceil(filtered.length / PER_PAGE) || 1;
@@ -736,28 +738,19 @@ function renderLog() {
   const slice = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
 
   if (!slice.length) {
-    c.innerHTML = `<div class="loading-state"><p>No log entries found.</p></div>`;
+    c.innerHTML = `<div class="loading-state"><p>No entries for this filter.</p></div>`;
     if (pg) pg.style.display = 'none';
     return;
   }
 
   c.innerHTML = `<div class="log-list">${slice.map(e => {
-    const action  = e.action || 'unknown';
-    const icon    = LOG_ICONS[action] || '📌';
-    const label   = ACTION_LABEL[action] || action.toUpperCase().replace(/_/g,' ');
-    const target  = formatTarget(action, e.target);
-    const mod     = cleanEntry(e.moderator) || 'System';
-    const detail  = e.detail || '';
-    const reason  = (e.reason && e.reason !== detail) ? e.reason : '';
-
-    // Build a cleaner detail line — strip emoji-heavy channel names
-    const cleanDetail = detail
-      .replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, c => {
-        // Keep only common emoji, strip weird unicode fragments
-        const cp = c.codePointAt(0);
-        return (cp >= 0x1F300) ? c : '';
-      }).trim();
-
+    const action = e.action || 'unknown';
+    const icon   = LOG_ICONS[action] || '📌';
+    const label  = ACTION_LABEL[action] || action.toUpperCase().replace(/_/g,' ');
+    const target = formatTarget(action, e.target);
+    const mod    = cleanEntry(e.moderator) || 'System';
+    const detail = e.detail || '';
+    const reason = (e.reason && e.reason !== detail) ? e.reason : '';
     return `
     <div class="log-entry ${action}">
       <div class="log-icon">${icon}</div>
@@ -766,7 +759,7 @@ function renderLog() {
           <span class="log-tag ${action}">${label}</span>
           ${target}${reason ? ` — <span style="color:var(--tx-2);font-weight:400">${reason}</span>` : ''}
         </div>
-        ${cleanDetail ? `<div class="log-meta" style="color:rgba(78,255,145,.8);margin-top:3px">📋 ${cleanDetail}</div>` : ''}
+        ${detail ? `<div class="log-meta" style="color:rgba(78,255,145,.85);margin-top:3px">📋 ${detail}</div>` : ''}
         <div class="log-meta">By <strong>${mod}</strong>${e.guild_name ? ' in ' + e.guild_name : ''}</div>
       </div>
       <div class="log-time">${formatTime(e.timestamp)}</div>
