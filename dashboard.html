@@ -857,9 +857,9 @@
 
       <div class="db-row">
         <!-- Left column: Punishment + Alert + Whitelist -->
-        <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
 
-          <div class="db-card">
+          <div class="db-card" style="margin-bottom:14px">
             <div class="settings-section">
               <div class="settings-section-title">⚖️ Punishment</div>
               <div class="field">
@@ -880,11 +880,11 @@
             </div>
           </div>
 
-          <div class="db-card" style="flex:1">
+          <div class="db-card">
             <div class="settings-section">
               <div class="settings-section-title">✅ Whitelist</div>
               <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:10px;line-height:1.6">Never punished. Add yourself <strong style="color:var(--green)">before</strong> enabling!</p>
-              <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:0;margin-bottom:10px"></div>
+              <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px"></div>
               <div style="display:flex;gap:8px">
                 <input type="text" id="an-whitelist-input" class="f-input" placeholder="User ID" style="flex:1;min-width:0">
                 <button class="btn-sm" onclick="anWhitelistAdd()" style="flex-shrink:0">Add</button>
