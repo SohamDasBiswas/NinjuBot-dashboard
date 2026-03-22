@@ -190,11 +190,14 @@ function showOAuthGate() {
 }
 
 function showServerPicker() {
-  document.getElementById('oauth-gate').style.display       = 'none';
-  document.getElementById('server-picker-page').style.display = 'block';
-  document.getElementById('dashboard-app').style.display    = 'none';
+  // Clear current guild (works whether called from init or from inside dashboard)
+  sessionStorage.removeItem('current_guild');
+  currentGuild = null;
 
-  // Populate user info
+  document.getElementById('oauth-gate').style.display         = 'none';
+  document.getElementById('server-picker-page').style.display = 'block';
+  document.getElementById('dashboard-app').style.display      = 'none';
+
   if (currentUser) {
     const avatarUrl = currentUser.avatar
       ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png?size=64`
@@ -209,9 +212,9 @@ function showServerPicker() {
 }
 
 function showDashboard() {
-  document.getElementById('oauth-gate').style.display       = 'none';
+  document.getElementById('oauth-gate').style.display         = 'none';
   document.getElementById('server-picker-page').style.display = 'none';
-  document.getElementById('dashboard-app').style.display    = 'flex';
+  document.getElementById('dashboard-app').style.display      = 'flex';
 
   populateUserUI();
   applyAdminVisibility();
@@ -220,28 +223,6 @@ function showDashboard() {
   fetchBoostStats();
   fetchHealth();
   fetchHealth();  // immediately populate overview stats
-}
-
-function showServerPicker() {
-  // If called from inside dashboard
-  sessionStorage.removeItem('current_guild');
-  currentGuild = null;
-
-  document.getElementById('oauth-gate').style.display       = 'none';
-  document.getElementById('server-picker-page').style.display = 'block';
-  document.getElementById('dashboard-app').style.display    = 'none';
-
-  if (currentUser) {
-    const avatarUrl = currentUser.avatar
-      ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png?size=64`
-      : `https://cdn.discordapp.com/embed/avatars/0.png`;
-    const spav = document.getElementById('sp-avatar');
-    const spun = document.getElementById('sp-username');
-    if (spav) spav.src = avatarUrl;
-    if (spun) spun.textContent = currentUser.username || '';
-  }
-
-  loadGuilds();
 }
 
 
