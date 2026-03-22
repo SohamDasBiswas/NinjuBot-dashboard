@@ -1306,7 +1306,8 @@ let _bkRestoring=false;
 async function bkLoad(){
   if(!currentGuild)return;
   const isOwner=currentGuild.owner_id===currentUser?.id;
-  const warn=document.getElementById('backup-owner-warn');if(warn)warn.style.display=isOwner?'none':'block';
+  const warn=document.getElementById('backup-owner-warn');
+  if(warn){warn.style.display=isOwner?'none':'block';warn.parentElement.style.display=isOwner?'none':'block';}
   const el=document.getElementById('bk-list');if(!el)return;
   el.innerHTML=`<div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>`;
   try{const r=await fetch(`${BOT_API}/backup/list?guild_id=${currentGuild.id}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
