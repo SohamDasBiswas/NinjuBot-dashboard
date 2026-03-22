@@ -797,9 +797,8 @@
 
     <!-- ══════ ANTI-NUKE ══════ -->
     <div id="panel-cfg-antinuke" class="panel">
-      <div style="max-width:900px">
-        <div class="db-row" style="grid-template-columns:1fr 1fr;align-items:start">
-          <div class="db-card" style="min-width:0">
+      <div class="db-row">
+        <div class="db-card">
             <div class="card-hdr">
               <h3>🔰 Anti-Nuke</h3>
               <div id="an-status-pill" style="padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;background:rgba(255,79,79,.15);color:#ff4f4f;border:1px solid rgba(255,79,79,.3);white-space:nowrap">DISABLED</div>
@@ -839,7 +838,7 @@
               </div>
             </div>
           </div>
-          <div class="db-card" style="min-width:0">
+          <div class="db-card">
             <h3>📊 Thresholds <span style="font-size:.68rem;color:var(--tx-3);font-weight:400">/ 10s</span></h3>
             <p style="font-size:.78rem;color:var(--tx-2);margin-bottom:12px">Fires instantly when exceeded.</p>
             <div id="an-thresholds" style="display:flex;flex-direction:column;gap:5px"></div>
@@ -856,19 +855,15 @@
             <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
           </div>
         </div>
-      </div>
     </div>
 
     <!-- ══════ SERVER BACKUP ══════ -->
     <div id="panel-server-backup" class="panel">
-      <div style="max-width:860px;margin:0 auto 0 0">
-
-        <div id="backup-owner-warn" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,79,79,.08);border:1px solid rgba(255,79,79,.25);color:#ff6b6b;font-size:.83rem">
-          ⚠️ Only the <strong>server owner</strong> can create or restore backups.
-        </div>
-
-        <div class="db-row" style="grid-template-columns:360px 1fr;align-items:start">
-          <div class="db-card" style="min-width:0">
+      <div id="backup-owner-warn" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:var(--r-md);background:rgba(255,79,79,.08);border:1px solid rgba(255,79,79,.25);color:#ff6b6b;font-size:.83rem">
+        ⚠️ Only the <strong>server owner</strong> can create or restore backups.
+      </div>
+      <div class="db-row">
+        <div class="db-card">
             <h3>📸 Create Backup</h3>
             <p style="font-size:.83rem;color:var(--tx-2);margin-bottom:16px;line-height:1.7">
               Full snapshot of <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong> and permission overwrites.
@@ -888,7 +883,7 @@
             </div>
           </div>
 
-          <div class="db-card" style="min-width:0">
+        <div class="db-card">
             <div class="card-hdr">
               <h3>🗂️ Saved Backups</h3>
               <button class="btn-sm-o" onclick="bkLoad()" style="font-size:.75rem;padding:5px 10px">🔄 Refresh</button>
@@ -916,8 +911,6 @@
             </div>
           </div>
         </div>
-
-      </div>
 
       <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
         <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:26px;width:460px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
