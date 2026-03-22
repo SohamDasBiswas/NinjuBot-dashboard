@@ -697,18 +697,29 @@ function renderLog() {
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => `
-    <div class="log-entry ${e.action||''}">
-      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => {
+    const action  = e.action || 'unknown';
+    const label   = action.toUpperCase().replace(/_/g,' ');
+    const icon    = LOG_ICONS[action] || '📌';
+    const clean   = s => (s||'').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim() || s || '?';
+    const target  = clean(e.target);
+    const mod     = clean(e.moderator) || 'System';
+    const detail  = e.detail || '';
+    const reason  = e.reason && e.reason !== detail ? e.reason : '';
+    return `
+    <div class="log-entry ${action}">
+      <div class="log-icon">${icon}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
-          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
+          <span class="log-tag ${action}">${label}</span>
+          <strong>${target}</strong>${reason ? ` — ${reason}` : ''}
         </div>
-        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
+        ${detail ? `<div class="log-meta" style="color:var(--green);opacity:0.85;margin-top:2px;font-size:0.78rem">📋 ${detail}</div>` : ''}
+        <div class="log-meta">By ${mod}${e.guild_name ? ' in ' + e.guild_name : ''}</div>
       </div>
       <div class="log-time">${formatTime(e.timestamp)}</div>
-    </div>`).join('')}</div>`;
+    </div>`;
+  }).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
