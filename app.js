@@ -611,22 +611,19 @@ async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
   c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
-  const headers = { 'Authorization': `Bearer ${discordToken}` };
-  const guildId = currentGuild ? currentGuild.id : null;
-  let entries = [];
+  const headers  = { 'Authorization': `Bearer ${discordToken}` };
+  const guildId  = currentGuild ? currentGuild.id : null;
+  let entries    = [];
 
-  // 1. Try the Discord-native endpoint (needs updated bot.py on Render)
+  // 1. Try Discord-native endpoint (needs updated bot.py deployed on Render)
   if (guildId) {
     try {
       const r = await fetch(`${BOT_API}/server/audit-log?guild_id=${guildId}&limit=100`, { headers });
-      if (r.ok) {
-        const d = await r.json();
-        entries = d.entries || [];
-      }
+      if (r.ok) { const d = await r.json(); entries = d.entries || []; }
     } catch {}
   }
 
-  // 2. Fall back to MongoDB log — but STRICTLY exclude all bot system events
+  // 2. Fallback: MongoDB log — ALWAYS strip bot system events, never show them
   if (!entries.length) {
     try {
       const gp = guildId ? `&guild_id=${guildId}` : '';
@@ -643,18 +640,17 @@ async function fetchAuditLog() {
   if (badge) badge.textContent = entries.length;
 
   if (!entries.length) {
-    c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:10px;padding:40px">
-      <span style="font-size:2rem">🛡️</span>
-      <p style="font-weight:700">No server events yet</p>
-      <p style="font-size:0.8rem;color:var(--tx-3);text-align:center;max-width:360px">
-        Server moderation events (bans, kicks, role changes, etc.) will appear here.<br>
+    c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:10px;padding:40px;text-align:center">
+      <span style="font-size:2.5rem">🛡️</span>
+      <p style="font-weight:700;color:var(--tx)">No server events yet</p>
+      <p style="font-size:0.82rem;color:var(--tx-3);max-width:380px">
+        Server events (bans, kicks, role changes, etc.) appear here automatically.<br><br>
         Make sure the updated <code style="color:var(--green)">bot.py</code> is deployed on Render.
       </p>
-      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:4px">🔄 Refresh</button>
+      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:6px">🔄 Refresh</button>
     </div>`;
     return;
   }
-
   renderLog();
 }
 
