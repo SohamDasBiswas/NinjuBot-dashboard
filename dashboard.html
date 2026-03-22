@@ -798,6 +798,8 @@
     <!-- ══════ ANTI-NUKE ══════ -->
     <div id="panel-cfg-antinuke" class="panel">
       <div class="db-row">
+
+        <!-- Left card: settings -->
         <div class="db-card">
           <div class="card-hdr">
             <h3>🔰 Anti-Nuke Protection</h3>
@@ -840,30 +842,28 @@
               <button class="btn-sm" onclick="anWhitelistAdd()">Add</button>
             </div>
           </div>
-          <div class="save-bar">
-            <span class="save-bar-text">Anti-Nuke settings</span>
-            <div class="save-actions">
-              <button class="btn-sm-o" onclick="loadAntiNuke()">↩ Reset</button>
-              <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
-            </div>
-          </div>
         </div>
+
+        <!-- Right card: thresholds -->
         <div class="db-card">
           <h3>📊 Action Thresholds <span style="font-size:.7rem;color:var(--tx-3);font-weight:400">(per 10 seconds)</span></h3>
-          <div style="font-size:.8rem;color:var(--tx-2);margin-bottom:16px">Punishment triggers when a user exceeds these limits.</div>
-          <div id="an-thresholds" style="display:flex;flex-direction:column;gap:10px"></div>
-          <div style="margin-top:16px;padding:12px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.8rem;color:var(--tx-2);line-height:1.8">
+          <p style="font-size:.82rem;color:var(--tx-2);margin-bottom:16px">Punishment triggers instantly when a user exceeds these limits within 10 seconds.</p>
+          <div id="an-thresholds" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div style="margin-top:16px;padding:12px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.8rem;color:var(--tx-2);line-height:1.9">
             🔴 <strong style="color:#ff4f4f">1</strong> = zero tolerance &nbsp;·&nbsp;
             🟡 <strong style="color:#fbbf24">3–5</strong> = moderate &nbsp;·&nbsp;
-            🟢 Whitelist trusted bots (Carl-bot, MEE6…)
+            🟢 Whitelist trusted bots first
           </div>
-          <div class="save-bar" style="margin-top:16px">
-            <span class="save-bar-text">Thresholds</span>
-            <div class="save-actions">
-              <button class="btn-sm-o" onclick="anResetDefaults()">↩ Defaults</button>
-              <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
-            </div>
-          </div>
+        </div>
+      </div>
+
+      <!-- Save bar outside the db-row -->
+      <div class="save-bar">
+        <span class="save-bar-text">Saves <strong>Anti-Nuke</strong> config for <strong id="an-guild-name">this server</strong></span>
+        <div class="save-actions">
+          <button class="btn-sm-o" onclick="anResetDefaults()">↩ Defaults</button>
+          <button class="btn-sm-o" onclick="loadAntiNuke()">↩ Reset</button>
+          <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
         </div>
       </div>
     </div>
