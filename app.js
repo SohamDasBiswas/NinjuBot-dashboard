@@ -1305,19 +1305,26 @@ async function saveAntiNuke(){
 let _bkRestoring=false;
 async function bkLoad(){
   if(!currentGuild)return;
-  const isOwner=currentGuild.owner_id===currentUser?.id;
+  // Discord's guild list API returns owner:true/false on the guild object.
+  // owner_id is only present if explicitly added by the bot API.
+  // Support both so the check works regardless of which the bot returns.
+  const isOwner = currentGuild.owner === true
+    || (currentGuild.owner_id && currentGuild.owner_id === currentUser?.id);
   const warn=document.getElementById('backup-owner-warn');
   if(warn)warn.style.display=isOwner?'none':'block';
   const el=document.getElementById('bk-list');if(!el)return;
   el.innerHTML=`<div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>`;
   try{const r=await fetch(`${BOT_API}/backup/list?guild_id=${currentGuild.id}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
   const data=r.ok?await r.json():{backups:[]};const bks=data.backups||[];
-  if(!bks.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--tx-3);font-size:.82rem"><div style="font-size:1.6rem;margin-bottom:6px">💾</div>No backups yet.</div>`;return;}
+  if(!bks.length){el.innerHTML=`<div class="bk-empty"><div class="bk-empty-icon">🗄️</div><div class="bk-empty-title">No backups yet</div><div class="bk-empty-sub">Create your first backup to protect your server structure.</div></div>`;return;}
   el.innerHTML=bks.map(b=>`<div style="padding:10px 12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.label||'Backup'}</div><div style="font-size:.68rem;color:var(--tx-3)">🎭${b.role_count} 📢${b.channel_count} 😀${b.emoji_count} · ${new Date(b.created_at).toLocaleDateString()}</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="btn-sm-o" style="font-size:.68rem;padding:3px 7px" onclick="bkPreview('${b.backup_id}')">👁</button>${isOwner?`<button class="btn-sm" style="font-size:.68rem;padding:3px 7px" onclick="bkRestore('${b.backup_id}','${(b.label||'Backup').replace(/'/g,"\\'")}')">🔄</button><button class="btn-danger" style="font-size:.68rem;padding:3px 7px" onclick="bkDelete('${b.backup_id}')">🗑</button>`:''}</div></div>`).join('');}
   catch{el.innerHTML=`<div class="loading-state"><p>❌ Failed.</p></div>`;}
 }
 async function bkCreate(){
-  if(!currentGuild)return;if(currentGuild.owner_id!==currentUser?.id)return showToast('Only server owner can create backups','error');
+  if(!currentGuild)return;
+  const isOwner = currentGuild.owner === true
+    || (currentGuild.owner_id && currentGuild.owner_id === currentUser?.id);
+  if(!isOwner)return showToast('Only server owner can create backups','error');
   const label=document.getElementById('bk-label')?.value.trim()||'';showToast('⏳ Creating backup…');
   try{const r=await fetch(`${BOT_API}/backup/create`,{method:'POST',headers:{'Authorization':`Bearer ${discordToken}`,'Content-Type':'application/json'},body:JSON.stringify({guild_id:currentGuild.id,label})});
   const data=await r.json();if(r.ok&&data.success){showToast(`✅ Created: ${data.backup.label}`);const inp=document.getElementById('bk-label');if(inp)inp.value='';bkLoad();}else showToast(`❌ ${data.error||'Failed'}`,'error');}
@@ -1338,7 +1345,10 @@ async function bkPreview(backupId){
   catch{showToast('❌ Preview failed','error');}
 }
 async function bkRestore(backupId,label){
-  if(_bkRestoring)return;if(currentGuild.owner_id!==currentUser?.id)return showToast('Only server owner can restore','error');
+  if(_bkRestoring)return;
+  const isOwner = currentGuild.owner === true
+    || (currentGuild.owner_id && currentGuild.owner_id === currentUser?.id);
+  if(!isOwner)return showToast('Only server owner can restore','error');
   if(!confirm(`⚠️ Restore "${label}"?\nUpdates/recreates roles and channels. Nothing deleted.\nProceed?`))return;
   _bkRestoring=true;
   const modal=document.getElementById('bk-restore-modal'),status=document.getElementById('bk-restore-status'),bar=document.getElementById('bk-restore-bar'),log=document.getElementById('bk-restore-log');
