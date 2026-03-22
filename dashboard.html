@@ -797,7 +797,7 @@
   </div><!-- /panels -->
 
     <!-- ══════ ANTI-NUKE ══════ -->
-    <div id="panel-cfg-antinuke" class="panel" style="display:none">
+    <div id="panel-cfg-antinuke" class="panel">
       <div class="db-row">
         <div class="db-card">
           <div class="card-hdr">
@@ -837,7 +837,7 @@
             <div style="font-size:.8rem;color:var(--tx-2);margin-bottom:10px">These users/bots are never punished. Always whitelist yourself before enabling!</div>
             <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
             <div style="display:flex;gap:8px">
-              <input type="text" id="an-whitelist-input" class="f-input" placeholder="Discord User ID" style="flex:1">
+              <input type="text" id="an-whitelist-input" class="f-input" placeholder="Discord User ID (17-19 digits)" style="flex:1">
               <button class="btn-sm" onclick="anWhitelistAdd()">Add</button>
             </div>
           </div>
@@ -849,15 +849,14 @@
             </div>
           </div>
         </div>
-
         <div class="db-card">
           <h3>📊 Action Thresholds <span style="font-size:.7rem;color:var(--tx-3);font-weight:400">(per 10 seconds)</span></h3>
-          <div style="font-size:.8rem;color:var(--tx-2);margin-bottom:16px">If a user exceeds these limits, punishment is applied instantly.</div>
+          <div style="font-size:.8rem;color:var(--tx-2);margin-bottom:16px">Punishment triggers when a user exceeds these limits.</div>
           <div id="an-thresholds" style="display:flex;flex-direction:column;gap:10px"></div>
           <div style="margin-top:16px;padding:12px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.8rem;color:var(--tx-2);line-height:1.8">
             🔴 <strong style="color:#ff4f4f">1</strong> = zero tolerance &nbsp;·&nbsp;
             🟡 <strong style="color:#fbbf24">3–5</strong> = moderate &nbsp;·&nbsp;
-            🟢 Whitelist trusted bots
+            🟢 Whitelist trusted bots (Carl-bot, MEE6…)
           </div>
           <div class="save-bar" style="margin-top:16px">
             <span class="save-bar-text">Thresholds</span>
@@ -871,14 +870,14 @@
     </div>
 
     <!-- ══════ SERVER BACKUP ══════ -->
-    <div id="panel-server-backup" class="panel" style="display:none">
+    <div id="panel-server-backup" class="panel">
       <div id="backup-owner-warn" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:var(--r-md);background:rgba(255,79,79,.08);border:1px solid rgba(255,79,79,.25);color:#ff6b6b;font-size:.85rem">
         ⚠️ Server Backup is only available to the <strong>server owner</strong>.
       </div>
       <div class="db-row">
         <div class="db-card">
           <h3>📸 Create Backup</h3>
-          <p style="font-size:.85rem;color:var(--tx-2);margin-bottom:18px;line-height:1.7">Creates a full snapshot: all <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, and <strong>permission overwrites</strong>.</p>
+          <p style="font-size:.85rem;color:var(--tx-2);margin-bottom:18px;line-height:1.7">Creates a full snapshot of your server: <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, and all <strong>permission overwrites</strong>.</p>
           <div class="field">
             <label class="field-label">Label (optional)</label>
             <input type="text" id="bk-label" class="f-input" placeholder="e.g. Before restructure…">
@@ -886,10 +885,10 @@
           <button class="btn-sm" onclick="bkCreate()" style="width:100%;margin-top:8px;padding:12px;font-size:.9rem">📸 Create Backup Now</button>
           <div style="margin-top:20px;padding:14px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);font-size:.8rem;color:var(--tx-2);line-height:2">
             <div style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">What gets backed up</div>
-            ✅ All roles (name, color, permissions)<br>
+            ✅ All roles (name, color, permissions, position)<br>
             ✅ All categories + permission overwrites<br>
-            ✅ All text & voice channels<br>
-            ✅ Server name & settings<br>
+            ✅ All text &amp; voice channels<br>
+            ✅ Server name &amp; settings<br>
             ❌ Messages and member data
           </div>
         </div>
@@ -901,8 +900,7 @@
           <div id="bk-list"><div class="loading-state"><div class="spinner"></div><p>Loading…</p></div></div>
         </div>
       </div>
-
-      <!-- Preview panel -->
+      <!-- Preview pane -->
       <div id="bk-detail" style="display:none;margin-top:16px">
         <div class="db-card">
           <div class="card-hdr">
@@ -931,8 +929,7 @@
           </div>
         </div>
       </div>
-
-      <!-- Restore progress modal -->
+      <!-- Restore progress overlay -->
       <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
         <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:28px;width:480px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
           <div style="font-size:1rem;font-weight:700;color:#4eff91;margin-bottom:8px">🔄 Restoring Server…</div>
