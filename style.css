@@ -697,4 +697,7 @@ section{padding:100px 40px}
 /* ── Dashboard scrollbar ── */
 .panels::-webkit-scrollbar{display:none}
 
+
+
+
 #dashboard-app{flex:1;min-height:0;display:flex;overflow:visible}

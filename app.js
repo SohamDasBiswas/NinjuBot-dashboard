@@ -1281,7 +1281,7 @@ function _anRender(){
   const wlEl=document.getElementById('an-whitelist-list');
   if(wlEl){const wl=cfg.whitelist||[];wlEl.innerHTML=wl.length?wl.map(uid=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.1)"><span style="flex:1;font-size:.78rem;font-family:monospace;overflow:hidden;text-overflow:ellipsis">${uid}</span><button class="btn-danger" style="padding:2px 7px;font-size:.68rem;flex-shrink:0" onclick="anWhitelistRemove('${uid}')">✕</button></div>`).join(''):'<div style="color:var(--tx-3);font-size:.76rem">No users whitelisted.</div>';}
   const tEl=document.getElementById('an-thresholds');
-  if(tEl){const thresh=cfg.thresholds||AN_DEFAULTS;tEl.innerHTML=Object.entries(AN_ACTIONS).map(([key,{label,desc}])=>{const val=thresh[key]??AN_DEFAULTS[key];return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.06);gap:6px"><div style="flex:1;min-width:0"><div style="font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</div><div style="font-size:.63rem;color:var(--tx-3)">${desc}</div></div><div style="display:flex;align-items:center;gap:3px;flex-shrink:0"><button onclick="anAdj('${key}',-1)" style="width:22px;height:22px;border-radius:4px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:.95rem;cursor:pointer;padding:0">−</button><input type="number" id="an-thresh-${key}" value="${val}" min="1" max="20" style="width:36px;text-align:center;padding:2px;border-radius:4px;background:#07100a;border:1px solid rgba(78,255,145,.2);color:#d0ffe0;font-family:'Courier New',monospace;font-size:.85rem;font-weight:700" oninput="markDirty('antinuke')"><button onclick="anAdj('${key}',1)" style="width:22px;height:22px;border-radius:4px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:.95rem;cursor:pointer;padding:0">+</button></div></div>`;}).join('');}
+  if(tEl){const thresh=cfg.thresholds||AN_DEFAULTS;tEl.innerHTML=Object.entries(AN_ACTIONS).map(([key,{label,desc}])=>{const val=thresh[key]??AN_DEFAULTS[key];return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.06);gap:6px"><div style="flex:1;min-width:0"><div style="font-size:.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</div><div style="font-size:.63rem;color:var(--tx-3)">${desc}</div></div><div style="display:flex;align-items:center;gap:3px;flex-shrink:0"><button onclick="anAdj('${key}',-1)" style="width:22px;height:22px;border-radius:4px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:.95rem;cursor:pointer;padding:0">−</button><input type="number" id="an-thresh-${key}" value="${val}" min="1" max="20" style="width:36px;text-align:center;padding:2px;border-radius:4px;background:#07100a;border:1px solid rgba(78,255,145,.2);color:#d0ffe0;font-family:'Courier New',monospace;font-size:.85rem;font-weight:700" oninput="markDirty('antinuke')"><button onclick="anAdj('${key}',1)" style="width:22px;height:22px;border-radius:4px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:.95rem;cursor:pointer;padding:0">+</button></div></div>`;}).join('');}
   const d=document.getElementById('dd-antinuke');if(d)d.classList.remove('show');
   const gn=document.getElementById('an-guild-name');if(gn&&currentGuild)gn.textContent=currentGuild.name;
 }
@@ -1307,7 +1307,7 @@ async function bkLoad(){
   if(!currentGuild)return;
   const isOwner=currentGuild.owner_id===currentUser?.id;
   const warn=document.getElementById('backup-owner-warn');
-  if(warn) warn.style.display=isOwner?'none':'block';
+  if(warn)warn.style.display=isOwner?'none':'block';
   const el=document.getElementById('bk-list');if(!el)return;
   el.innerHTML=`<div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>`;
   try{const r=await fetch(`${BOT_API}/backup/list?guild_id=${currentGuild.id}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
@@ -1329,10 +1329,10 @@ async function bkPreview(backupId){
   try{const r=await fetch(`${BOT_API}/backup/get?guild_id=${currentGuild.id}&backup_id=${backupId}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
   const data=await r.json();if(!r.ok){showToast(`❌ ${data.error}`,'error');return;}
   document.getElementById('bk-detail-title').textContent=`📋 ${data.label}`;
-  ['roles','channels','emojis','members'].forEach(k=>{const el=document.getElementById(`bk-d-${k}`);if(el)el.textContent=data[`${k==='channels'?'channel':k}_count`]??'—';});
+  document.getElementById('bk-d-roles').textContent=data.role_count;document.getElementById('bk-d-channels').textContent=data.channel_count;
+  document.getElementById('bk-d-emojis').textContent=data.emoji_count;document.getElementById('bk-d-members').textContent=data.member_count;
   const fmt=arr=>arr.length?arr.map(n=>`<div>• ${n}</div>`).join(''):'<div style="color:var(--tx-3)">None</div>';
-  const prev=data.preview||{};
-  document.getElementById('bk-d-roles-list').innerHTML=fmt(prev.roles||[]);
+  const prev=data.preview||{};document.getElementById('bk-d-roles-list').innerHTML=fmt(prev.roles||[]);
   document.getElementById('bk-d-channels-list').innerHTML=fmt([...(prev.text_channels||[]),...(prev.voice_channels||[])]);
   document.getElementById('bk-d-cats-list').innerHTML=fmt(prev.categories||[]);}
   catch{showToast('❌ Preview failed','error');}
