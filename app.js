@@ -605,43 +605,31 @@ async function fetchBoostStats() {
 // ══════════════════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════════════════
-const _BOT_SYSTEM_EVENTS = new Set(['bot_start','bot_stop','bot_restart','bot_connect','bot_disconnect','bot_ready']);
-
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
-  const headers = { 'Authorization': `Bearer ${discordToken}` };
-  const guildId = currentGuild ? currentGuild.id : null;
-  let entries = [];
-  if (guildId) {
-    try {
-      const r = await fetch(`${BOT_API}/server/audit-log?guild_id=${guildId}&limit=100`, { headers });
-      if (r.ok) { const d = await r.json(); entries = d.entries || []; }
-    } catch {}
-  }
-  if (!entries.length) {
-    try {
-      const gp = guildId ? `&guild_id=${guildId}` : '';
-      const r  = await fetch(`${BOT_API}/audit/log?limit=200${gp}`, { headers });
-      if (r.ok) {
-        const d = await r.json();
-        entries = (d.entries || []).filter(e => !_BOT_SYSTEM_EVENTS.has(e.action));
-      }
-    } catch {}
-  }
-  allLogEntries = entries;
-  const badge = document.getElementById('log-badge');
-  if (badge) badge.textContent = entries.length;
-  if (!entries.length) {
-    c.innerHTML = `<div class="loading-state" style="flex-direction:column;gap:10px;padding:40px;text-align:center">
-      <span style="font-size:2rem">🛡️</span><p style="font-weight:700">No server events yet</p>
-      <p style="font-size:0.8rem;color:var(--tx-3);max-width:360px">Deploy the updated <code style="color:var(--green)">bot.py</code> on Render to see real Discord audit logs.</p>
-      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:6px">🔄 Refresh</button>
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
+  try {
+    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error('failed');
+    allLogEntries = data.entries || [];
+
+    // Update badge count
+    const badge = document.getElementById('log-badge');
+    if (badge) badge.textContent = allLogEntries.length;
+
+    renderLog();
+  } catch {
+    c.innerHTML = `<div class="loading-state">
+      <p>❌ Audit log not available.</p>
+      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
+      <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
     </div>`;
-    return;
   }
-  renderLog();
 }
 
 function filterLog(filter, btn) {
@@ -657,114 +645,48 @@ function logPage(dir) {
   renderLog();
 }
 
-const LOG_ICONS = {
-  ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊',
-  warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️',
-  role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️',
-  channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝',
-  voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀',
-  invite_create:'🔗', invite_delete:'❌', server_rename:'🏠',
-  emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓',
-  member_ban_add:'🔨', member_ban_remove:'🔓', member_kick:'👢',
-  member_update:'✏️', member_role_update:'🏷️',
-  member_disconnect:'🔇', member_move:'🔀',
-  message_delete:'🗑️', message_bulk_delete:'🧹', message_pin:'📌',
-  channel_update:'📝', role_update:'🏷️', role_create:'🎭', role_delete:'🗑️',
-  guild_update:'🏠', bot_add:'🤖',
-  member_join:'✅', member_leave:'🚪', member_prune:'🚪',
-};
-
-const ACTION_LABEL = {
-  member_ban_add:'BAN', member_ban_remove:'UNBAN', member_kick:'KICK',
-  member_update:'MEMBER UPDATE', member_role_update:'ROLE CHANGE',
-  member_disconnect:'VOICE KICK', member_move:'VOICE MOVE',
-  member_join:'JOIN', member_leave:'LEAVE', member_prune:'PRUNE',
-  message_delete:'MSG DELETE', message_bulk_delete:'BULK DELETE', message_pin:'MSG PINNED',
-  channel_create:'CHANNEL CREATE', channel_delete:'CHANNEL DELETE', channel_update:'CHANNEL UPDATE',
-  role_create:'ROLE CREATED', role_delete:'ROLE DELETED', role_update:'ROLE MODIFIED',
-  guild_update:'SERVER UPDATE', bot_add:'BOT ADDED',
-  invite_create:'INVITE CREATE', invite_delete:'INVITE DELETE',
-};
-
-function cleanEntry(s) {
-  return (s||'').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim() || s || 'Unknown';
-}
-
-function formatTarget(action, target) {
-  const t = cleanEntry(target);
-  if (['role_create','role_delete','role_update','member_role_update'].includes(action))
-    return `<span style="color:#fbbf24">@${t}</span>`;
-  if (['channel_create','channel_delete','channel_update'].includes(action))
-    return `<span style="color:#38bdf8">#${t}</span>`;
-  if (['member_ban_add','member_kick','member_disconnect'].includes(action))
-    return `<span style="color:#ff4f4f">${t}</span>`;
-  return `<strong>${t}</strong>`;
-}
-
-const PER_PAGE = 20;
+const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓', bot_start:'🚀' };
+const PER_PAGE  = 20;
 
 function renderLog() {
   const c = document.getElementById('audit-log-list');
   const pg = document.getElementById('log-pagination');
   if (!c) return;
 
-  // Maps each filter button value → all matching action names (old + Discord native)
   const multiFilters = {
-    'ban':            ['ban', 'member_ban_add'],
-    'kick':           ['kick', 'member_kick'],
-    'timeout':        ['timeout', 'untimeout', 'member_update'],
-    'warn':           ['warn'],
-    'delete':         ['delete', 'message_delete', 'message_bulk_delete'],
-    'edit':           ['edit', 'message_pin'],
-    'join':           ['join', 'member_join'],
-    'leave':          ['leave', 'member_leave', 'member_prune', 'member_kick', 'member_ban_add'],
-    'voice_join':     ['voice_join', 'voice_leave', 'voice_move', 'member_disconnect', 'member_move'],
-    'role_add':       ['role_add', 'role_remove', 'role_create', 'role_delete', 'role_rename', 'role_update', 'member_role_update'],
-    'channel_create': ['channel_create', 'channel_delete', 'channel_rename', 'channel_update'],
-    'invite_create':  ['invite_create', 'invite_delete'],
-    'purge':          ['purge', 'message_bulk_delete'],
+    'voice_join':     ['voice_join','voice_leave','voice_move'],
+    'role_add':       ['role_add','role_remove','role_create','role_delete','role_rename'],
+    'channel_create': ['channel_create','channel_delete','channel_rename'],
+    'invite_create':  ['invite_create','invite_delete'],
   };
-
   const filtered = auditLogFilter === 'all'
     ? allLogEntries
-    : allLogEntries.filter(e => {
-        const a = e.action || '';
-        const map = multiFilters[auditLogFilter];
-        return map ? map.includes(a) : a === auditLogFilter;
-      });
+    : allLogEntries.filter(e => multiFilters[auditLogFilter]
+        ? multiFilters[auditLogFilter].includes(e.action)
+        : e.action === auditLogFilter);
 
-  const total = Math.ceil(filtered.length / PER_PAGE) || 1;
-  auditLogPage = Math.min(auditLogPage, total);
-  const slice = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
+  const total     = Math.ceil(filtered.length / PER_PAGE) || 1;
+  auditLogPage    = Math.min(auditLogPage, total);
+  const slice     = filtered.slice((auditLogPage-1)*PER_PAGE, auditLogPage*PER_PAGE);
 
   if (!slice.length) {
-    c.innerHTML = `<div class="loading-state"><p>No entries for this filter.</p></div>`;
+    c.innerHTML = `<div class="loading-state"><p>No log entries found.</p></div>`;
     if (pg) pg.style.display = 'none';
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => {
-    const action = e.action || 'unknown';
-    const icon   = LOG_ICONS[action] || '📌';
-    const label  = ACTION_LABEL[action] || action.toUpperCase().replace(/_/g,' ');
-    const target = formatTarget(action, e.target);
-    const mod    = cleanEntry(e.moderator) || 'System';
-    const detail = e.detail || '';
-    const reason = (e.reason && e.reason !== detail) ? e.reason : '';
-    return `
-    <div class="log-entry ${action}">
-      <div class="log-icon">${icon}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => `
+    <div class="log-entry ${e.action||''}">
+      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${action}">${label}</span>
-          ${target}${reason ? ` — <span style="color:var(--tx-2);font-weight:400">${reason}</span>` : ''}
+          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
+          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
         </div>
-        ${detail ? `<div class="log-meta" style="color:rgba(78,255,145,.85);margin-top:3px">📋 ${detail}</div>` : ''}
-        <div class="log-meta">By <strong>${mod}</strong>${e.guild_name ? ' in ' + e.guild_name : ''}</div>
+        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
       </div>
       <div class="log-time">${formatTime(e.timestamp)}</div>
-    </div>`;
-  }).join('')}</div>`;
+    </div>`).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
@@ -814,7 +736,7 @@ function showPanel(name, el) {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
     'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-booster':'Booster Cards',
-    'cfg-moderation':'Moderation', 'audit-log':'Audit Log', mongodb:'MongoDB Stats'
+    'cfg-moderation':'Moderation', 'cfg-antinuke':'Anti-Nuke', 'audit-log':'Audit Log', mongodb:'MongoDB Stats'
   };
   const t = document.getElementById('page-title');
   if (t) t.textContent = titles[name] || name;
@@ -825,6 +747,7 @@ function showPanel(name, el) {
   if (name === 'audit-log')   fetchAuditLog();
   if (name === 'mongodb')     fetchMongoStats();
   if (name === 'admin-hq')    hqLoad();
+  if (name === 'cfg-antinuke') loadAntiNuke();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1343,4 +1266,191 @@ async function hqExportEco(){
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
     a.download=`economy_${Date.now()}.csv`;a.click();showToast('✅ Exported');
   }catch{showToast('❌ Export failed','error');}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ANTI-NUKE PANEL
+// ══════════════════════════════════════════════════════════════
+
+const AN_ACTIONS = {
+  ban:            { label:'🔨 Mass Ban',            desc:'Bans in 10s' },
+  kick:           { label:'👢 Mass Kick',           desc:'Kicks in 10s' },
+  channel_delete: { label:'🗑️ Channel Delete',      desc:'Channel deletes in 10s' },
+  channel_create: { label:'📢 Channel Spam',         desc:'Channel creates in 10s' },
+  role_delete:    { label:'🗑️ Role Delete',          desc:'Role deletes in 10s' },
+  role_create:    { label:'🎭 Role Spam',             desc:'Role creates in 10s' },
+  webhook_create: { label:'🔗 Webhook Spam',          desc:'Webhooks created in 10s' },
+  member_prune:   { label:'🚪 Mass Prune',            desc:'Prune triggers in 10s' },
+  everyone_ping:  { label:'📣 @everyone Spam',        desc:'@everyone pings in 10s' },
+};
+
+const AN_DEFAULTS = {
+  ban:2, kick:3, channel_delete:2, channel_create:5,
+  role_delete:2, role_create:5, webhook_create:3,
+  member_prune:1, everyone_ping:2
+};
+
+let _anCfg = null;
+
+async function loadAntiNuke() {
+  if (!currentGuild) return;
+  try {
+    const res  = await fetch(`${BOT_API}/antinuke?guild_id=${currentGuild.id}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    _anCfg = res.ok ? await res.json() : {
+      enabled: false, punishment: 'ban', whitelist: [], thresholds: {...AN_DEFAULTS}, log_channel: null
+    };
+  } catch {
+    _anCfg = { enabled: false, punishment: 'ban', whitelist: [], thresholds: {...AN_DEFAULTS}, log_channel: null };
+  }
+  _anRender();
+}
+
+function _anRender() {
+  const cfg = _anCfg;
+  if (!cfg) return;
+
+  // Toggle
+  const tog = document.getElementById('an-enabled');
+  if (tog) tog.checked = !!cfg.enabled;
+
+  // Status pill
+  const pill = document.getElementById('an-status-pill');
+  if (pill) {
+    pill.textContent = cfg.enabled ? '🟢 ENABLED' : '🔴 DISABLED';
+    pill.style.background = cfg.enabled ? 'rgba(78,255,145,.15)' : 'rgba(255,79,79,.15)';
+    pill.style.color       = cfg.enabled ? '#4eff91' : '#ff4f4f';
+    pill.style.borderColor = cfg.enabled ? 'rgba(78,255,145,.3)' : 'rgba(255,79,79,.3)';
+  }
+
+  // Punishment
+  const pun = document.getElementById('an-punishment');
+  if (pun) pun.value = cfg.punishment || 'ban';
+
+  // Log channel
+  const sel = document.getElementById('an-logchannel');
+  if (sel) {
+    const cur = cfg.log_channel || '';
+    Array.from(sel.options).forEach(o => { o.selected = o.value === cur; });
+  }
+
+  // Whitelist
+  const wlEl = document.getElementById('an-whitelist-list');
+  if (wlEl) {
+    const wl = cfg.whitelist || [];
+    wlEl.innerHTML = wl.length
+      ? wl.map(uid => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.1)">
+            <span style="font-family:var(--font-m);font-size:.82rem;flex:1"><@${uid}> <span style="color:var(--tx-3);font-size:.72rem">(${uid})</span></span>
+            <button class="btn-danger" style="padding:4px 10px;font-size:.72rem" onclick="anWhitelistRemove('${uid}')">Remove</button>
+          </div>`).join('')
+      : '<div style="color:var(--tx-3);font-size:.8rem;padding:8px 0">No users whitelisted yet.</div>';
+  }
+
+  // Thresholds
+  const tEl = document.getElementById('an-thresholds');
+  if (tEl) {
+    const thresh = cfg.thresholds || AN_DEFAULTS;
+    tEl.innerHTML = Object.entries(AN_ACTIONS).map(([key, {label, desc}]) => {
+      const val = thresh[key] ?? AN_DEFAULTS[key];
+      const def = AN_DEFAULTS[key];
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.07)">
+          <div>
+            <div style="font-size:.85rem;font-weight:600">${label}</div>
+            <div style="font-size:.7rem;color:var(--tx-3)">${desc} &nbsp;·&nbsp; default: ${def}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <button onclick="anThreshAdj('${key}',-1)" style="width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:1rem;cursor:pointer;line-height:1">−</button>
+            <input type="number" id="an-thresh-${key}" value="${val}" min="1" max="20"
+              style="width:52px;text-align:center;padding:5px 4px;border-radius:6px;background:#07100a;border:1px solid rgba(78,255,145,.2);color:#d0ffe0;font-family:'Courier New',monospace;font-size:.95rem;font-weight:700"
+              oninput="markDirty('antinuke')">
+            <button onclick="anThreshAdj('${key}',1)" style="width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid rgba(78,255,145,.2);color:var(--green);font-size:1rem;cursor:pointer;line-height:1">+</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  const dirty = document.getElementById('dd-antinuke');
+  if (dirty) dirty.classList.remove('show');
+}
+
+function anToggle() {
+  if (!_anCfg) return;
+  _anCfg.enabled = document.getElementById('an-enabled').checked;
+  const pill = document.getElementById('an-status-pill');
+  if (pill) {
+    pill.textContent = _anCfg.enabled ? '🟢 ENABLED' : '🔴 DISABLED';
+    pill.style.background = _anCfg.enabled ? 'rgba(78,255,145,.15)' : 'rgba(255,79,79,.15)';
+    pill.style.color       = _anCfg.enabled ? '#4eff91' : '#ff4f4f';
+    pill.style.borderColor = _anCfg.enabled ? 'rgba(78,255,145,.3)' : 'rgba(255,79,79,.3)';
+  }
+  markDirty('antinuke');
+}
+
+function anWhitelistAdd() {
+  if (!_anCfg) return;
+  const inp = document.getElementById('an-whitelist-input');
+  if (!inp) return;
+  const raw = inp.value.trim().replace(/[^0-9]/g, '');
+  if (!raw || raw.length < 17) { showToast('Enter a valid Discord user ID', 'warn'); return; }
+  if (!_anCfg.whitelist.includes(raw)) {
+    _anCfg.whitelist.push(raw);
+    _anRender();
+    markDirty('antinuke');
+  }
+  inp.value = '';
+}
+
+function anWhitelistRemove(uid) {
+  if (!_anCfg) return;
+  _anCfg.whitelist = _anCfg.whitelist.filter(u => u !== uid);
+  _anRender();
+  markDirty('antinuke');
+}
+
+function anThreshAdj(key, delta) {
+  const el = document.getElementById(`an-thresh-${key}`);
+  if (!el) return;
+  const newVal = Math.min(20, Math.max(1, parseInt(el.value || 1) + delta));
+  el.value = newVal;
+  markDirty('antinuke');
+}
+
+function anResetDefaults() {
+  Object.entries(AN_DEFAULTS).forEach(([key, val]) => {
+    const el = document.getElementById(`an-thresh-${key}`);
+    if (el) el.value = val;
+  });
+  showToast('Thresholds reset to defaults — click Save to apply', 'warn');
+  markDirty('antinuke');
+}
+
+async function saveAntiNuke() {
+  if (!currentGuild || !_anCfg) return;
+  // Read current values from UI
+  _anCfg.punishment  = document.getElementById('an-punishment')?.value || 'ban';
+  _anCfg.log_channel = document.getElementById('an-logchannel')?.value || null;
+  Object.keys(AN_DEFAULTS).forEach(key => {
+    const el = document.getElementById(`an-thresh-${key}`);
+    if (el) _anCfg.thresholds[key] = parseInt(el.value);
+  });
+
+  try {
+    const res = await fetch(`${BOT_API}/antinuke?guild_id=${currentGuild.id}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(_anCfg)
+    });
+    if (res.ok) {
+      showToast('✅ Anti-Nuke settings saved!');
+      const dirty = document.getElementById('dd-antinuke');
+      if (dirty) dirty.classList.remove('show');
+    } else {
+      showToast('❌ Failed to save', 'error');
+    }
+  } catch {
+    showToast('❌ Network error', 'error');
+  }
 }

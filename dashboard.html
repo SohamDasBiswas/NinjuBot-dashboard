@@ -108,6 +108,7 @@
     <div class="sl" onclick="showPanel('cfg-streams',this)"><span class="sl-icon">📺</span> Stream Alerts<span class="dirty-dot" id="dd-streams" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-booster',this)"><span class="sl-icon">🚀</span> Booster Cards<span class="dirty-dot" id="dd-booster" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-moderation',this)"><span class="sl-icon">🛡️</span> Moderation<span class="dirty-dot" id="dd-moderation" style="margin-left:auto"></span></div>
+    <div class="sl" onclick="showPanel('cfg-antinuke',this)"><span class="sl-icon">🔰</span> Anti-Nuke<span class="dirty-dot" id="dd-antinuke" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('audit-log',this)"><span class="sl-icon">📋</span> Audit Log <span class="sl-badge red" id="log-badge">0</span></div>
     <div id="admin-sidebar-section" style="display:none;flex-direction:column">
       <div style="height:1px;background:rgba(255,107,107,0.15);margin:6px 4px"></div>
@@ -793,6 +794,102 @@
       </div>
     </div>
   </div><!-- /panels -->
+
+    <!-- ══════ ANTI-NUKE ══════ -->
+    <div id="panel-cfg-antinuke" class="panel" style="display:none">
+      <div class="db-row">
+
+        <!-- Left: Status + Punishment + Log Channel -->
+        <div class="db-card">
+          <div class="card-hdr">
+            <h3>🔰 Anti-Nuke Protection</h3>
+            <div id="an-status-pill" style="padding:4px 12px;border-radius:999px;font-size:.75rem;font-weight:700;background:rgba(255,79,79,.15);color:#ff4f4f;border:1px solid rgba(255,79,79,.3)">DISABLED</div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">⚡ Master Switch</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-name">Enable Anti-Nuke</div>
+                <div class="toggle-desc">Automatically punish users who mass-delete channels, mass-ban, etc.</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="an-enabled" onchange="anToggle()"><span class="toggle-track"></span></label>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">⚖️ Punishment</div>
+            <div class="field">
+              <label class="field-label">Action when triggered</label>
+              <select id="an-punishment" class="f-select" onchange="markDirty('antinuke')">
+                <option value="ban">🔨 Ban the user</option>
+                <option value="kick">👢 Kick the user</option>
+                <option value="strip">🗑️ Strip all roles</option>
+              </select>
+              <span class="field-hint">Applied instantly when threshold is exceeded</span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">📢 Alert Channel</div>
+            <div class="field">
+              <label class="field-label">Send alerts to</label>
+              <select id="an-logchannel" class="f-select" onchange="markDirty('antinuke')">
+                <option value="">— Disabled —</option>
+              </select>
+              <span class="field-hint">Anti-nuke triggers will be logged here</span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">✅ Whitelist</div>
+            <div style="font-size:.8rem;color:var(--tx-2);margin-bottom:10px">These users/bots are never punished by anti-nuke.</div>
+            <div id="an-whitelist-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
+            <div style="display:flex;gap:8px">
+              <input type="text" id="an-whitelist-input" class="f-input" placeholder="User ID or @mention" style="flex:1">
+              <button class="btn-sm" onclick="anWhitelistAdd()">Add</button>
+            </div>
+          </div>
+
+          <div class="save-bar">
+            <span class="save-bar-text">Saves <strong>Anti-Nuke</strong> settings</span>
+            <div class="save-actions">
+              <button class="btn-sm-o" onclick="loadAntiNuke()">↩ Reset</button>
+              <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Thresholds -->
+        <div class="db-card">
+          <h3>📊 Action Thresholds <span style="font-size:.7rem;color:var(--tx-3);font-weight:400">(per 10 seconds)</span></h3>
+          <div style="font-size:.8rem;color:var(--tx-2);margin-bottom:16px">If a user exceeds these limits, the punishment is applied immediately.</div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🔨 Moderation Actions</div>
+            <div id="an-thresholds" style="display:flex;flex-direction:column;gap:12px"></div>
+          </div>
+
+          <div class="settings-section" style="margin-top:16px">
+            <div class="settings-section-title">⚠️ Danger Zones</div>
+            <div style="padding:12px;border-radius:var(--r-md);background:rgba(255,79,79,.07);border:1px solid rgba(255,79,79,.2);font-size:.82rem;color:var(--tx-2);line-height:1.7">
+              🔴 <strong style="color:#ff4f4f">Set threshold to 1</strong> for zero-tolerance<br>
+              🟡 <strong style="color:#fbbf24">Set to 3-5</strong> for moderate protection<br>
+              🟢 <strong style="color:#4eff91">Whitelist</strong> trusted bots like Carl-bot, MEE6<br>
+              ⚠️ <strong>Always whitelist yourself</strong> before enabling
+            </div>
+          </div>
+
+          <div class="save-bar" style="margin-top:20px">
+            <span class="save-bar-text">Saves <strong>Thresholds</strong></span>
+            <div class="save-actions">
+              <button class="btn-sm-o" onclick="anResetDefaults()">↩ Defaults</button>
+              <button class="btn-sm" onclick="saveAntiNuke()">💾 Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 </main>
 </div><!-- /dashboard-app -->
 
