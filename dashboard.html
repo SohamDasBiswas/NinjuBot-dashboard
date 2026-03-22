@@ -962,8 +962,8 @@
         .bk-empty-sub{font-size:0.76rem;color:var(--tx-3);max-width:200px;line-height:1.7;font-family:var(--font-m)}
       </style>
 
-      <!-- Owner warning banner -->
-      <div id="backup-owner-warn" style="display:none">
+      <!-- Owner warning banner — shown/hidden by app.js -->
+      <div id="backup-owner-warn" style="display:none;margin-bottom:14px">
         <div class="bk-banner">
           <div class="bk-banner-icon">⚠️</div>
           <span>Only the <strong>server owner</strong> can create or restore backups.</span>
@@ -1100,10 +1100,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     observer.observe(anPanel, { attributes: true, subtree: true, childList: true });
   }
-
-  /* Backup owner-warn: remove inline display:none so class toggle works */
-  var warn = document.getElementById('backup-owner-warn');
-  if (warn) warn.style.display = '';
 });
 </script>
 </body>
