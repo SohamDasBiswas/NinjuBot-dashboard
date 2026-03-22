@@ -608,22 +608,25 @@ async function fetchBoostStats() {
 async function fetchAuditLog() {
   const c = document.getElementById('audit-log-list');
   if (!c) return;
-  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading server audit log…</p></div>`;
+  c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading audit log from MongoDB…</p></div>`;
   try {
-    if (!currentGuild) throw new Error('No guild selected');
-    const res  = await fetch(`${BOT_API}/server/audit-log?guild_id=${currentGuild.id}&limit=100`, {
+    const guildParam = currentGuild ? `&guild_id=${currentGuild.id}` : '';
+    const res  = await fetch(`${BOT_API}/audit/log?limit=200${guildParam}`, {
       headers: { 'Authorization': `Bearer ${discordToken}` }
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed');
+    if (!res.ok) throw new Error('failed');
     allLogEntries = data.entries || [];
+
+    // Update badge count
     const badge = document.getElementById('log-badge');
     if (badge) badge.textContent = allLogEntries.length;
+
     renderLog();
-  } catch(err) {
+  } catch {
     c.innerHTML = `<div class="loading-state">
-      <p>❌ Could not load server audit log.</p>
-      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">${err.message}</p>
+      <p>❌ Audit log not available.</p>
+      <p style="font-size:0.78rem;color:var(--tx-3);margin-top:6px">Add <code style="color:var(--green)">GET /audit/log</code> to your bot API to display MongoDB mod logs here.</p>
       <button class="btn-sm-o" onclick="fetchAuditLog()" style="margin-top:10px">🔄 Retry</button>
     </div>`;
   }
@@ -642,11 +645,7 @@ function logPage(dir) {
   renderLog();
 }
 
-const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓',
-  member_ban_add:'🔨', member_ban_remove:'🔓', member_kick:'👢', member_update:'✏️', member_role_update:'🏷️',
-  message_delete:'🗑️', message_bulk_delete:'🧹', channel_update:'📝', role_update:'🏷️',
-  guild_update:'🏠', bot_add:'🤖', invite_create:'🔗',
-};
+const LOG_ICONS = { ban:'🔨', unban:'🔓', kick:'👢', timeout:'⏱', untimeout:'🔊', mute:'🔇', unmute:'🔊', warn:'⚠️', purge:'🧹', delete:'🗑️', edit:'✏️', join:'✅', leave:'🚪', nick:'✏️', role_add:'➕', role_remove:'➖', role_create:'🎭', role_delete:'🗑️', role_rename:'🏷️', channel_create:'📢', channel_delete:'🗑️', channel_rename:'📝', voice_join:'🎙️', voice_leave:'🔇', voice_move:'🔀', invite_create:'🔗', invite_delete:'❌', server_rename:'🏠', emoji_add:'😀', emoji_remove:'🗑️', slowmode:'🐢', lock:'🔒', unlock:'🔓', bot_start:'🚀' };
 const PER_PAGE  = 20;
 
 function renderLog() {
@@ -676,25 +675,18 @@ function renderLog() {
     return;
   }
 
-  c.innerHTML = `<div class="log-list">${slice.map(e => {
-    const action = e.action || 'unknown';
-    const label  = action.toUpperCase().replace(/_/g,' ');
-    const icon   = LOG_ICONS[action] || '📌';
-    // Strip numeric Discord IDs from names
-    const clean  = s => (s||'').replace(/\s*\(\d{10,20}\)/g,'').replace(/#0$/,'').trim() || s || '?';
-    return `
-    <div class="log-entry ${action}">
-      <div class="log-icon">${icon}</div>
+  c.innerHTML = `<div class="log-list">${slice.map(e => `
+    <div class="log-entry ${e.action||''}">
+      <div class="log-icon">${LOG_ICONS[e.action]||'📌'}</div>
       <div class="log-body">
         <div class="log-action">
-          <span class="log-tag ${action}">${label}</span>
-          <strong>${clean(e.target)}</strong>${e.reason ? ` — ${e.reason}` : ''}
+          <span class="log-tag ${e.action||''}">${(e.action||'action').toUpperCase()}</span>
+          <strong>${e.target || 'Unknown'}</strong>${e.reason ? ` — ${e.reason}` : ''}
         </div>
-        <div class="log-meta">By ${clean(e.moderator)} ${e.guild_name?'in '+e.guild_name:''}</div>
+        <div class="log-meta">By ${e.moderator||'System'} ${e.guild_name?'in '+e.guild_name:''}</div>
       </div>
       <div class="log-time">${formatTime(e.timestamp)}</div>
-    </div>`;
-  }).join('')}</div>`;
+    </div>`).join('')}</div>`;
 
   if (pg) {
     pg.style.display = 'flex';
