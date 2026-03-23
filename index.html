@@ -123,6 +123,8 @@
         <button class="ctab" onclick="showTab('ai',this)">🤖 AI & Fun</button>
         <button class="ctab" onclick="showTab('mod',this)">🛡️ Moderation</button>
         <button class="ctab" onclick="showTab('stream',this)">📺 Streams</button>
+        <button class="ctab" onclick="showTab('antinuke',this)">🔰 AntiNuke</button>
+        <button class="ctab" onclick="showTab('backup',this)">🗄️ Server Backup</button>
       </div>
       <div>
         <div id="p-music" class="cpanel active">
@@ -191,6 +193,38 @@
             <div class="ce"><code>-twitchreset</code><span>Delete saved Twitch channel IDs</span></div>
           </div>
         </div>
+        <div id="p-antinuke" class="cpanel">
+          <div class="cpanel-h">🔰 AntiNuke Commands</div>
+          <div class="cmd-grid">
+            <div class="ce"><code>-antinuke on/off</code><span>Enable or disable AntiNuke protection</span></div>
+            <div class="ce"><code>-antinuke status</code><span>Show current AntiNuke settings</span></div>
+            <div class="ce"><code>-antinuke whitelist @user</code><span>Whitelist a trusted admin user</span></div>
+            <div class="ce"><code>-antinuke unwhitelist @user</code><span>Remove user from whitelist</span></div>
+            <div class="ce"><code>-antinuke punishment ban/kick/strip</code><span>Set action on nuke detection</span></div>
+            <div class="ce"><code>-antinuke threshold &lt;action&gt; &lt;n&gt;</code><span>Set trigger threshold per action</span></div>
+            <div class="ce"><code>-antinuke logchannel #channel</code><span>Set alert log channel</span></div>
+            <div class="ce"><code>-antinuke reset</code><span>Reset all thresholds to default</span></div>
+          </div>
+          <div style="margin-top:18px;padding:14px 18px;border-radius:var(--r-md);background:var(--green-lo);border:1px solid var(--green-border);font-size:0.82rem;color:var(--tx-2);line-height:1.7">
+            <strong style="color:var(--green)">🔰 What AntiNuke does:</strong><br>
+            Monitors mass bans, kicks, channel/role deletions and permission changes in real time. If a compromised admin account tries to nuke your server, NinjuBot automatically bans or strips them before the damage spreads. Configure thresholds &amp; punishment via Dashboard or commands.
+          </div>
+        </div>
+        <div id="p-backup" class="cpanel">
+          <div class="cpanel-h">🗄️ Server Backup Commands</div>
+          <div class="cmd-grid">
+            <div class="ce"><code>-backup create [label]</code><span>Create a full server backup</span></div>
+            <div class="ce"><code>-backup list</code><span>List all saved backups</span></div>
+            <div class="ce"><code>-backup restore &lt;id&gt;</code><span>Restore roles &amp; channels (owner only)</span></div>
+            <div class="ce"><code>-backup delete &lt;id&gt;</code><span>Delete a backup (owner only)</span></div>
+            <div class="ce"><code>-backup preview &lt;id&gt;</code><span>Preview backup contents</span></div>
+            <div class="ce"><code>-backup info</code><span>Show backup storage usage</span></div>
+          </div>
+          <div style="margin-top:18px;padding:14px 18px;border-radius:var(--r-md);background:var(--green-lo);border:1px solid var(--green-border);font-size:0.82rem;color:var(--tx-2);line-height:1.7">
+            <strong style="color:var(--green)">🗄️ What Server Backup saves:</strong><br>
+            Roles (names, colours, permissions), channels (categories, text &amp; voice, topics, slowmode), server emoji and member count snapshot. Restore is non-destructive — it recreates missing items without deleting existing ones. Only the server owner can create or restore backups.
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -241,6 +275,21 @@
     </div>
   </div>
 </footer>
+
+<script>
+// ── Tab switcher for Commands section ────────────────────────
+function showTab(id, btn) {
+  // Hide all panels
+  document.querySelectorAll('.cpanel').forEach(p => p.classList.remove('active'));
+  // Deactivate all tab buttons
+  document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
+  // Show selected panel
+  const panel = document.getElementById('p-' + id);
+  if (panel) panel.classList.add('active');
+  // Activate clicked button
+  if (btn) btn.classList.add('active');
+}
+</script>
 
 <script>
 // ── Terminal Typewriter ────────────────────────────────────
