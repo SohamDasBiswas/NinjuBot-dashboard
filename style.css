@@ -296,7 +296,7 @@ section{padding:100px 40px}
 .ctab.active{background:var(--green-lo);color:var(--green);border-color:var(--green-border);box-shadow:var(--neu-gsm);transform:translateX(4px)}
 .cpanel{display:none;animation:fadeUp 0.28s var(--ease);margin-top:0}
 .cpanel.active{display:block}
-.panel{display:none;animation:fadeUp 0.28s var(--ease);margin-top:0}
+.panel{display:none;animation:fadeUp 0.28s var(--ease);margin-top:0;padding-top:30px}
 .cpanel-h{font-family:var(--font-d);font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:20px}
 .cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ce{padding:14px 16px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);border:1px solid rgba(78,255,145,0.05);transition:all var(--t) var(--ease)}
