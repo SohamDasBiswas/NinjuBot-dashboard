@@ -1353,11 +1353,27 @@ async function bkLoad(){
   if(warn)warn.style.display=ownerCheck?'none':'block';
   const el=document.getElementById('bk-list');if(!el)return;
   el.innerHTML=`<div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>`;
-  try{const r=await fetch(`${BOT_API}/backup/list?guild_id=${currentGuild.id}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
-  const data=r.ok?await r.json():{backups:[]};const bks=data.backups||[];
-  if(!bks.length){el.innerHTML=`<div class="bk-empty"><div class="bk-empty-icon">🗄️</div><div class="bk-empty-title">No backups yet</div><div class="bk-empty-sub">Create your first backup to protect your server structure.</div></div>`;return;}
-  el.innerHTML=bks.map(b=>`<div style="padding:10px 12px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,.08);display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.label||'Backup'}</div><div style="font-size:.68rem;color:var(--tx-3)">🎭${b.role_count} 📢${b.channel_count} 😀${b.emoji_count} · ${new Date(b.created_at).toLocaleDateString()}</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="btn-sm-o" style="font-size:.68rem;padding:3px 7px" onclick="bkPreview('${b.backup_id}')">👁</button>${ownerCheck?`<button class="btn-sm" style="font-size:.68rem;padding:3px 7px" onclick="bkRestore('${b.backup_id}','${(b.label||'Backup').replace(/'/g,"\\'")}')">🔄</button><button class="btn-danger" style="font-size:.68rem;padding:3px 7px" onclick="bkDelete('${b.backup_id}')">🗑</button>`:''}</div></div>`).join('');}
-  catch{el.innerHTML=`<div class="loading-state"><p>❌ Failed.</p></div>`;}
+  try{
+    const r=await fetch(`${BOT_API}/backup/list?guild_id=${currentGuild.id}`,{headers:{'Authorization':`Bearer ${discordToken}`}});
+    const data=r.ok?await r.json():{backups:[]};
+    const bks=data.backups||[];
+    if(!bks.length){
+      el.innerHTML=`<div class="bk-empty"><div class="bk-empty-ico">🗄️</div><div class="bk-empty-t">No backups yet</div><div class="bk-empty-s">Create your first backup to protect your server.</div></div>`;
+      return;
+    }
+    el.innerHTML=bks.map(b=>`
+      <div class="bk-item">
+        <div class="bk-item-ico">📦</div>
+        <div style="flex:1;min-width:0">
+          <div class="bk-item-name">${b.label||'Backup'}</div>
+          <div class="bk-item-meta">🎭 ${b.role_count} &nbsp;📢 ${b.channel_count} &nbsp;😀 ${b.emoji_count} · ${new Date(b.created_at).toLocaleDateString()}</div>
+        </div>
+        <div class="bk-item-acts">
+          <button class="bk-act view" onclick="bkPreview('${b.backup_id}')">👁</button>
+          ${ownerCheck?`<button class="bk-act restore" onclick="bkRestore('${b.backup_id}','${(b.label||'Backup').replace(/'/g,"\\'")}')">🔄</button><button class="bk-act del" onclick="bkDelete('${b.backup_id}')">🗑</button>`:''}
+        </div>
+      </div>`).join('');
+  }catch{el.innerHTML=`<div class="loading-state"><p>❌ Failed to load backups.</p></div>`;}
 }
 async function bkCreate(){
   if(!currentGuild)return;

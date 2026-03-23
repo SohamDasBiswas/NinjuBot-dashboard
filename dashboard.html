@@ -832,7 +832,7 @@
         .an-thresh-hdr{padding:20px 24px 16px;border-bottom:1px solid rgba(78,255,145,0.07);background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent);position:relative}
         .an-thresh-hdr::after{content:'';position:absolute;bottom:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.25),transparent)}
         .an-thresh-hdr h3{font-family:var(--font-d);font-size:1rem;font-weight:700}
-        .an-thresh-body{padding:14px 18px 18px}
+        .an-thresh-body{padding:10px 16px 14px;max-height:420px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a6e3c #07100a}
         .an-thresh-legend{margin:10px 18px 16px;padding:12px 16px;border-radius:var(--r-md);background:linear-gradient(135deg,rgba(255,79,79,0.04),rgba(78,255,145,0.03));border:1px solid rgba(78,255,145,0.08);font-size:0.74rem;color:var(--tx-2);display:flex;gap:18px;flex-wrap:wrap}
         .an-thresh-legend span{display:flex;align-items:center;gap:6px}
       </style>
@@ -923,130 +923,187 @@
     <!-- ══════ SERVER BACKUP ══════ -->
     <div id="panel-server-backup" class="panel">
       <style>
-        /* ── Server Backup enhancements ── */
-        .bk-banner{border-radius:var(--r-md);background:linear-gradient(135deg,rgba(255,79,79,0.08),rgba(251,191,36,0.05));border:1px solid rgba(255,79,79,0.2);padding:13px 18px;font-size:0.84rem;color:#ffb3b3;display:flex;align-items:center;gap:12px;margin-bottom:16px}
-        .bk-banner strong{color:#ff7070}
-        .bk-banner-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,79,79,0.12);border:1px solid rgba(255,79,79,0.25);display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0}
-        /* Create card header */
-        .bk-create-hdr{display:flex;align-items:center;gap:14px;padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid rgba(78,255,145,0.08);position:relative}
-        .bk-create-hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(78,255,145,0.25),transparent)}
-        .bk-hdr-icon{width:48px;height:48px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,rgba(78,255,145,0.14),rgba(78,255,145,0.04));border:1px solid rgba(78,255,145,0.28);display:flex;align-items:center;justify-content:center;font-size:1.35rem;box-shadow:0 0 18px rgba(78,255,145,0.12)}
-        .bk-hdr-text h3{font-family:var(--font-d);font-size:1.05rem;font-weight:800;margin-bottom:3px}
-        .bk-hdr-text p{font-size:0.8rem;color:var(--tx-2)}
-        /* Label input group */
-        .bk-input-group{display:flex;border-radius:var(--r-md);overflow:hidden;box-shadow:var(--neu-in);border:1px solid rgba(78,255,145,0.12)}
-        .bk-input-pfx{width:44px;background:#05100a;display:flex;align-items:center;justify-content:center;font-size:0.95rem;color:var(--tx-3);border-right:1px solid rgba(78,255,145,0.1);flex-shrink:0}
-        .bk-input-inner{flex:1;padding:11px 14px;background:#07100a;border:none;outline:none;color:var(--tx);font-family:var(--font-m);font-size:0.82rem}
-        .bk-input-inner::placeholder{color:var(--tx-3)}
-        /* Create button with shimmer */
-        .bk-create-btn{width:100%;margin-top:14px;padding:14px;border-radius:var(--r-md);background:linear-gradient(135deg,var(--green-dim),var(--green));color:var(--base-down);font-size:0.93rem;font-weight:800;border:none;cursor:pointer;box-shadow:0 5px 22px rgba(78,255,145,0.38),var(--neu-out-sm);transition:all 0.2s var(--spring);display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;letter-spacing:0.2px}
-        .bk-create-btn::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);transform:skewX(-20deg);transition:left 0.5s ease}
-        .bk-create-btn:hover{transform:translateY(-2px);box-shadow:0 9px 28px rgba(78,255,145,0.52)}
-        .bk-create-btn:hover::before{left:160%}
-        .bk-create-btn:active{transform:translateY(0)}
-        /* Backed-up checklist */
-        .bk-checklist{margin-top:16px;padding:14px 18px;border-radius:var(--r-md);background:var(--base-down);border:1px solid rgba(78,255,145,0.08);box-shadow:inset 3px 3px 8px #040c07,inset -3px -3px 8px #162a1c}
-        .bk-checklist-title{font-size:0.67rem;font-weight:700;color:rgba(78,255,145,0.5);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--font-m);margin-bottom:8px}
-        .bk-check-item{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:0.81rem;color:var(--tx-2)}
-        .bk-check-item:not(:last-child){border-bottom:1px solid rgba(78,255,145,0.05)}
-        .bk-check-yes{width:20px;height:20px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;background:rgba(78,255,145,0.1);border:1px solid rgba(78,255,145,0.28);color:var(--green)}
-        .bk-check-no{width:20px;height:20px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;background:rgba(255,79,79,0.09);border:1px solid rgba(255,79,79,0.22);color:var(--red)}
-        /* Saved backups card */
-        .bk-saved-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(78,255,145,0.07);position:relative}
-        .bk-saved-hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(78,255,145,0.2),transparent)}
-        .bk-saved-hdr h3{font-family:var(--font-d);font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+        /* ══ Server Backup — compact neumorphic redesign ══ */
+
+        /* Owner warning */
+        #backup-owner-warn{display:none;margin-bottom:12px}
+        .bk-warn-inner{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:var(--r-md);background:rgba(255,79,79,0.07);border:1px solid rgba(255,79,79,0.22);font-size:0.8rem;color:#ffb3b3}
+        .bk-warn-inner strong{color:#ff7070}
+        .bk-warn-dot{width:7px;height:7px;border-radius:50%;background:#ff4f4f;flex-shrink:0;box-shadow:0 0 6px #ff4f4f}
+
+        /* Page header strip */
+        .bk-page-hdr{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:var(--r-lg);background:linear-gradient(135deg,#0c1c10,#0f2014);border:1px solid rgba(78,255,145,0.14);box-shadow:var(--neu-out-sm);margin-bottom:16px;position:relative;overflow:hidden}
+        .bk-page-hdr::before{content:'';position:absolute;top:0;left:30px;right:30px;height:1px;background:linear-gradient(90deg,transparent,rgba(78,255,145,0.4),transparent)}
+        .bk-icon-wrap{width:44px;height:44px;border-radius:12px;flex-shrink:0;background:rgba(78,255,145,0.1);border:1px solid rgba(78,255,145,0.25);display:flex;align-items:center;justify-content:center;font-size:1.25rem;box-shadow:var(--neu-out-sm)}
+        .bk-page-hdr h2{font-family:var(--font-d);font-size:1.1rem;font-weight:800;margin-bottom:2px}
+        .bk-page-hdr p{font-size:0.75rem;color:var(--tx-2);font-weight:300}
+
+        /* Two-col grid */
+        .bk-grid{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+
+        /* Left card — create */
+        .bk-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.07);overflow:hidden}
+        .bk-card-hdr{padding:14px 18px 12px;border-bottom:1px solid rgba(78,255,145,0.06);display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent)}
+        .bk-card-hdr h3{font-family:var(--font-d);font-size:0.92rem;font-weight:700}
+        .bk-card-body{padding:14px 18px 16px}
+
+        /* Label field */
+        .bk-lbl-row{margin-bottom:12px}
+        .bk-lbl-text{font-size:0.65rem;font-weight:700;color:rgba(78,255,145,0.5);text-transform:uppercase;letter-spacing:1.2px;font-family:var(--font-m);margin-bottom:5px}
+        .bk-field{display:flex;border-radius:10px;overflow:hidden;box-shadow:inset 4px 4px 10px #040c07,inset -4px -4px 10px #162a1c;border:1px solid rgba(78,255,145,0.1)}
+        .bk-field-pfx{width:38px;background:#05100a;display:flex;align-items:center;justify-content:center;font-size:0.85rem;border-right:1px solid rgba(78,255,145,0.08);flex-shrink:0;color:var(--tx-3)}
+        .bk-field input{flex:1;padding:9px 12px;background:#07100a;border:none;outline:none;color:var(--tx);font-family:var(--font-m);font-size:0.8rem}
+        .bk-field input::placeholder{color:var(--tx-3)}
+
+        /* Create button */
+        .bk-btn{width:100%;padding:11px;border-radius:10px;background:linear-gradient(135deg,#30d96a,#4eff91);color:#060f08;font-size:0.85rem;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(78,255,145,0.35);transition:all 0.18s var(--spring);display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden;letter-spacing:0.2px;margin-bottom:12px}
+        .bk-btn::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transform:skewX(-20deg);transition:left 0.45s ease}
+        .bk-btn:hover{transform:translateY(-2px);box-shadow:0 7px 24px rgba(78,255,145,0.5)}
+        .bk-btn:hover::after{left:160%}
+        .bk-btn:active{transform:translateY(0)}
+        .bk-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+        /* Checklist */
+        .bk-cl{background:var(--base-down);border-radius:10px;box-shadow:inset 3px 3px 8px #040c07,inset -3px -3px 8px #162a1c;border:1px solid rgba(78,255,145,0.06);padding:10px 14px}
+        .bk-cl-ttl{font-size:0.6rem;font-weight:700;color:rgba(78,255,145,0.4);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--font-m);margin-bottom:7px}
+        .bk-cl-item{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.78rem;color:var(--tx-2);border-bottom:1px solid rgba(78,255,145,0.04)}
+        .bk-cl-item:last-child{border-bottom:none}
+        .bk-cl-ok{width:17px;height:17px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;background:rgba(78,255,145,0.09);border:1px solid rgba(78,255,145,0.25);color:var(--green)}
+        .bk-cl-no{width:17px;height:17px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;background:rgba(255,79,79,0.08);border:1px solid rgba(255,79,79,0.2);color:var(--red)}
+
+        /* Right card — saved backups */
+        .bk-saved-hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+        .bk-saved-hdr-row h3{font-family:var(--font-d);font-size:0.92rem;font-weight:700;display:flex;align-items:center;gap:7px}
+
+        /* Backup list items */
+        .bk-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--base-down);box-shadow:inset 3px 3px 8px #040c07,inset -3px -3px 8px #162a1c;border:1px solid rgba(78,255,145,0.07);margin-bottom:7px;transition:border-color 0.18s}
+        .bk-item:hover{border-color:rgba(78,255,145,0.2)}
+        .bk-item-ico{width:34px;height:34px;border-radius:9px;background:rgba(78,255,145,0.08);border:1px solid rgba(78,255,145,0.16);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+        .bk-item-name{font-size:0.82rem;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .bk-item-meta{font-size:0.65rem;color:var(--tx-3);font-family:var(--font-m);margin-top:2px}
+        .bk-item-acts{display:flex;gap:5px;flex-shrink:0;margin-left:auto}
+        .bk-act{padding:5px 10px;border-radius:7px;font-size:0.68rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s var(--spring)}
+        .bk-act.view{background:rgba(78,255,145,0.08);color:var(--green);border:1px solid rgba(78,255,145,0.2)}
+        .bk-act.restore{background:rgba(56,189,248,0.08);color:var(--blue);border:1px solid rgba(56,189,248,0.2)}
+        .bk-act.del{background:rgba(255,79,79,0.08);color:var(--red);border:1px solid rgba(255,79,79,0.18)}
+        .bk-act:hover{transform:scale(1.07)}
+
         /* Empty state */
-        .bk-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 20px;gap:12px;text-align:center}
-        .bk-empty-icon{width:68px;height:68px;border-radius:18px;background:rgba(78,255,145,0.04);border:1px solid rgba(78,255,145,0.1);box-shadow:var(--neu-in);display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:4px}
-        .bk-empty-title{font-family:var(--font-d);font-size:0.95rem;font-weight:700;color:var(--tx-2)}
-        .bk-empty-sub{font-size:0.76rem;color:var(--tx-3);max-width:200px;line-height:1.7;font-family:var(--font-m)}
+        .bk-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:10px;text-align:center}
+        .bk-empty-ico{width:54px;height:54px;border-radius:14px;background:rgba(78,255,145,0.04);border:1px solid rgba(78,255,145,0.09);box-shadow:var(--neu-in);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+        .bk-empty-t{font-size:0.88rem;font-weight:700;color:var(--tx-2);margin-top:4px}
+        .bk-empty-s{font-size:0.72rem;color:var(--tx-3);max-width:180px;line-height:1.6;font-family:var(--font-m)}
+
+        @media(max-width:860px){.bk-grid{grid-template-columns:1fr}}
       </style>
 
-      <!-- Owner warning banner — shown/hidden by app.js -->
-      <div id="backup-owner-warn" style="display:none;margin-bottom:14px">
-        <div class="bk-banner">
-          <div class="bk-banner-icon">⚠️</div>
+      <!-- Owner warning — controlled by app.js -->
+      <div id="backup-owner-warn" style="display:none">
+        <div class="bk-warn-inner">
+          <div class="bk-warn-dot"></div>
           <span>Only the <strong>server owner</strong> can create or restore backups.</span>
         </div>
       </div>
 
-      <div class="db-row">
-        <!-- Create backup -->
-        <div class="db-card">
-          <div class="bk-create-hdr">
-            <div class="bk-hdr-icon">📸</div>
-            <div class="bk-hdr-text">
-              <h3>Create Backup</h3>
-              <p>Full snapshot: <strong>roles</strong>, <strong>channels</strong>, <strong>categories</strong>, and permission overwrites.</p>
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="field-label">Label <span style="color:var(--tx-3);font-weight:400">(optional)</span></label>
-            <div class="bk-input-group">
-              <div class="bk-input-pfx">🏷️</div>
-              <input class="bk-input-inner" id="bk-label" placeholder="e.g. Before restructure…">
-            </div>
-          </div>
-
-          <button class="bk-create-btn" onclick="bkCreate()">
-            <span style="font-size:1.05rem">📸</span> Create Backup Now
-          </button>
-
-          <div class="bk-checklist">
-            <div class="bk-checklist-title">What's backed up</div>
-            <div class="bk-check-item"><div class="bk-check-yes">✓</div>All roles (name, color, permissions)</div>
-            <div class="bk-check-item"><div class="bk-check-yes">✓</div>All categories + permission overwrites</div>
-            <div class="bk-check-item"><div class="bk-check-yes">✓</div>All text &amp; voice channels</div>
-            <div class="bk-check-item"><div class="bk-check-yes">✓</div>Server name &amp; settings</div>
-            <div class="bk-check-item"><div class="bk-check-no">✕</div><span style="color:var(--tx-3)">Messages and member data</span></div>
-          </div>
-        </div>
-
-        <!-- Saved backups -->
-        <div class="db-card">
-          <div class="bk-saved-hdr">
-            <h3>🗂️ Saved Backups</h3>
-            <button class="btn-sm-o" onclick="bkLoad()" style="font-size:.75rem">🔄 Refresh</button>
-          </div>
-          <div id="bk-list">
-            <div class="bk-empty">
-              <div class="bk-empty-icon">🗄️</div>
-              <div class="bk-empty-title">No backups yet</div>
-              <div class="bk-empty-sub">Create your first backup to protect your server structure.</div>
-            </div>
-          </div>
+      <!-- Page header -->
+      <div class="bk-page-hdr">
+        <div class="bk-icon-wrap">💾</div>
+        <div>
+          <h2>Server Backup</h2>
+          <p>Snapshot roles, channels, categories &amp; permissions — restore anytime.</p>
         </div>
       </div>
 
-      <!-- Backup detail (unchanged, same IDs) -->
+      <!-- Main two-col grid -->
+      <div class="bk-grid">
+
+        <!-- LEFT: Create -->
+        <div class="bk-card">
+          <div class="bk-card-hdr">
+            <span style="font-size:1rem">📸</span>
+            <h3>Create Backup</h3>
+          </div>
+          <div class="bk-card-body">
+            <div class="bk-lbl-row">
+              <div class="bk-lbl-text">Label <span style="color:var(--tx-3);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+              <div class="bk-field">
+                <div class="bk-field-pfx">🏷️</div>
+                <input id="bk-label" placeholder="e.g. Before restructure…">
+              </div>
+            </div>
+
+            <button class="bk-btn" id="bk-create-btn" onclick="bkCreate()">
+              <span>📸</span> Create Backup Now
+            </button>
+
+            <div class="bk-cl">
+              <div class="bk-cl-ttl">What's included</div>
+              <div class="bk-cl-item"><div class="bk-cl-ok">✓</div>All roles (name, color, permissions)</div>
+              <div class="bk-cl-item"><div class="bk-cl-ok">✓</div>All categories + permission overwrites</div>
+              <div class="bk-cl-item"><div class="bk-cl-ok">✓</div>All text &amp; voice channels</div>
+              <div class="bk-cl-item"><div class="bk-cl-ok">✓</div>Server name &amp; settings</div>
+              <div class="bk-cl-item"><div class="bk-cl-no">✕</div><span style="color:var(--tx-3)">Messages and member data</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Saved Backups -->
+        <div class="bk-card">
+          <div class="bk-card-hdr">
+            <div class="bk-saved-hdr-row" style="width:100%">
+              <h3><span>🗂️</span> Saved Backups</h3>
+              <button class="btn-sm-o" onclick="bkLoad()" style="font-size:.72rem;padding:5px 12px">🔄 Refresh</button>
+            </div>
+          </div>
+          <div class="bk-card-body" style="padding-top:12px">
+            <div id="bk-list">
+              <div class="bk-empty">
+                <div class="bk-empty-ico">🗄️</div>
+                <div class="bk-empty-t">No backups yet</div>
+                <div class="bk-empty-s">Create your first backup to protect your server.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /bk-grid -->
+
+      <!-- Backup detail preview -->
       <div id="bk-detail" style="display:none;margin-top:14px">
-        <div class="db-card">
-          <div class="card-hdr">
-            <h3 id="bk-detail-title">Backup Preview</h3>
-            <button class="btn-sm-o" onclick="document.getElementById('bk-detail').style.display='none'">✕ Close</button>
+        <div class="bk-card">
+          <div class="bk-card-hdr">
+            <span style="font-size:1rem">📋</span>
+            <h3 id="bk-detail-title" style="flex:1">Backup Preview</h3>
+            <button class="btn-sm-o" onclick="document.getElementById('bk-detail').style.display='none'" style="font-size:.72rem;padding:5px 10px">✕ Close</button>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-            <div class="dsc"><div class="dsc-icon">🎭</div><div><div class="dsc-val" id="bk-d-roles">—</div><div class="dsc-lbl">Roles</div></div></div>
-            <div class="dsc"><div class="dsc-icon">📢</div><div><div class="dsc-val" id="bk-d-channels">—</div><div class="dsc-lbl">Channels</div></div></div>
-            <div class="dsc"><div class="dsc-icon">😀</div><div><div class="dsc-val" id="bk-d-emojis">—</div><div class="dsc-lbl">Emojis</div></div></div>
-            <div class="dsc"><div class="dsc-icon">👥</div><div><div class="dsc-val" id="bk-d-members">—</div><div class="dsc-lbl">Members</div></div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">🎭 Roles</div><div id="bk-d-roles-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📢 Channels</div><div id="bk-d-channels-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
-            <div><div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📁 Categories</div><div id="bk-d-cats-list" style="font-size:.78rem;color:var(--tx-2);line-height:1.9"></div></div>
+          <div class="bk-card-body">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+              <div class="dsc"><div class="dsc-icon">🎭</div><div><div class="dsc-val" id="bk-d-roles">—</div><div class="dsc-lbl">Roles</div></div></div>
+              <div class="dsc"><div class="dsc-icon">📢</div><div><div class="dsc-val" id="bk-d-channels">—</div><div class="dsc-lbl">Channels</div></div></div>
+              <div class="dsc"><div class="dsc-icon">😀</div><div><div class="dsc-val" id="bk-d-emojis">—</div><div class="dsc-lbl">Emojis</div></div></div>
+              <div class="dsc"><div class="dsc-icon">👥</div><div><div class="dsc-val" id="bk-d-members">—</div><div class="dsc-lbl">Members</div></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+              <div><div style="font-size:.68rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">🎭 Roles</div><div id="bk-d-roles-list" style="font-size:.76rem;color:var(--tx-2);line-height:1.9"></div></div>
+              <div><div style="font-size:.68rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📢 Channels</div><div id="bk-d-channels-list" style="font-size:.76rem;color:var(--tx-2);line-height:1.9"></div></div>
+              <div><div style="font-size:.68rem;color:var(--green);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">📁 Categories</div><div id="bk-d-cats-list" style="font-size:.76rem;color:var(--tx-2);line-height:1.9"></div></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Restore modal (unchanged, same IDs) -->
-      <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);align-items:center;justify-content:center">
-        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:14px;padding:26px;width:460px;max-width:90vw;box-shadow:0 0 40px rgba(78,255,145,.2)">
-          <div style="font-size:.95rem;font-weight:700;color:#4eff91;margin-bottom:8px">🔄 Restoring Server…</div>
-          <div id="bk-restore-status" style="font-size:.8rem;color:var(--tx-2);margin-bottom:12px">Starting…</div>
-          <div style="height:5px;background:rgba(78,255,145,.1);border-radius:999px;overflow:hidden"><div id="bk-restore-bar" style="height:100%;background:#4eff91;border-radius:999px;width:0%;transition:width .5s ease"></div></div>
-          <div id="bk-restore-log" style="margin-top:12px;max-height:150px;overflow-y:auto;font-size:.7rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.6)"></div>
+      <!-- Restore progress modal -->
+      <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.82);align-items:center;justify-content:center">
+        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:16px;padding:26px;width:440px;max-width:92vw;box-shadow:0 0 50px rgba(78,255,145,.18)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(78,255,145,0.12);border:1px solid rgba(78,255,145,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem">🔄</div>
+            <div style="font-size:0.92rem;font-weight:700;color:#4eff91">Restoring Server…</div>
+          </div>
+          <div id="bk-restore-status" style="font-size:0.78rem;color:var(--tx-2);margin-bottom:10px">Starting…</div>
+          <div style="height:4px;background:rgba(78,255,145,.1);border-radius:999px;overflow:hidden;margin-bottom:10px">
+            <div id="bk-restore-bar" style="height:100%;background:linear-gradient(90deg,#30d96a,#4eff91);border-radius:999px;width:0%;transition:width .5s ease"></div>
+          </div>
+          <div id="bk-restore-log" style="max-height:130px;overflow-y:auto;font-size:0.68rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.55);line-height:1.7"></div>
         </div>
       </div>
     </div>
