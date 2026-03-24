@@ -742,7 +742,7 @@ function showPanel(name, el) {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
     'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-booster':'Booster Cards',
-    'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup',
+    'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup', 'minecraft':'⛏️ Minecraft',
     'audit-log':'Audit Log', mongodb:'MongoDB Stats',
   };
   const t = document.getElementById('page-title');
