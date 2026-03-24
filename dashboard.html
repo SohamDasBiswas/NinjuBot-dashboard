@@ -1080,233 +1080,108 @@
     </div>
 
 
+    <!-- ══════ MINECRAFT (ATERNOS) PANEL ══════ -->
+    <div id="panel-minecraft" class="panel">
+    <style>
+    .mc-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.07);overflow:hidden;margin-bottom:14px}
+    .mc-card-hdr{padding:13px 18px 11px;border-bottom:1px solid rgba(78,255,145,0.06);display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent)}
+    .mc-card-hdr h3{font-family:var(--font-d);font-size:0.92rem;font-weight:700;flex:1}
+    .mc-card-body{padding:16px 18px 18px}
+    .mc-lbl{font-size:0.65rem;font-weight:700;color:rgba(78,255,145,0.5);text-transform:uppercase;letter-spacing:1.2px;font-family:var(--font-m);margin-bottom:5px}
+    .mc-inp{width:100%;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-family:var(--font-m);font-size:0.82rem;outline:none;transition:border-color .18s;box-sizing:border-box}
+    .mc-inp:focus{border-color:rgba(78,255,145,0.45)}
+    .mc-inp::placeholder{color:var(--tx-3)}
+    .mc-sel{width:100%;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-size:0.82rem;outline:none;box-sizing:border-box}
+    .mc-sel option{background:#0a1a0d}
+    .mc-field{margin-bottom:14px}
+    .mc-hint{font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m);margin-top:5px;line-height:1.5}
+    .mc-info-box{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--r-md);background:rgba(78,255,145,0.04);border:1px solid rgba(78,255,145,0.1);font-size:0.78rem;color:var(--tx-2);margin-bottom:18px;line-height:1.6}
+    .mc-status-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);border:1px solid rgba(78,255,145,0.1);margin-bottom:18px}
+    .mc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .mc-dot.ok{background:#4eff91;box-shadow:0 0 6px #4eff91}
+    .mc-dot.off{background:#ff4f4f;box-shadow:0 0 6px #ff4f4f}
+    .mc-dot.unknown{background:#fbbf24;box-shadow:0 0 6px #fbbf24}
+    </style>
 
-          <!-- ══════ MINECRAFT SERVER PANEL ══════ -->
-<div id="panel-minecraft" class="panel">
-
-<style>
-/* ── Minecraft panel styles ── */
-.mc-status-bar{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);border:1px solid rgba(78,255,145,0.1);margin-bottom:18px}
-.mc-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .3s}
-.mc-status-dot.online{background:#4eff91;box-shadow:0 0 8px #4eff91}
-.mc-status-dot.offline{background:#ff4f4f;box-shadow:0 0 8px #ff4f4f}
-.mc-status-dot.unknown{background:#fbbf24;box-shadow:0 0 8px #fbbf24}
-.mc-status-dot.checking{background:#38bdf8;box-shadow:0 0 8px #38bdf8;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.mc-stat-badge{padding:4px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;font-family:var(--font-m);letter-spacing:.5px}
-.mc-stat-badge.online{background:rgba(78,255,145,0.12);color:var(--green);border:1px solid rgba(78,255,145,0.3)}
-.mc-stat-badge.offline{background:rgba(255,79,79,0.1);color:#ff7070;border:1px solid rgba(255,79,79,0.25)}
-.mc-stat-badge.unknown{background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.25)}
-.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-.mc-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
-.mc-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.07);overflow:hidden}
-.mc-card-hdr{padding:13px 18px 11px;border-bottom:1px solid rgba(78,255,145,0.06);display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent)}
-.mc-card-hdr h3{font-family:var(--font-d);font-size:0.92rem;font-weight:700;flex:1}
-.mc-card-body{padding:14px 18px 16px}
-.mc-lbl{font-size:0.65rem;font-weight:700;color:rgba(78,255,145,0.5);text-transform:uppercase;letter-spacing:1.2px;font-family:var(--font-m);margin-bottom:5px}
-.mc-inp-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.mc-inp{flex:1;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-family:var(--font-m);font-size:0.82rem;outline:none;transition:border-color .18s}
-.mc-inp:focus{border-color:var(--green-border)}
-.mc-inp::placeholder{color:var(--tx-3)}
-.mc-inp-sm{width:100px}
-.mc-inp-pwd{font-family:var(--font-m);letter-spacing:2px}
-.mc-inp-pwd::placeholder{letter-spacing:normal}
-.mc-sel{flex:1;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-size:0.82rem;outline:none}
-.mc-sel option{background:#0a1a0d}
-.mc-player-list{max-height:200px;overflow-y:auto}
-.mc-player{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;background:var(--base-down);border:1px solid rgba(78,255,145,0.06);margin-bottom:5px}
-.mc-player:last-child{margin-bottom:0}
-.mc-player-head{width:26px;height:26px;border-radius:6px;background:rgba(78,255,145,0.08);border:1px solid rgba(78,255,145,0.18);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
-.mc-player-name{font-size:0.82rem;font-weight:600;flex:1}
-.mc-player-dur{font-size:0.65rem;color:var(--tx-3);font-family:var(--font-m)}
-.mc-wl-item{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;background:var(--base-down);border:1px solid rgba(78,255,145,0.06);margin-bottom:5px}
-.mc-wl-name{font-size:0.82rem;font-weight:600}
-.mc-del-btn{background:rgba(255,79,79,0.08);color:var(--red);border:1px solid rgba(255,79,79,0.2);border-radius:6px;padding:3px 8px;font-size:0.68rem;font-weight:700;cursor:pointer;transition:all .15s}
-.mc-del-btn:hover{background:rgba(255,79,79,0.18);transform:scale(1.06)}
-.mc-console{background:#040c07;border:1px solid rgba(78,255,145,0.12);border-radius:10px;padding:10px 12px;font-family:'Courier New',monospace;font-size:0.72rem;color:rgba(78,255,145,0.7);max-height:190px;overflow-y:auto;line-height:1.8;margin-bottom:10px}
-.mc-console .mc-log-info{color:rgba(78,255,145,.65)}
-.mc-console .mc-log-warn{color:#fbbf24}
-.mc-console .mc-log-error{color:#ff6b6b}
-.mc-console .mc-log-cmd{color:#38bdf8}
-.mc-console .mc-log-resp{color:var(--green)}
-.mc-cmd-row{display:flex;gap:8px}
-.mc-cmd-inp{flex:1;padding:9px 12px;background:#05100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--green);font-family:'Courier New',monospace;font-size:0.82rem;outline:none}
-.mc-cmd-inp:focus{border-color:var(--green-border)}
-.mc-cmd-inp::placeholder{color:rgba(78,255,145,.25);font-family:var(--font-b)}
-.mc-send-btn{padding:9px 18px;border-radius:10px;background:linear-gradient(135deg,#30d96a,#4eff91);color:#060f08;font-weight:800;font-size:0.82rem;border:none;cursor:pointer;white-space:nowrap;transition:all .18s var(--spring)}
-.mc-send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(78,255,145,.4)}
-.mc-send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.mc-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.mc-stat-item{background:var(--base-down);border-radius:10px;padding:10px 12px;border:1px solid rgba(78,255,145,.06)}
-.mc-stat-val{font-family:var(--font-d);font-size:1.2rem;font-weight:800;color:var(--green)}
-.mc-stat-lbl{font-size:0.62rem;color:var(--tx-3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-m)}
-.mc-difficulty-btn{padding:7px 13px;border-radius:8px;font-size:0.76rem;font-weight:700;border:1px solid rgba(78,255,145,.18);background:transparent;color:var(--tx-2);cursor:pointer;transition:all .15s}
-.mc-difficulty-btn.active{background:rgba(78,255,145,.12);color:var(--green);border-color:var(--green-border)}
-.mc-difficulty-btn:hover:not(.active){border-color:rgba(78,255,145,.35)}
-.mc-quick-cmd{padding:7px 13px;border-radius:8px;font-size:0.73rem;font-weight:700;border:1px solid rgba(78,255,145,.12);background:var(--base-down);color:var(--tx-2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
-.mc-quick-cmd:hover{border-color:rgba(78,255,145,.3);color:var(--green)}
-.mc-quick-cmd.danger{border-color:rgba(255,79,79,.18);color:#ff8080}
-.mc-quick-cmd.danger:hover{background:rgba(255,79,79,.07);border-color:rgba(255,79,79,.35)}
-@media(max-width:820px){.mc-grid,.mc-grid-3{grid-template-columns:1fr}}
-</style>
-
-<!-- ── Live Status Bar ── -->
-<div class="mc-status-bar" id="mc-status-bar">
-  <div class="mc-status-dot unknown" id="mc-dot"></div>
-  <div style="flex:1">
-    <div style="font-size:.85rem;font-weight:700" id="mc-status-text">Not connected — configure RCON below</div>
-    <div style="font-size:.65rem;color:var(--tx-3);font-family:var(--font-m)" id="mc-status-sub">Host and port not set</div>
-  </div>
-  <span class="mc-stat-badge unknown" id="mc-status-badge">UNKNOWN</span>
-  <button class="btn-sm-o" onclick="mcRefreshStatus()" style="font-size:.72rem;padding:6px 12px" id="mc-refresh-btn">🔄 Refresh</button>
-</div>
-
-<!-- ── Stats row ── -->
-<div class="mc-stat-row" id="mc-stat-row" style="display:none">
-  <div class="mc-stat-item"><div class="mc-stat-val" id="mc-stat-players">0/20</div><div class="mc-stat-lbl">Players Online</div></div>
-  <div class="mc-stat-item"><div class="mc-stat-val" id="mc-stat-tps">—</div><div class="mc-stat-lbl">Server TPS</div></div>
-</div>
-
-<div class="mc-grid">
-
-  <!-- ── RCON Connection ── -->
-  <div class="mc-card">
-    <div class="mc-card-hdr"><span>🔌</span><h3>RCON Connection</h3><span class="sl-badge" id="mc-rcon-badge" style="background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);font-size:.6rem">NOT SAVED</span></div>
-    <div class="mc-card-body">
-      <div class="mc-lbl">Minecraft Server Host</div>
-      <div class="mc-inp-row" style="margin-bottom:12px">
-        <input class="mc-inp" id="mc-host" type="text" placeholder="mc.yourserver.com or 1.2.3.4" oninput="markDirty('minecraft')">
+    <!-- Status bar -->
+    <div class="mc-status-bar" id="mc-status-bar">
+      <div class="mc-dot unknown" id="mc-dot"></div>
+      <div style="flex:1">
+        <div style="font-size:.82rem;font-weight:700" id="mc-status-text">Not configured</div>
+        <div style="font-size:.63rem;color:var(--tx-3);font-family:var(--font-m)" id="mc-status-sub">Set the log file path below to enable the bridge</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div>
-          <div class="mc-lbl">Query Port</div>
-          <input class="mc-inp" id="mc-query-port" type="number" placeholder="25565" min="1" max="65535" oninput="markDirty('minecraft')">
-        </div>
-        <div>
-          <div class="mc-lbl">RCON Port</div>
-          <input class="mc-inp" id="mc-rcon-port" type="number" placeholder="25575" min="1" max="65535" oninput="markDirty('minecraft')">
+    </div>
+
+    <div class="mc-info-box">
+      <span style="font-size:1rem;flex-shrink:0">ℹ️</span>
+      <span>This is an <strong style="color:var(--green)">Aternos</strong> log bridge — no RCON needed.
+      Point NinjuBot at your Aternos server log file, pick two Discord channels,
+      and the bot will relay in-game chat to Discord and post server events (joins, leaves, deaths, start/stop).</span>
+    </div>
+
+    <div class="db-row">
+
+      <!-- Left: Log file path -->
+      <div class="mc-card" style="margin-bottom:0">
+        <div class="mc-card-hdr"><span>📄</span><h3>Log File</h3></div>
+        <div class="mc-card-body">
+          <div class="mc-field">
+            <div class="mc-lbl">Aternos Log File Path</div>
+            <input class="mc-inp" id="mc-log-path" type="text"
+              placeholder="/home/container/logs/latest.log"
+              oninput="markDirty('minecraft')">
+            <div class="mc-hint">
+              On Aternos the log is usually at <code style="color:var(--green)">/logs/latest.log</code> inside your server folder.<br>
+              Enter the full absolute path where NinjuBot can read the file.
+            </div>
+          </div>
+          <div class="mc-field" style="margin-bottom:0">
+            <div class="mc-lbl">Log Poll Interval</div>
+            <select class="mc-sel" id="mc-poll-interval" onchange="markDirty('minecraft')">
+              <option value="2">Every 2 seconds</option>
+              <option value="5">Every 5 seconds</option>
+              <option value="10">Every 10 seconds</option>
+            </select>
+            <div class="mc-hint">How often the bot checks the log file for new lines.</div>
+          </div>
         </div>
       </div>
-      <div class="mc-lbl">RCON Password</div>
-      <div class="mc-inp-row" style="margin-bottom:14px">
-        <input class="mc-inp mc-inp-pwd" id="mc-rcon-pass" type="password" placeholder="••••••••" oninput="markDirty('minecraft')">
-        <button class="btn-sm-o" onclick="mcTogglePwd()" style="font-size:.72rem;padding:7px 11px;flex-shrink:0" id="mc-pwd-toggle">👁</button>
+
+      <!-- Right: Discord channels -->
+      <div class="mc-card" style="margin-bottom:0">
+        <div class="mc-card-hdr"><span>💬</span><h3>Discord Channels</h3></div>
+        <div class="mc-card-body">
+          <div class="mc-field">
+            <div class="mc-lbl">Chat Relay Channel</div>
+            <select class="mc-sel" id="mc-chat-channel" onchange="markDirty('minecraft')">
+              <option value="">— Disabled —</option>
+            </select>
+            <div class="mc-hint">
+              In-game chat, joins, leaves, deaths, and server start/stop are posted here.<br>
+              Discord messages in this channel are also forwarded <strong>to Minecraft</strong> (requires RCON on the bot side).
+            </div>
+          </div>
+          <div class="mc-field" style="margin-bottom:0">
+            <div class="mc-lbl">Server Log Channel</div>
+            <select class="mc-sel" id="mc-log-channel" onchange="markDirty('minecraft')">
+              <option value="">— Disabled —</option>
+            </select>
+            <div class="mc-hint">Raw filtered INFO lines from the server log are posted here (optional).</div>
+          </div>
+        </div>
       </div>
-      <button class="bk-btn" onclick="mcSaveConnection()">💾 Save & Test Connection</button>
-      <div id="mc-conn-result" style="display:none;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-top:4px"></div>
-      <div style="height:1px;background:rgba(78,255,145,0.08);margin:14px 0"></div>
-      <div class="mc-lbl" style="margin-bottom:8px">Discord Channel Relay</div>
-      <div style="margin-bottom:10px">
-        <div class="mc-lbl">Chat Relay <span style="color:var(--tx-3);font-weight:400;text-transform:none;letter-spacing:0">(Minecraft ↔ Discord)</span></div>
-        <select class="mc-sel" id="mc-chat-channel" onchange="markDirty('minecraft')">
-          <option value="">— Disabled —</option>
-        </select>
-      </div>
-      <div>
-        <div class="mc-lbl">Log Channel <span style="color:var(--tx-3);font-weight:400;text-transform:none;letter-spacing:0">(server events → Discord)</span></div>
-        <select class="mc-sel" id="mc-log-channel" onchange="markDirty('minecraft')">
-          <option value="">— Disabled —</option>
-        </select>
+
+    </div>
+
+    <div class="save-bar">
+      <span class="save-bar-text">Saves <strong>Minecraft bridge</strong> settings for this server</span>
+      <div class="save-actions">
+        <button class="btn-sm-o" onclick="mcLoadSettings()">↩ Reset</button>
+        <button class="btn-sm" onclick="mcSaveSettings()">💾 Save</button>
       </div>
     </div>
-  </div>
 
-  <!-- ── Online Players ── -->
-  <div class="mc-card">
-    <div class="mc-card-hdr"><span>👥</span><h3>Online Players</h3><button class="btn-sm-o" onclick="mcRefreshPlayers()" style="font-size:.68rem;padding:5px 10px">🔄</button></div>
-    <div class="mc-card-body">
-      <div id="mc-player-list" style="min-height:80px">
-        <div class="loading-state" style="padding:20px 0"><p style="color:var(--tx-3);font-size:.8rem">Connect RCON to see players</p></div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /mc-grid -->
-
-<!-- ── Server Properties ── -->
-<div class="mc-card" style="margin-bottom:14px">
-  <div class="mc-card-hdr"><span>⚙️</span><h3>Server Properties</h3><span style="font-size:.7rem;color:var(--tx-3)">Sent via RCON — some require restart</span></div>
-  <div class="mc-card-body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
-      <div>
-        <div class="mc-lbl">MOTD (Message of the Day)</div>
-        <input class="mc-inp" id="mc-motd" type="text" placeholder="A Minecraft Server" maxlength="59" oninput="markDirty('minecraft')">
-      </div>
-      <div>
-        <div class="mc-lbl">Max Players</div>
-        <input class="mc-inp" id="mc-maxplayers" type="number" placeholder="20" min="1" max="1000" oninput="markDirty('minecraft')">
-      </div>
-      <div>
-        <div class="mc-lbl">Default Gamemode</div>
-        <select class="mc-sel" id="mc-gamemode" onchange="markDirty('minecraft')">
-          <option value="survival">Survival</option>
-          <option value="creative">Creative</option>
-          <option value="adventure">Adventure</option>
-          <option value="spectator">Spectator</option>
-        </select>
-      </div>
-    </div>
-    <div style="margin-bottom:14px">
-      <div class="mc-lbl" style="margin-bottom:7px">Difficulty</div>
-      <div style="display:flex;gap:7px;flex-wrap:wrap">
-        <button class="mc-difficulty-btn" id="mc-diff-peaceful" onclick="mcSetDiff('peaceful')">☮️ Peaceful</button>
-        <button class="mc-difficulty-btn active" id="mc-diff-easy" onclick="mcSetDiff('easy')">🌿 Easy</button>
-        <button class="mc-difficulty-btn" id="mc-diff-normal" onclick="mcSetDiff('normal')">⚔️ Normal</button>
-        <button class="mc-difficulty-btn" id="mc-diff-hard" onclick="mcSetDiff('hard')">💀 Hard</button>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-      <div class="toggle-row" style="background:var(--base-down);border-radius:10px;padding:10px 12px;border:1px solid rgba(78,255,145,.06)"><div class="toggle-info"><div class="toggle-name" style="font-size:.82rem">PvP</div><div class="toggle-desc" style="font-size:.67rem">Player vs Player combat</div></div><label class="toggle"><input type="checkbox" id="mc-pvp" checked onchange="markDirty('minecraft')"><span class="toggle-track"></span></label></div>
-      <div class="toggle-row" style="background:var(--base-down);border-radius:10px;padding:10px 12px;border:1px solid rgba(78,255,145,.06)"><div class="toggle-info"><div class="toggle-name" style="font-size:.82rem">Whitelist</div><div class="toggle-desc" style="font-size:.67rem">Only whitelisted players</div></div><label class="toggle"><input type="checkbox" id="mc-whitelist-enabled" onchange="mcToggleWhitelist()"><span class="toggle-track"></span></label></div>
-      <div class="toggle-row" style="background:var(--base-down);border-radius:10px;padding:10px 12px;border:1px solid rgba(78,255,145,.06)"><div class="toggle-info"><div class="toggle-name" style="font-size:.82rem">Flight</div><div class="toggle-desc" style="font-size:.67rem">Allow flying in survival</div></div><label class="toggle"><input type="checkbox" id="mc-flight" onchange="markDirty('minecraft')"><span class="toggle-track"></span></label></div>
-    </div>
-  </div>
-</div>
-
-<div class="mc-grid">
-
-  <!-- ── Whitelist Manager ── -->
-  <div class="mc-card">
-    <div class="mc-card-hdr"><span>📋</span><h3>Whitelist Manager</h3><button class="btn-sm-o" onclick="mcRefreshWhitelist()" style="font-size:.68rem;padding:5px 10px">🔄</button></div>
-    <div class="mc-card-body">
-      <div class="mc-inp-row" style="margin-bottom:12px">
-        <input class="mc-inp" id="mc-wl-inp" type="text" placeholder="Player username…" maxlength="16" onkeydown="if(event.key==='Enter')mcWlAdd()">
-        <button class="btn-sm" onclick="mcWlAdd()" style="flex-shrink:0;padding:9px 14px;font-size:.78rem">➕ Add</button>
-      </div>
-      <div id="mc-wl-list" style="max-height:200px;overflow-y:auto">
-        <div style="color:var(--tx-3);font-size:.78rem;text-align:center;padding:16px 0">Connect RCON to manage whitelist</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── RCON Console ── -->
-  <div class="mc-card">
-    <div class="mc-card-hdr"><span>💻</span><h3>RCON Console</h3><button onclick="mcClearConsole()" style="background:none;border:none;color:var(--tx-3);font-size:.7rem;cursor:pointer">✕ Clear</button></div>
-    <div class="mc-card-body">
-      <!-- Quick commands -->
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="mc-quick-cmd" onclick="mcQuickCmd('list')">👥 Players</button>
-        <button class="mc-quick-cmd" onclick="mcQuickCmd('tps')">📊 TPS</button>
-        <button class="mc-quick-cmd" onclick="mcQuickCmd('save-all')">💾 Save</button>
-        <button class="mc-quick-cmd danger" onclick="mcQuickCmd('stop')" id="mc-stop-btn">⛔ Stop</button>
-      </div>
-      <div class="mc-console" id="mc-console">
-        <div class="mc-log-info">[NinjuBot] RCON console ready. Connect your server to run commands.</div>
-      </div>
-      <div class="mc-cmd-row">
-        <input class="mc-cmd-inp" id="mc-cmd-inp" placeholder="Type a command… (e.g. say Hello!)" onkeydown="if(event.key==='Enter')mcSendCmd()">
-        <button class="mc-send-btn" onclick="mcSendCmd()" id="mc-send-btn">▶ Run</button>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /mc-grid -->
-
-<!-- Save bar -->
-<div class="save-bar"><span class="save-bar-text">Saves <strong>Minecraft settings</strong> for this server's NinjuBot config</span><div class="save-actions"><button class="btn-sm-o" onclick="mcLoadSettings()">↩ Reset</button><button class="btn-sm" onclick="mcSaveSettings()">💾 Save All</button></div></div>
-
-</div><!-- /panel-minecraft -->
-
+    </div><!-- /panel-minecraft -->
   </div><!-- /panels -->
 </main>
 </div><!-- /dashboard-app -->
