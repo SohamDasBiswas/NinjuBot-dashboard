@@ -243,6 +243,8 @@ function populateChannelDropdowns(channels) {
     'cfg-modlog-channel',
     'cfg-yt-alert-channel',
     'cfg-tw-alert-channel',
+    'mc-chat-channel',
+    'mc-log-channel',
   ];
 
   if (!channels || channels.length === 0) {
@@ -742,7 +744,7 @@ function showPanel(name, el) {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
     'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-booster':'Booster Cards',
-    'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup', 'minecraft':'⛏️ Minecraft',
+    'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup',
     'audit-log':'Audit Log', mongodb:'MongoDB Stats',
   };
   const t = document.getElementById('page-title');
@@ -1444,6 +1446,23 @@ async function mcLoadSettings() {
     if (s.flight !== undefined) document.getElementById('mc-flight').checked = !!s.flight;
     if (s.whitelist !== undefined) document.getElementById('mc-whitelist-enabled').checked = !!s.whitelist;
     if (s.difficulty)   mcSetDiff(s.difficulty, false);
+    // Populate channel selects (reuse cached channels list)
+    ['mc-chat-channel','mc-log-channel'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (!sel) return;
+      const savedVal = selId === 'mc-chat-channel' ? (s.chat_channel_id || '') : (s.log_channel_id || '');
+      if (_cachedChannels && _cachedChannels.length) {
+        const cats = {};
+        _cachedChannels.forEach(ch => { const c = ch.category||'Uncategorized'; if(!cats[c]) cats[c]=[]; cats[c].push(ch); });
+        sel.innerHTML = '<option value="">— Disabled —</option>';
+        Object.entries(cats).forEach(([cat, chs]) => {
+          const grp = document.createElement('optgroup'); grp.label = cat;
+          chs.forEach(ch => { const o = document.createElement('option'); o.value = ch.id; o.textContent = '# '+ch.name; grp.appendChild(o); });
+          sel.appendChild(grp);
+        });
+      }
+      if (savedVal) sel.value = savedVal;
+    });
     const badge = document.getElementById('mc-rcon-badge');
     if (badge && s.host) {
       badge.textContent = 'SAVED';
@@ -1471,6 +1490,8 @@ async function mcSaveSettings() {
     pvp:         document.getElementById('mc-pvp').checked,
     flight:      document.getElementById('mc-flight').checked,
     whitelist:   document.getElementById('mc-whitelist-enabled').checked,
+    chat_channel_id: document.getElementById('mc-chat-channel')?.value || '',
+    log_channel_id:  document.getElementById('mc-log-channel')?.value  || '',
   };
   try {
     const r = await fetch(`${BOT_API}/minecraft/settings`, {
