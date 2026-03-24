@@ -1416,3 +1416,371 @@ async function bkDelete(backupId){
   const data=await r.json();if(data.success){showToast('🗑️ Deleted');bkLoad();}else showToast(`❌ ${data.error||'Failed'}`,'error');}
   catch{showToast('❌ Network error','error');}
 }
+
+// ══════════════════════════════════════════════════════════════
+//  MINECRAFT SERVER PANEL
+// ══════════════════════════════════════════════════════════════
+
+let _mcDiff = 'easy';
+let _mcConnected = false;
+
+// ── Load saved Minecraft settings from bot API ──────────────
+async function mcLoadSettings() {
+  if (!currentGuild) return;
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/settings?guild_id=${currentGuild.id}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    const s = d.settings || {};
+    if (s.host)         document.getElementById('mc-host').value = s.host;
+    if (s.query_port)   document.getElementById('mc-query-port').value = s.query_port;
+    if (s.rcon_port)    document.getElementById('mc-rcon-port').value = s.rcon_port;
+    if (s.motd)         document.getElementById('mc-motd').value = s.motd;
+    if (s.max_players)  document.getElementById('mc-maxplayers').value = s.max_players;
+    if (s.gamemode)     document.getElementById('mc-gamemode').value = s.gamemode;
+    if (s.pvp !== undefined) document.getElementById('mc-pvp').checked = !!s.pvp;
+    if (s.flight !== undefined) document.getElementById('mc-flight').checked = !!s.flight;
+    if (s.whitelist !== undefined) document.getElementById('mc-whitelist-enabled').checked = !!s.whitelist;
+    if (s.difficulty)   mcSetDiff(s.difficulty, false);
+    const badge = document.getElementById('mc-rcon-badge');
+    if (badge && s.host) {
+      badge.textContent = 'SAVED';
+      badge.style.background = 'rgba(78,255,145,.1)';
+      badge.style.color = 'var(--green)';
+      badge.style.borderColor = 'rgba(78,255,145,.3)';
+    }
+  } catch(e) { /* not fatal */ }
+}
+
+// ── Save all settings ────────────────────────────────────────
+async function mcSaveSettings() {
+  if (!currentGuild) return showToast('No server selected', 'error');
+  const host = document.getElementById('mc-host').value.trim();
+  if (!host) return showToast('Enter a server host first', 'warn');
+  const payload = {
+    guild_id:    currentGuild.id,
+    host,
+    query_port:  parseInt(document.getElementById('mc-query-port').value) || 25565,
+    rcon_port:   parseInt(document.getElementById('mc-rcon-port').value)  || 25575,
+    motd:        document.getElementById('mc-motd').value.trim(),
+    max_players: parseInt(document.getElementById('mc-maxplayers').value) || 20,
+    gamemode:    document.getElementById('mc-gamemode').value,
+    difficulty:  _mcDiff,
+    pvp:         document.getElementById('mc-pvp').checked,
+    flight:      document.getElementById('mc-flight').checked,
+    whitelist:   document.getElementById('mc-whitelist-enabled').checked,
+  };
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/settings`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (r.ok) {
+      showToast('✅ Minecraft settings saved!');
+      const dd = document.getElementById('dd-minecraft');
+      if (dd) dd.classList.remove('show');
+      const badge = document.getElementById('mc-rcon-badge');
+      if (badge) { badge.textContent='SAVED'; badge.style.background='rgba(78,255,145,.1)'; badge.style.color='var(--green)'; badge.style.borderColor='rgba(78,255,145,.3)'; }
+    } else {
+      showToast('❌ Save failed', 'error');
+    }
+  } catch { showToast('❌ Network error', 'error'); }
+}
+
+// ── Save & Test RCON connection ──────────────────────────────
+async function mcSaveConnection() {
+  if (!currentGuild) return showToast('No server selected', 'error');
+  const host = document.getElementById('mc-host').value.trim();
+  const rconPort = parseInt(document.getElementById('mc-rcon-port').value) || 25575;
+  const rconPass = document.getElementById('mc-rcon-pass').value;
+  if (!host) return showToast('Enter a server host', 'warn');
+  const resultEl = document.getElementById('mc-conn-result');
+  resultEl.style.display = 'block';
+  resultEl.style.background = 'rgba(56,189,248,.07)';
+  resultEl.style.border = '1px solid rgba(56,189,248,.2)';
+  resultEl.style.color = '#38bdf8';
+  resultEl.innerHTML = '🔄 Testing RCON connection…';
+  mcSetStatus('checking', 'Connecting…', `${host}:${rconPort}`);
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/test-rcon`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id: currentGuild.id, host, rcon_port: rconPort, rcon_password: rconPass })
+    });
+    const d = await r.json();
+    if (r.ok && d.success) {
+      _mcConnected = true;
+      resultEl.style.background = 'rgba(78,255,145,.07)';
+      resultEl.style.border = '1px solid rgba(78,255,145,.2)';
+      resultEl.style.color = 'var(--green)';
+      resultEl.innerHTML = `✅ Connected! Server: <strong>${d.server_version || 'Minecraft'}</strong>`;
+      mcSetStatus('online', `Online — ${d.server_version || 'Minecraft'}`, `${host}:${rconPort}`);
+      mcConsoleLog('[RCON] Connected to ' + host + ':' + rconPort, 'info');
+      await mcSaveSettings();
+      mcRefreshPlayers();
+      mcRefreshWhitelist();
+      if (d.tps) document.getElementById('mc-stat-tps').textContent = d.tps;
+    } else {
+      resultEl.style.background = 'rgba(255,79,79,.07)';
+      resultEl.style.border = '1px solid rgba(255,79,79,.2)';
+      resultEl.style.color = '#ff7070';
+      resultEl.innerHTML = `❌ ${d.error || 'Connection failed — check host / port / password'}`;
+      mcSetStatus('offline', 'Connection failed', d.error || '');
+      mcConsoleLog('[RCON] Failed: ' + (d.error || 'Unknown error'), 'error');
+    }
+  } catch(e) {
+    resultEl.style.background = 'rgba(255,79,79,.07)';
+    resultEl.style.border = '1px solid rgba(255,79,79,.2)';
+    resultEl.style.color = '#ff7070';
+    resultEl.innerHTML = '❌ Network error — is your bot running?';
+    mcSetStatus('offline', 'Network error', '');
+  }
+}
+
+// ── Refresh live server status ───────────────────────────────
+async function mcRefreshStatus() {
+  if (!currentGuild) return;
+  const host = document.getElementById('mc-host')?.value.trim();
+  if (!host) return showToast('Configure server host first', 'warn');
+  mcSetStatus('checking', 'Refreshing…', host);
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/status?guild_id=${currentGuild.id}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const d = await r.json();
+    if (r.ok && d.online) {
+      mcSetStatus('online', `Online — ${d.players_online}/${d.players_max} players`, `${host} · ${d.version || ''}`);
+      document.getElementById('mc-stat-players').textContent = `${d.players_online}/${d.players_max}`;
+      document.getElementById('mc-stat-row').style.display = 'grid';
+      if (d.tps) document.getElementById('mc-stat-tps').textContent = d.tps;
+      mcConsoleLog(`[STATUS] ${d.players_online}/${d.players_max} players · ${d.version || ''}`, 'info');
+    } else {
+      mcSetStatus('offline', 'Server offline or unreachable', host);
+      document.getElementById('mc-stat-row').style.display = 'none';
+    }
+  } catch {
+    mcSetStatus('offline', 'Status check failed', '');
+  }
+}
+
+// ── Refresh online players ───────────────────────────────────
+async function mcRefreshPlayers() {
+  const el = document.getElementById('mc-player-list');
+  if (!el) return;
+  el.innerHTML = '<div class="loading-state" style="padding:14px 0"><div class="spinner"></div></div>';
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/players?guild_id=${currentGuild.id}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const d = await r.json();
+    const players = d.players || [];
+    if (!players.length) {
+      el.innerHTML = '<div style="color:var(--tx-3);font-size:.78rem;text-align:center;padding:16px 0">🌿 No players online</div>';
+      return;
+    }
+    el.innerHTML = players.map(p => `
+      <div class="mc-player">
+        <div class="mc-player-head">🧑</div>
+        <div class="mc-player-name">${p.name}</div>
+        <div class="mc-player-dur">${p.since || ''}</div>
+        <button class="mc-del-btn" onclick="mcKickPlayer('${p.name}')" title="Kick">⚡ Kick</button>
+      </div>`).join('');
+    document.getElementById('mc-stat-players').textContent = `${players.length}/${document.getElementById('mc-maxplayers').value||'?'}`;
+  } catch {
+    el.innerHTML = '<div style="color:var(--tx-3);font-size:.78rem;text-align:center;padding:16px 0">❌ Failed to load players</div>';
+  }
+}
+
+// ── Refresh whitelist ────────────────────────────────────────
+async function mcRefreshWhitelist() {
+  const el = document.getElementById('mc-wl-list');
+  if (!el) return;
+  el.innerHTML = '<div class="loading-state" style="padding:10px 0"><div class="spinner"></div></div>';
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/whitelist?guild_id=${currentGuild.id}`, {
+      headers: { 'Authorization': `Bearer ${discordToken}` }
+    });
+    const d = await r.json();
+    const list = d.whitelist || [];
+    if (!list.length) {
+      el.innerHTML = '<div style="color:var(--tx-3);font-size:.78rem;text-align:center;padding:12px 0">📋 Whitelist is empty</div>';
+      return;
+    }
+    el.innerHTML = list.map(name => `
+      <div class="mc-wl-item">
+        <span class="mc-wl-name">🧑 ${name}</span>
+        <button class="mc-del-btn" onclick="mcWlRemove('${name}')">✕ Remove</button>
+      </div>`).join('');
+  } catch {
+    el.innerHTML = '<div style="color:var(--tx-3);font-size:.78rem;text-align:center;padding:12px 0">❌ Failed — RCON not connected</div>';
+  }
+}
+
+// ── Whitelist add ────────────────────────────────────────────
+async function mcWlAdd() {
+  const inp = document.getElementById('mc-wl-inp');
+  const name = inp.value.trim();
+  if (!name || name.length < 3) return showToast('Enter a valid username (3–16 chars)', 'warn');
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/whitelist/add`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id: currentGuild.id, username: name })
+    });
+    const d = await r.json();
+    if (r.ok && d.success) {
+      showToast(`✅ ${name} added to whitelist`);
+      inp.value = '';
+      mcConsoleLog(`[RCON] whitelist add ${name} → OK`, 'resp');
+      mcRefreshWhitelist();
+    } else {
+      showToast(`❌ ${d.error || 'Failed'}`, 'error');
+    }
+  } catch { showToast('❌ Network error', 'error'); }
+}
+
+// ── Whitelist remove ─────────────────────────────────────────
+async function mcWlRemove(name) {
+  if (!confirm(`Remove ${name} from whitelist?`)) return;
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/whitelist/remove`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id: currentGuild.id, username: name })
+    });
+    const d = await r.json();
+    if (r.ok && d.success) {
+      showToast(`🗑️ ${name} removed`);
+      mcConsoleLog(`[RCON] whitelist remove ${name} → OK`, 'resp');
+      mcRefreshWhitelist();
+    } else showToast(`❌ ${d.error || 'Failed'}`, 'error');
+  } catch { showToast('❌ Network error', 'error'); }
+}
+
+// ── Toggle whitelist on/off ──────────────────────────────────
+async function mcToggleWhitelist() {
+  const enabled = document.getElementById('mc-whitelist-enabled').checked;
+  markDirty('minecraft');
+  mcConsoleLog(`[RCON] whitelist ${enabled ? 'on' : 'off'} (save to apply)`, 'warn');
+}
+
+// ── Kick player via RCON ─────────────────────────────────────
+async function mcKickPlayer(name) {
+  if (!confirm(`Kick ${name} from the server?`)) return;
+  await mcRunRcon(`kick ${name} Kicked by NinjuBot Dashboard`);
+  setTimeout(mcRefreshPlayers, 1200);
+}
+
+// ── Send custom RCON command ─────────────────────────────────
+async function mcSendCmd() {
+  const inp = document.getElementById('mc-cmd-inp');
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+  inp.value = '';
+  await mcRunRcon(cmd);
+}
+
+// ── Quick command shortcuts ──────────────────────────────────
+async function mcQuickCmd(cmd) {
+  if (cmd === 'stop') {
+    if (!confirm('⚠️ Send STOP command? This will shut down the Minecraft server!')) return;
+  }
+  await mcRunRcon(cmd);
+}
+
+// ── Core RCON command sender ─────────────────────────────────
+async function mcRunRcon(cmd) {
+  mcConsoleLog(`> ${cmd}`, 'cmd');
+  const sendBtn = document.getElementById('mc-send-btn');
+  if (sendBtn) sendBtn.disabled = true;
+  try {
+    const r = await fetch(`${BOT_API}/minecraft/rcon`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${discordToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guild_id: currentGuild.id, command: cmd })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      const resp = d.response || '(no output)';
+      mcConsoleLog(resp, 'resp');
+      if (cmd === 'tps' && d.response) {
+        const match = d.response.match(/[\d.]+/);
+        if (match) document.getElementById('mc-stat-tps').textContent = parseFloat(match[0]).toFixed(1);
+      }
+    } else {
+      mcConsoleLog(`[ERR] ${d.error || 'Command failed'}`, 'error');
+      if (d.error && d.error.includes('auth')) mcSetStatus('offline', 'RCON auth failed', '');
+    }
+  } catch(e) {
+    mcConsoleLog(`[ERR] Network error`, 'error');
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+// ── Difficulty selector ──────────────────────────────────────
+function mcSetDiff(val, dirty = true) {
+  _mcDiff = val;
+  ['peaceful','easy','normal','hard'].forEach(d => {
+    const el = document.getElementById(`mc-diff-${d}`);
+    if (el) el.classList.toggle('active', d === val);
+  });
+  if (dirty) markDirty('minecraft');
+}
+
+// ── Status bar helper ────────────────────────────────────────
+function mcSetStatus(state, text, sub) {
+  const dot    = document.getElementById('mc-dot');
+  const txt    = document.getElementById('mc-status-text');
+  const sub_el = document.getElementById('mc-status-sub');
+  const badge  = document.getElementById('mc-status-badge');
+  if (dot)    { dot.className = `mc-status-dot ${state}`; }
+  if (txt)    txt.textContent = text;
+  if (sub_el) sub_el.textContent = sub || '';
+  if (badge) {
+    badge.textContent = state.toUpperCase();
+    badge.className = `mc-stat-badge ${state === 'checking' ? 'unknown' : state}`;
+    if (state === 'checking') { badge.style.color='#38bdf8'; badge.style.background='rgba(56,189,248,.1)'; badge.style.borderColor='rgba(56,189,248,.25)'; }
+  }
+}
+
+// ── Console log helper ───────────────────────────────────────
+function mcConsoleLog(msg, type = 'info') {
+  const con = document.getElementById('mc-console');
+  if (!con) return;
+  const line = document.createElement('div');
+  line.className = `mc-log-${type}`;
+  const ts = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent = `[${ts}] ${msg}`;
+  con.appendChild(line);
+  con.scrollTop = con.scrollHeight;
+}
+
+// ── Clear console ────────────────────────────────────────────
+function mcClearConsole() {
+  const con = document.getElementById('mc-console');
+  if (con) con.innerHTML = '<div class="mc-log-info">[NinjuBot] Console cleared.</div>';
+}
+
+// ── Toggle RCON password visibility ─────────────────────────
+function mcTogglePwd() {
+  const inp = document.getElementById('mc-rcon-pass');
+  const btn = document.getElementById('mc-pwd-toggle');
+  if (!inp) return;
+  if (inp.type === 'password') { inp.type='text'; if(btn) btn.textContent='🙈'; }
+  else { inp.type='password'; if(btn) btn.textContent='👁'; }
+}
+
+// ── Hook into showPanel so Minecraft loads settings on open ──
+(function patchShowPanel() {
+  const _orig = window.showPanel;
+  window.showPanel = function(id, el) {
+    if (_orig) _orig(id, el);
+    if (id === 'minecraft') {
+      mcLoadSettings();
+    }
+  };
+})();
