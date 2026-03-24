@@ -1079,8 +1079,7 @@
       </div>
     </div>
 
-
-    <!-- ══════ MINECRAFT (ATERNOS) PANEL ══════ -->
+      <!-- ══════ MINECRAFT (ATERNOS) PANEL ══════ -->
     <div id="panel-minecraft" class="panel">
     <style>
     .mc-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.07);overflow:hidden;margin-bottom:14px}
@@ -1088,66 +1087,44 @@
     .mc-card-hdr h3{font-family:var(--font-d);font-size:0.92rem;font-weight:700;flex:1}
     .mc-card-body{padding:16px 18px 18px}
     .mc-lbl{font-size:0.65rem;font-weight:700;color:rgba(78,255,145,0.5);text-transform:uppercase;letter-spacing:1.2px;font-family:var(--font-m);margin-bottom:5px}
-    .mc-inp{width:100%;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-family:var(--font-m);font-size:0.82rem;outline:none;transition:border-color .18s;box-sizing:border-box}
-    .mc-inp:focus{border-color:rgba(78,255,145,0.45)}
-    .mc-inp::placeholder{color:var(--tx-3)}
-    .mc-sel{width:100%;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-size:0.82rem;outline:none;box-sizing:border-box}
+    .mc-sel{width:100%;padding:9px 12px;background:#07100a;border:1px solid rgba(78,255,145,0.15);border-radius:10px;color:var(--tx);font-size:0.82rem;outline:none;box-sizing:border-box;transition:border-color .18s}
+    .mc-sel:focus{border-color:rgba(78,255,145,0.45)}
     .mc-sel option{background:#0a1a0d}
     .mc-field{margin-bottom:14px}
-    .mc-hint{font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m);margin-top:5px;line-height:1.5}
-    .mc-info-box{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--r-md);background:rgba(78,255,145,0.04);border:1px solid rgba(78,255,145,0.1);font-size:0.78rem;color:var(--tx-2);margin-bottom:18px;line-height:1.6}
-    .mc-status-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--neu-out-sm);border:1px solid rgba(78,255,145,0.1);margin-bottom:18px}
-    .mc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-    .mc-dot.ok{background:#4eff91;box-shadow:0 0 6px #4eff91}
-    .mc-dot.off{background:#ff4f4f;box-shadow:0 0 6px #ff4f4f}
-    .mc-dot.unknown{background:#fbbf24;box-shadow:0 0 6px #fbbf24}
+    .mc-field:last-child{margin-bottom:0}
+    .mc-hint{font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m);margin-top:5px;line-height:1.6}
+    .mc-webhook-box{display:flex;align-items:center;gap:8px;padding:10px 13px;background:#040c07;border:1px solid rgba(78,255,145,0.2);border-radius:10px;font-family:'Courier New',monospace;font-size:0.75rem;color:var(--green);word-break:break-all}
+    .mc-copy-btn{flex-shrink:0;padding:6px 12px;border-radius:8px;background:rgba(78,255,145,0.1);border:1px solid rgba(78,255,145,0.25);color:var(--green);font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s}
+    .mc-copy-btn:hover{background:rgba(78,255,145,0.2)}
+    .mc-step{display:flex;gap:12px;padding:10px 14px;border-radius:10px;background:var(--base-down);border:1px solid rgba(78,255,145,0.06);margin-bottom:7px;font-size:0.8rem;color:var(--tx-2);line-height:1.6}
+    .mc-step-num{width:22px;height:22px;border-radius:6px;background:rgba(78,255,145,0.1);border:1px solid rgba(78,255,145,0.25);color:var(--green);font-size:0.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
     </style>
-
-    <!-- Status bar -->
-    <div class="mc-status-bar" id="mc-status-bar">
-      <div class="mc-dot unknown" id="mc-dot"></div>
-      <div style="flex:1">
-        <div style="font-size:.82rem;font-weight:700" id="mc-status-text">Not configured</div>
-        <div style="font-size:.63rem;color:var(--tx-3);font-family:var(--font-m)" id="mc-status-sub">Set the log file path below to enable the bridge</div>
-      </div>
-    </div>
-
-    <div class="mc-info-box">
-      <span style="font-size:1rem;flex-shrink:0">ℹ️</span>
-      <span>This is an <strong style="color:var(--green)">Aternos</strong> log bridge — no RCON needed.
-      Point NinjuBot at your Aternos server log file, pick two Discord channels,
-      and the bot will relay in-game chat to Discord and post server events (joins, leaves, deaths, start/stop).</span>
-    </div>
 
     <div class="db-row">
 
-      <!-- Left: Log file path -->
+      <!-- LEFT: Webhook URL + setup steps -->
       <div class="mc-card" style="margin-bottom:0">
-        <div class="mc-card-hdr"><span>📄</span><h3>Log File</h3></div>
+        <div class="mc-card-hdr"><span>🔗</span><h3>Webhook URL</h3></div>
         <div class="mc-card-body">
           <div class="mc-field">
-            <div class="mc-lbl">Aternos Log File Path</div>
-            <input class="mc-inp" id="mc-log-path" type="text"
-              placeholder="/home/container/logs/latest.log"
-              oninput="markDirty('minecraft')">
-            <div class="mc-hint">
-              On Aternos the log is usually at <code style="color:var(--green)">/logs/latest.log</code> inside your server folder.<br>
-              Enter the full absolute path where NinjuBot can read the file.
+            <div class="mc-lbl">Your bot's webhook endpoint</div>
+            <div class="mc-webhook-box">
+              <span id="mc-webhook-url">https://ninjubot.onrender.com/minecraft/webhook</span>
+              <button class="mc-copy-btn" onclick="mcCopyWebhook()">📋 Copy</button>
             </div>
+            <div class="mc-hint">Paste this URL into your DiscordSRV config on Aternos.</div>
           </div>
-          <div class="mc-field" style="margin-bottom:0">
-            <div class="mc-lbl">Log Poll Interval</div>
-            <select class="mc-sel" id="mc-poll-interval" onchange="markDirty('minecraft')">
-              <option value="2">Every 2 seconds</option>
-              <option value="5">Every 5 seconds</option>
-              <option value="10">Every 10 seconds</option>
-            </select>
-            <div class="mc-hint">How often the bot checks the log file for new lines.</div>
-          </div>
+
+          <div class="mc-lbl" style="margin-bottom:8px;margin-top:4px">Setup Steps</div>
+          <div class="mc-step"><div class="mc-step-num">1</div><div>Go to your <strong>Aternos panel → Plugins</strong> and install <strong style="color:var(--green)">DiscordSRV</strong></div></div>
+          <div class="mc-step"><div class="mc-step-num">2</div><div>Start the server once so DiscordSRV generates its config files under <code style="color:var(--green)">plugins/DiscordSRV/</code></div></div>
+          <div class="mc-step"><div class="mc-step-num">3</div><div>Open <code style="color:var(--green)">config.yml</code> and set <code style="color:var(--green)">BotToken</code> to your bot token and set the channel IDs you pick on the right</div></div>
+          <div class="mc-step"><div class="mc-step-num">4</div><div>In the same config set <code style="color:var(--green)">DiscordWebhookURL</code> to the URL above so DiscordSRV sends events to NinjuBot instead</div></div>
+          <div class="mc-step"><div class="mc-step-num">5</div><div>Pick your Discord channels on the right, hit <strong style="color:var(--green)">Save</strong>, then restart Aternos — done!</div></div>
         </div>
       </div>
 
-      <!-- Right: Discord channels -->
+      <!-- RIGHT: Channel pickers -->
       <div class="mc-card" style="margin-bottom:0">
         <div class="mc-card-hdr"><span>💬</span><h3>Discord Channels</h3></div>
         <div class="mc-card-body">
@@ -1157,16 +1134,17 @@
               <option value="">— Disabled —</option>
             </select>
             <div class="mc-hint">
-              In-game chat, joins, leaves, deaths, and server start/stop are posted here.<br>
-              Discord messages in this channel are also forwarded <strong>to Minecraft</strong> (requires RCON on the bot side).
+              In-game chat, joins, leaves, deaths, server start/stop all post here as embeds.
             </div>
           </div>
-          <div class="mc-field" style="margin-bottom:0">
-            <div class="mc-lbl">Server Log Channel</div>
+          <div class="mc-field">
+            <div class="mc-lbl">Server Log Channel <span style="color:var(--tx-3);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
             <select class="mc-sel" id="mc-log-channel" onchange="markDirty('minecraft')">
               <option value="">— Disabled —</option>
             </select>
-            <div class="mc-hint">Raw filtered INFO lines from the server log are posted here (optional).</div>
+            <div class="mc-hint">
+              Raw filtered server log lines posted here. Leave disabled if you don't need it.
+            </div>
           </div>
         </div>
       </div>
@@ -1174,7 +1152,7 @@
     </div>
 
     <div class="save-bar">
-      <span class="save-bar-text">Saves <strong>Minecraft bridge</strong> settings for this server</span>
+      <span class="save-bar-text">Saves <strong>Minecraft bridge</strong> channel settings for this server</span>
       <div class="save-actions">
         <button class="btn-sm-o" onclick="mcLoadSettings()">↩ Reset</button>
         <button class="btn-sm" onclick="mcSaveSettings()">💾 Save</button>
@@ -1182,6 +1160,7 @@
     </div>
 
     </div><!-- /panel-minecraft -->
+
   </div><!-- /panels -->
 </main>
 </div><!-- /dashboard-app -->

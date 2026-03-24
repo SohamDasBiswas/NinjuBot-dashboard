@@ -243,6 +243,8 @@ function populateChannelDropdowns(channels) {
     'cfg-modlog-channel',
     'cfg-yt-alert-channel',
     'cfg-tw-alert-channel',
+    'mc-chat-channel',
+    'mc-log-channel',
   ];
 
   if (!channels || channels.length === 0) {
@@ -1418,10 +1420,10 @@ async function bkDelete(backupId){
 }
 
 // ══════════════════════════════════════════════════════════════
-//  MINECRAFT (ATERNOS) BRIDGE PANEL
+//  MINECRAFT (ATERNOS) BRIDGE
 // ══════════════════════════════════════════════════════════════
 
-// ── Load settings from bot API ───────────────────────────────
+// ── Load settings ────────────────────────────────────────────
 async function mcLoadSettings() {
   if (!currentGuild) return;
   try {
@@ -1432,16 +1434,17 @@ async function mcLoadSettings() {
     const d = await r.json();
     const s = d.settings || {};
 
-    const logPath = document.getElementById('mc-log-path');
-    const pollInt = document.getElementById('mc-poll-interval');
-    if (logPath && s.log_path)      logPath.value = s.log_path;
-    if (pollInt && s.poll_interval) pollInt.value = s.poll_interval;
+    // Show the actual webhook URL for this bot
+    const urlEl = document.getElementById('mc-webhook-url');
+    if (urlEl) urlEl.textContent = `${BOT_API}/minecraft/webhook`;
 
-    // Populate channel selects from cached channels then apply saved values
+    // Populate channel selects
     ['mc-chat-channel', 'mc-log-channel'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel) return;
-      const saved = selId === 'mc-chat-channel' ? (s.chat_channel_id || '') : (s.log_channel_id || '');
+      const saved = selId === 'mc-chat-channel'
+        ? (s.chat_channel_id || '')
+        : (s.log_channel_id  || '');
       if (_cachedChannels && _cachedChannels.length) {
         const cats = {};
         _cachedChannels.forEach(ch => {
@@ -1464,24 +1467,14 @@ async function mcLoadSettings() {
       }
       if (saved) sel.value = saved;
     });
-
-    // Update status dot
-    mcSetStatus(s.log_path ? 'ok' : 'unknown',
-      s.log_path ? 'Log file configured' : 'Not configured',
-      s.log_path || 'Set the log file path below');
-
   } catch(e) { /* not fatal */ }
 }
 
-// ── Save settings to bot API ─────────────────────────────────
+// ── Save settings ────────────────────────────────────────────
 async function mcSaveSettings() {
   if (!currentGuild) return showToast('No server selected', 'error');
-  const logPath = document.getElementById('mc-log-path')?.value.trim();
-  if (!logPath) return showToast('Enter the log file path', 'warn');
   const payload = {
     guild_id:        currentGuild.id,
-    log_path:        logPath,
-    poll_interval:   parseInt(document.getElementById('mc-poll-interval')?.value) || 2,
     chat_channel_id: document.getElementById('mc-chat-channel')?.value || '',
     log_channel_id:  document.getElementById('mc-log-channel')?.value  || '',
   };
@@ -1492,24 +1485,19 @@ async function mcSaveSettings() {
       body: JSON.stringify(payload)
     });
     if (r.ok) {
-      showToast('✅ Minecraft bridge settings saved!');
+      showToast('✅ Minecraft bridge saved!');
       const dd = document.getElementById('dd-minecraft');
       if (dd) dd.classList.remove('show');
-      mcSetStatus('ok', 'Log file configured', logPath);
     } else {
       showToast('❌ Save failed', 'error');
     }
   } catch { showToast('❌ Network error', 'error'); }
 }
 
-// ── Status dot helper ────────────────────────────────────────
-function mcSetStatus(state, text, sub) {
-  const dot  = document.getElementById('mc-dot');
-  const txt  = document.getElementById('mc-status-text');
-  const sub_ = document.getElementById('mc-status-sub');
-  if (dot) dot.className = `mc-dot ${state}`;
-  if (txt)  txt.textContent  = text;
-  if (sub_) sub_.textContent = sub || '';
+// ── Copy webhook URL to clipboard ────────────────────────────
+function mcCopyWebhook() {
+  const url = document.getElementById('mc-webhook-url')?.textContent || '';
+  navigator.clipboard.writeText(url).then(() => showToast('📋 Webhook URL copied!'));
 }
 
 // ── Hook into showPanel ──────────────────────────────────────
