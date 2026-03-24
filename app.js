@@ -744,7 +744,7 @@ function showPanel(name, el) {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
     'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-booster':'Booster Cards',
-    'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup',
+    'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup', 'minecraft':'⛏️ Minecraft',
     'audit-log':'Audit Log', mongodb:'MongoDB Stats',
   };
   const t = document.getElementById('page-title');
@@ -1446,7 +1446,7 @@ async function mcLoadSettings() {
     if (s.flight !== undefined) document.getElementById('mc-flight').checked = !!s.flight;
     if (s.whitelist !== undefined) document.getElementById('mc-whitelist-enabled').checked = !!s.whitelist;
     if (s.difficulty)   mcSetDiff(s.difficulty, false);
-    // Populate channel selects (reuse cached channels list)
+    // Populate minecraft channel selects from cached channels
     ['mc-chat-channel','mc-log-channel'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel) return;
@@ -1490,8 +1490,6 @@ async function mcSaveSettings() {
     pvp:         document.getElementById('mc-pvp').checked,
     flight:      document.getElementById('mc-flight').checked,
     whitelist:   document.getElementById('mc-whitelist-enabled').checked,
-    chat_channel_id: document.getElementById('mc-chat-channel')?.value || '',
-    log_channel_id:  document.getElementById('mc-log-channel')?.value  || '',
   };
   try {
     const r = await fetch(`${BOT_API}/minecraft/settings`, {

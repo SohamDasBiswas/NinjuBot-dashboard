@@ -1061,7 +1061,27 @@
         </div>
       </div>
 
-      <!-- ══════ MINECRAFT SERVER PANEL ══════ -->
+
+
+      <!-- Restore progress modal -->
+      <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.82);align-items:center;justify-content:center">
+        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:16px;padding:26px;width:440px;max-width:92vw;box-shadow:0 0 50px rgba(78,255,145,.18)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(78,255,145,0.12);border:1px solid rgba(78,255,145,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem">🔄</div>
+            <div style="font-size:0.92rem;font-weight:700;color:#4eff91">Restoring Server…</div>
+          </div>
+          <div id="bk-restore-status" style="font-size:0.78rem;color:var(--tx-2);margin-bottom:10px">Starting…</div>
+          <div style="height:4px;background:rgba(78,255,145,.1);border-radius:999px;overflow:hidden;margin-bottom:10px">
+            <div id="bk-restore-bar" style="height:100%;background:linear-gradient(90deg,#30d96a,#4eff91);border-radius:999px;width:0%;transition:width .5s ease"></div>
+          </div>
+          <div id="bk-restore-log" style="max-height:130px;overflow-y:auto;font-size:0.68rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.55);line-height:1.7"></div>
+        </div>
+      </div>
+    </div>
+
+
+
+          <!-- ══════ MINECRAFT SERVER PANEL ══════ -->
 <div id="panel-minecraft" class="panel">
 
 <style>
@@ -1177,7 +1197,7 @@
       <div style="height:1px;background:rgba(78,255,145,0.08);margin:14px 0"></div>
       <div class="mc-lbl" style="margin-bottom:8px">Discord Channel Relay</div>
       <div style="margin-bottom:10px">
-        <div class="mc-lbl">Chat Relay Channel <span style="color:var(--tx-3);font-weight:400;text-transform:none;letter-spacing:0">(Minecraft ↔ Discord)</span></div>
+        <div class="mc-lbl">Chat Relay <span style="color:var(--tx-3);font-weight:400;text-transform:none;letter-spacing:0">(Minecraft ↔ Discord)</span></div>
         <select class="mc-sel" id="mc-chat-channel" onchange="markDirty('minecraft')">
           <option value="">— Disabled —</option>
         </select>
@@ -1286,22 +1306,6 @@
 <div class="save-bar"><span class="save-bar-text">Saves <strong>Minecraft settings</strong> for this server's NinjuBot config</span><div class="save-actions"><button class="btn-sm-o" onclick="mcLoadSettings()">↩ Reset</button><button class="btn-sm" onclick="mcSaveSettings()">💾 Save All</button></div></div>
 
 </div><!-- /panel-minecraft -->
-
-      <!-- Restore progress modal -->
-      <div id="bk-restore-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.82);align-items:center;justify-content:center">
-        <div style="background:#0a1510;border:1px solid #4eff91;border-radius:16px;padding:26px;width:440px;max-width:92vw;box-shadow:0 0 50px rgba(78,255,145,.18)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <div style="width:32px;height:32px;border-radius:8px;background:rgba(78,255,145,0.12);border:1px solid rgba(78,255,145,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem">🔄</div>
-            <div style="font-size:0.92rem;font-weight:700;color:#4eff91">Restoring Server…</div>
-          </div>
-          <div id="bk-restore-status" style="font-size:0.78rem;color:var(--tx-2);margin-bottom:10px">Starting…</div>
-          <div style="height:4px;background:rgba(78,255,145,.1);border-radius:999px;overflow:hidden;margin-bottom:10px">
-            <div id="bk-restore-bar" style="height:100%;background:linear-gradient(90deg,#30d96a,#4eff91);border-radius:999px;width:0%;transition:width .5s ease"></div>
-          </div>
-          <div id="bk-restore-log" style="max-height:130px;overflow-y:auto;font-size:0.68rem;font-family:'Courier New',monospace;color:rgba(78,255,145,.55);line-height:1.7"></div>
-        </div>
-      </div>
-    </div>
 
   </div><!-- /panels -->
 </main>
