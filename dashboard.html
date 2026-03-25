@@ -158,7 +158,9 @@
     <div class="sl" onclick="showPanel('cfg-moderation',this)"><span class="sl-icon">🛡️</span> Moderation<span class="dirty-dot" id="dd-moderation" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-antinuke',this)"><span class="sl-icon">🔰</span> Anti-Nuke<span class="dirty-dot" id="dd-antinuke" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('server-backup',this)"><span class="sl-icon">💾</span> Server Backup</div>
+    <!-- HIDDEN: Minecraft panel nav item
     <div class="sl" onclick="showPanel('minecraft',this)"><span class="sl-icon">⛏️</span> Minecraft<span class="dirty-dot" id="dd-minecraft" style="margin-left:auto"></span></div>
+    -->
     <div class="sl" onclick="showPanel('audit-log',this)"><span class="sl-icon">📋</span> Audit Log <span class="sl-badge red" id="log-badge">0</span></div>
     <div id="admin-sidebar-section" style="display:none;flex-direction:column">
       <div style="height:1px;background:rgba(255,107,107,0.15);margin:6px 4px"></div>
@@ -1079,7 +1081,7 @@
       </div>
     </div>
 
-      <!-- ══════ MINECRAFT (ATERNOS) PANEL ══════ -->
+      <!-- ══════ MINECRAFT (ATERNOS) PANEL — HIDDEN (commented out) ══════
     <div id="panel-minecraft" class="panel">
     <style>
     .mc-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.07);overflow:hidden;margin-bottom:14px}
@@ -1232,6 +1234,7 @@
     </div>
 
     </div><!-- /panel-minecraft -->
+    -->
 
   </div><!-- /panels -->
 </main>
