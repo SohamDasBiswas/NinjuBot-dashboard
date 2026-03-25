@@ -1426,32 +1426,33 @@ async function bkDelete(backupId){
 // ── Load settings ────────────────────────────────────────────
 async function mcLoadSettings() {
   if (!currentGuild) return;
+
+  // ── Fill everything we already know instantly (no fetch needed) ──────
+  const webhookUrl = `${BOT_API}/minecraft/webhook`;
+  const gid        = currentGuild.id;
+
+  const urlEl = document.getElementById('mc-webhook-url');
+  if (urlEl) urlEl.textContent = webhookUrl;
+
+  const guildIdEl = document.getElementById('mc-guild-id');
+  if (guildIdEl) guildIdEl.textContent = gid;
+
+  ['mc-yaml-url','mc-yaml-url2','mc-yaml-url3','mc-yaml-url4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = webhookUrl;
+  });
+  ['mc-yaml-gid1','mc-yaml-gid2','mc-yaml-gid3','mc-yaml-gid4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = gid;
+  });
+
   try {
-    const r = await fetch(`${BOT_API}/minecraft/settings?guild_id=${currentGuild.id}`, {
+    const r = await fetch(`${BOT_API}/minecraft/settings?guild_id=${gid}`, {
       headers: { 'Authorization': `Bearer ${discordToken}` }
     });
     if (!r.ok) return;
     const d = await r.json();
     const s = d.settings || {};
-
-    // ── Webhook URL ──────────────────────────────────────────
-    const webhookUrl = `${BOT_API}/minecraft/webhook`;
-    const urlEl = document.getElementById('mc-webhook-url');
-    if (urlEl) urlEl.textContent = webhookUrl;
-
-    // ── Guild ID display ─────────────────────────────────────
-    const guildIdEl = document.getElementById('mc-guild-id');
-    if (guildIdEl) guildIdEl.textContent = currentGuild.id;
-
-    // ── Update YAML snippet with live values ─────────────────
-    ['mc-yaml-url','mc-yaml-url2','mc-yaml-url3','mc-yaml-url4'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = webhookUrl;
-    });
-    ['mc-yaml-gid1','mc-yaml-gid2','mc-yaml-gid3','mc-yaml-gid4'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = currentGuild.id;
-    });
 
     // ── Status indicator ─────────────────────────────────────
     const hasChatCh = !!(s.chat_channel_id);
