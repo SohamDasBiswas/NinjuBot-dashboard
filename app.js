@@ -1542,15 +1542,15 @@ function mcCopyWebhook() {
 
 // ── Copy Guild ID to clipboard ────────────────────────────────
 function mcCopyGuildId() {
-  const gid = document.getElementById('mc-guild-id')?.textContent || '';
-  if (!gid || gid === 'Loading…') return showToast('No guild ID yet — pick a server first', 'error');
+  const gid = (currentGuild && currentGuild.id) ? currentGuild.id : '';
+  if (!gid) return showToast('No guild ID yet — pick a server first', 'error');
   navigator.clipboard.writeText(gid).then(() => showToast('📋 Guild ID copied!'));
 }
 
 // ── Copy full alerts.yml snippet to clipboard ─────────────────
 function mcCopyYaml() {
-  const gid      = document.getElementById('mc-guild-id')?.textContent  || 'YOUR_GUILD_ID';
-  const url      = document.getElementById('mc-webhook-url')?.textContent || 'https://ninjubot.onrender.com/minecraft/webhook';
+  const gid      = (currentGuild && currentGuild.id) ? currentGuild.id : 'YOUR_GUILD_ID';
+  const url      = BOT_API + '/minecraft/webhook';
   const yaml =
 `# ── NinjuBot · DiscordSRV alerts.yml ──────────────────────────
 # Paste this into plugins/DiscordSRV/alerts.yml on your Aternos server
