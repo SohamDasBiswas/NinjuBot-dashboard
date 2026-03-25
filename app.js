@@ -1434,11 +1434,40 @@ async function mcLoadSettings() {
     const d = await r.json();
     const s = d.settings || {};
 
-    // Show the actual webhook URL for this bot
+    // ── Webhook URL ──────────────────────────────────────────
+    const webhookUrl = `${BOT_API}/minecraft/webhook`;
     const urlEl = document.getElementById('mc-webhook-url');
-    if (urlEl) urlEl.textContent = `${BOT_API}/minecraft/webhook`;
+    if (urlEl) urlEl.textContent = webhookUrl;
 
-    // Populate channel selects
+    // ── Guild ID display ─────────────────────────────────────
+    const guildIdEl = document.getElementById('mc-guild-id');
+    if (guildIdEl) guildIdEl.textContent = currentGuild.id;
+
+    // ── Update YAML snippet with live values ─────────────────
+    ['mc-yaml-url','mc-yaml-url2','mc-yaml-url3','mc-yaml-url4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = webhookUrl;
+    });
+    ['mc-yaml-gid1','mc-yaml-gid2','mc-yaml-gid3','mc-yaml-gid4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = currentGuild.id;
+    });
+
+    // ── Status indicator ─────────────────────────────────────
+    const hasChatCh = !!(s.chat_channel_id);
+    const dot = document.getElementById('mc-status-dot');
+    const txt = document.getElementById('mc-status-txt');
+    if (dot && txt) {
+      if (hasChatCh) {
+        dot.className = 'mc-status-dot green';
+        txt.textContent = 'Bridge is active — waiting for Minecraft events';
+      } else {
+        dot.className = 'mc-status-dot grey';
+        txt.textContent = 'No chat channel set — bridge is inactive';
+      }
+    }
+
+    // ── Populate channel selects ─────────────────────────────
     ['mc-chat-channel', 'mc-log-channel'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel) return;
@@ -1488,6 +1517,16 @@ async function mcSaveSettings() {
       showToast('✅ Minecraft bridge saved!');
       const dd = document.getElementById('dd-minecraft');
       if (dd) dd.classList.remove('show');
+      // Refresh status dot
+      const dot = document.getElementById('mc-status-dot');
+      const txt = document.getElementById('mc-status-txt');
+      const hasCh = !!(payload.chat_channel_id);
+      if (dot && txt) {
+        dot.className = hasCh ? 'mc-status-dot green' : 'mc-status-dot grey';
+        txt.textContent = hasCh
+          ? 'Bridge is active — waiting for Minecraft events'
+          : 'No chat channel set — bridge is inactive';
+      }
     } else {
       showToast('❌ Save failed', 'error');
     }
@@ -1498,6 +1537,50 @@ async function mcSaveSettings() {
 function mcCopyWebhook() {
   const url = document.getElementById('mc-webhook-url')?.textContent || '';
   navigator.clipboard.writeText(url).then(() => showToast('📋 Webhook URL copied!'));
+}
+
+// ── Copy Guild ID to clipboard ────────────────────────────────
+function mcCopyGuildId() {
+  const gid = document.getElementById('mc-guild-id')?.textContent || '';
+  if (!gid || gid === 'Loading…') return showToast('No guild ID yet — pick a server first', 'error');
+  navigator.clipboard.writeText(gid).then(() => showToast('📋 Guild ID copied!'));
+}
+
+// ── Copy full alerts.yml snippet to clipboard ─────────────────
+function mcCopyYaml() {
+  const gid      = document.getElementById('mc-guild-id')?.textContent  || 'YOUR_GUILD_ID';
+  const url      = document.getElementById('mc-webhook-url')?.textContent || 'https://ninjubot.onrender.com/minecraft/webhook';
+  const yaml =
+`# ── NinjuBot · DiscordSRV alerts.yml ──────────────────────────
+# Paste this into plugins/DiscordSRV/alerts.yml on your Aternos server
+Alerts:
+
+  # ── Player Chat ─────────────────────────────────────────────
+  - Trigger: AsyncPlayerChatEvent
+    Conditions: []
+    Webhook:
+      Url: "${url}"
+      Body: "{\\"guild_id\\":\\"${gid}\\",\\"type\\":\\"chat\\",\\"player\\":\\"%player_name%\\",\\"message\\":\\"%message%\\"}"
+
+  # ── Player Join ──────────────────────────────────────────────
+  - Trigger: PlayerJoinEvent
+    Webhook:
+      Url: "${url}"
+      Body: "{\\"guild_id\\":\\"${gid}\\",\\"type\\":\\"join\\",\\"player\\":\\"%player_name%\\"}"
+
+  # ── Player Leave ─────────────────────────────────────────────
+  - Trigger: PlayerQuitEvent
+    Webhook:
+      Url: "${url}"
+      Body: "{\\"guild_id\\":\\"${gid}\\",\\"type\\":\\"leave\\",\\"player\\":\\"%player_name%\\"}"
+
+  # ── Player Death ─────────────────────────────────────────────
+  - Trigger: PlayerDeathEvent
+    Webhook:
+      Url: "${url}"
+      Body: "{\\"guild_id\\":\\"${gid}\\",\\"type\\":\\"death\\",\\"player\\":\\"%player_name%\\",\\"message\\":\\"%death_message%\\"}"
+`;
+  navigator.clipboard.writeText(yaml).then(() => showToast('📋 alerts.yml snippet copied!'));
 }
 
 // ── Hook into showPanel ──────────────────────────────────────

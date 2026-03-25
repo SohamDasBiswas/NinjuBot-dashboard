@@ -1098,29 +1098,54 @@
     .mc-copy-btn:hover{background:rgba(78,255,145,0.2)}
     .mc-step{display:flex;gap:12px;padding:10px 14px;border-radius:10px;background:var(--base-down);border:1px solid rgba(78,255,145,0.06);margin-bottom:7px;font-size:0.8rem;color:var(--tx-2);line-height:1.6}
     .mc-step-num{width:22px;height:22px;border-radius:6px;background:rgba(78,255,145,0.1);border:1px solid rgba(78,255,145,0.25);color:var(--green);font-size:0.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .mc-yaml-box{position:relative;background:#020a04;border:1px solid rgba(78,255,145,0.18);border-radius:12px;overflow:hidden}
+    .mc-yaml-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(78,255,145,0.04);border-bottom:1px solid rgba(78,255,145,0.08)}
+    .mc-yaml-lang{font-size:0.62rem;font-weight:700;color:rgba(78,255,145,0.4);text-transform:uppercase;letter-spacing:1.2px;font-family:var(--font-m)}
+    .mc-yaml-pre{margin:0;padding:14px 16px;font-family:'Courier New',monospace;font-size:0.72rem;line-height:1.8;color:#a8d8b8;overflow-x:auto;white-space:pre}
+    .mc-yaml-pre .y-key{color:#4eff91}
+    .mc-yaml-pre .y-str{color:#ffd787}
+    .mc-yaml-pre .y-cmt{color:rgba(78,255,145,0.3)}
+    .mc-yaml-pre .y-gid{color:#ff9f4a;font-weight:700}
+    .mc-status-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:14px}
+    .mc-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .mc-status-dot.green{background:#4eff91;box-shadow:0 0 7px #4eff91}
+    .mc-status-dot.grey{background:rgba(78,255,145,0.25)}
+    .mc-status-txt{font-size:0.78rem;font-weight:600;color:var(--tx-2)}
     </style>
 
     <div class="db-row">
 
-      <!-- LEFT: Webhook URL + setup steps -->
+      <!-- LEFT: Webhook URL + Guild ID + setup steps -->
       <div class="mc-card" style="margin-bottom:0">
-        <div class="mc-card-hdr"><span>🔗</span><h3>Webhook URL</h3></div>
+        <div class="mc-card-hdr"><span>🔗</span><h3>Connection Info</h3></div>
         <div class="mc-card-body">
+
+          <!-- Webhook URL -->
           <div class="mc-field">
-            <div class="mc-lbl">Your bot's webhook endpoint</div>
+            <div class="mc-lbl">Webhook Endpoint</div>
             <div class="mc-webhook-box">
               <span id="mc-webhook-url">https://ninjubot.onrender.com/minecraft/webhook</span>
               <button class="mc-copy-btn" onclick="mcCopyWebhook()">📋 Copy</button>
             </div>
-            <div class="mc-hint">Paste this URL into your DiscordSRV config on Aternos.</div>
+            <div class="mc-hint">Used in <code style="color:var(--green)">alerts.yml</code> → <code style="color:var(--green)">Webhook.Url</code></div>
+          </div>
+
+          <!-- Guild ID -->
+          <div class="mc-field">
+            <div class="mc-lbl">Your Server's Guild ID</div>
+            <div class="mc-webhook-box">
+              <span id="mc-guild-id" style="color:#ff9f4a">Loading…</span>
+              <button class="mc-copy-btn" onclick="mcCopyGuildId()">📋 Copy</button>
+            </div>
+            <div class="mc-hint">Paste this into <code style="color:var(--green)">alerts.yml</code> wherever it says <code style="color:var(--green)">YOUR_GUILD_ID</code></div>
           </div>
 
           <div class="mc-lbl" style="margin-bottom:8px;margin-top:4px">Setup Steps</div>
-          <div class="mc-step"><div class="mc-step-num">1</div><div>Go to your <strong>Aternos panel → Plugins</strong> and install <strong style="color:var(--green)">DiscordSRV</strong></div></div>
-          <div class="mc-step"><div class="mc-step-num">2</div><div>Start the server once so DiscordSRV generates its config files under <code style="color:var(--green)">plugins/DiscordSRV/</code></div></div>
-          <div class="mc-step"><div class="mc-step-num">3</div><div>Open <code style="color:var(--green)">config.yml</code> and set <code style="color:var(--green)">BotToken</code> to your bot token and set the channel IDs you pick on the right</div></div>
-          <div class="mc-step"><div class="mc-step-num">4</div><div>In the same config set <code style="color:var(--green)">DiscordWebhookURL</code> to the URL above so DiscordSRV sends events to NinjuBot instead</div></div>
-          <div class="mc-step"><div class="mc-step-num">5</div><div>Pick your Discord channels on the right, hit <strong style="color:var(--green)">Save</strong>, then restart Aternos — done!</div></div>
+          <div class="mc-step"><div class="mc-step-num">1</div><div>Go to <strong>Aternos → Plugins</strong> and install <strong style="color:var(--green)">DiscordSRV</strong></div></div>
+          <div class="mc-step"><div class="mc-step-num">2</div><div>Start the server once so it generates <code style="color:var(--green)">plugins/DiscordSRV/</code> config files, then stop it</div></div>
+          <div class="mc-step"><div class="mc-step-num">3</div><div>In <code style="color:var(--green)">config.yml</code> set <code style="color:var(--green)">BotToken</code> to your bot token and <code style="color:var(--green)">Channels</code> to your channel IDs</div></div>
+          <div class="mc-step"><div class="mc-step-num">4</div><div>Open <code style="color:var(--green)">alerts.yml</code>, paste the generated snippet from below — your Guild ID is already filled in</div></div>
+          <div class="mc-step"><div class="mc-step-num">5</div><div>Pick your Discord channels on the right, hit <strong style="color:var(--green)">Save</strong>, restart Aternos — done! ✅</div></div>
         </div>
       </div>
 
@@ -1146,9 +1171,64 @@
               Raw filtered server log lines posted here. Leave disabled if you don't need it.
             </div>
           </div>
+
+          <!-- Live connection status indicator -->
+          <div style="margin-top:6px;padding-top:14px;border-top:1px solid rgba(78,255,145,0.07)">
+            <div class="mc-lbl" style="margin-bottom:8px">Bridge Status</div>
+            <div id="mc-status-row" class="mc-status-row" style="background:var(--base-down);border:1px solid rgba(78,255,145,0.06)">
+              <div id="mc-status-dot" class="mc-status-dot grey"></div>
+              <div id="mc-status-txt" class="mc-status-txt">Save your settings to activate the bridge</div>
+            </div>
+          </div>
         </div>
       </div>
 
+    </div>
+
+    <!-- Full-width: auto-generated alerts.yml snippet -->
+    <div class="mc-card" style="margin-top:0">
+      <div class="mc-card-hdr">
+        <span>📄</span>
+        <h3>Auto-Generated <code style="font-family:'Courier New',monospace;font-size:0.82rem;color:var(--green);font-weight:400">alerts.yml</code> Snippet</h3>
+        <button class="mc-copy-btn" onclick="mcCopyYaml()" style="margin-left:auto">📋 Copy All</button>
+      </div>
+      <div class="mc-card-body" style="padding:0">
+        <div class="mc-yaml-box" style="border:none;border-radius:0">
+          <div class="mc-yaml-bar">
+            <span class="mc-yaml-lang">YAML · plugins/DiscordSRV/alerts.yml</span>
+            <span style="font-size:0.62rem;color:rgba(78,255,145,0.35);font-family:var(--font-m)">Your Guild ID is pre-filled ✦</span>
+          </div>
+          <pre class="mc-yaml-pre" id="mc-yaml-output"><span class="y-cmt"># ── NinjuBot · DiscordSRV alerts.yml ──────────────────────────</span>
+<span class="y-cmt"># Paste this into plugins/DiscordSRV/alerts.yml on your Aternos server</span>
+<span class="y-key">Alerts</span>:
+
+  <span class="y-cmt"># ── Player Chat ─────────────────────────────────────────</span>
+  - <span class="y-key">Trigger</span>: <span class="y-str">AsyncPlayerChatEvent</span>
+    <span class="y-key">Conditions</span>: []
+    <span class="y-key">Webhook</span>:
+      <span class="y-key">Url</span>: <span class="y-str" id="mc-yaml-url">https://ninjubot.onrender.com/minecraft/webhook</span>
+      <span class="y-key">Body</span>: <span class="y-str">"{\"guild_id\":\"<span class="y-gid" id="mc-yaml-gid1">YOUR_GUILD_ID</span>\",\"type\":\"chat\",\"player\":\"%player_name%\",\"message\":\"%message%\"}"</span>
+
+  <span class="y-cmt"># ── Player Join ──────────────────────────────────────────</span>
+  - <span class="y-key">Trigger</span>: <span class="y-str">PlayerJoinEvent</span>
+    <span class="y-key">Webhook</span>:
+      <span class="y-key">Url</span>: <span class="y-str" id="mc-yaml-url2">https://ninjubot.onrender.com/minecraft/webhook</span>
+      <span class="y-key">Body</span>: <span class="y-str">"{\"guild_id\":\"<span class="y-gid" id="mc-yaml-gid2">YOUR_GUILD_ID</span>\",\"type\":\"join\",\"player\":\"%player_name%\"}"</span>
+
+  <span class="y-cmt"># ── Player Leave ─────────────────────────────────────────</span>
+  - <span class="y-key">Trigger</span>: <span class="y-str">PlayerQuitEvent</span>
+    <span class="y-key">Webhook</span>:
+      <span class="y-key">Url</span>: <span class="y-str" id="mc-yaml-url3">https://ninjubot.onrender.com/minecraft/webhook</span>
+      <span class="y-key">Body</span>: <span class="y-str">"{\"guild_id\":\"<span class="y-gid" id="mc-yaml-gid3">YOUR_GUILD_ID</span>\",\"type\":\"leave\",\"player\":\"%player_name%\"}"</span>
+
+  <span class="y-cmt"># ── Player Death ─────────────────────────────────────────</span>
+  - <span class="y-key">Trigger</span>: <span class="y-str">PlayerDeathEvent</span>
+    <span class="y-key">Webhook</span>:
+      <span class="y-key">Url</span>: <span class="y-str" id="mc-yaml-url4">https://ninjubot.onrender.com/minecraft/webhook</span>
+      <span class="y-key">Body</span>: <span class="y-str">"{\"guild_id\":\"<span class="y-gid" id="mc-yaml-gid4">YOUR_GUILD_ID</span>\",\"type\":\"death\",\"player\":\"%player_name%\",\"message\":\"%death_message%\"}"</span>
+</pre>
+        </div>
+      </div>
     </div>
 
     <div class="save-bar">
