@@ -10,7 +10,7 @@
 //  6. All saves go to POST /settings/update with Authorization header
 // ══════════════════════════════════════════════════════════════
 
-const BOT_API      = 'https://ninjubot.onrender.com';
+const BOT_API      = 'https://ninju-bot--SohamDasBiswas.repl.co';
 
 // ── Admin config ──────────────────────────────────────────────
 // Only this Discord user ID sees the Database / MongoDB section
