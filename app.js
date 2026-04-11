@@ -455,8 +455,14 @@ function populateForm(d) {
   set('cfg-welcome-bg',d.welcome_card_bg); set('cfg-welcome-color',d.welcome_card_color);
   set('cfg-leave-enabled',d.leave_enabled); set('cfg-leave-channel',d.leave_channel_id); set('cfg-leave-msg',d.leave_message);
   set('cfg-yt-alerts',d.yt_alerts); set('cfg-yt-uploads',d.yt_uploads);
-  set('cfg-yt-channel-id',d.yt_channel_id); set('cfg-yt-alert-channel',d.yt_alert_channel_id);
+  set('cfg-yt-username',d.yt_username||''); set('cfg-yt-alert-channel',d.yt_alert_channel_id);
   set('cfg-yt-alert-msg',d.yt_alert_message);
+  set('cfg-yt-statsvc',d.yt_stats_vc);
+  set('cfg-yt-vc-subscribers',d.yt_vc_subscribers||''); set('cfg-yt-vc-views',d.yt_vc_views||'');
+  set('cfg-yt-vc-videos',d.yt_vc_videos||'');
+  setVcFmt('yt-subscribers', d.yt_fmt_subscribers || '🎬 | Subscribers : {value}');
+  setVcFmt('yt-views',       d.yt_fmt_views       || '🎬 | Views : {value}');
+  setVcFmt('yt-videos',      d.yt_fmt_videos      || '🎬 | Videos : {value}');
   set('cfg-tw-alerts',d.tw_alerts); set('cfg-tw-username',d.tw_username);
   set('cfg-tw-vc-followers',d.tw_vc_followers||''); set('cfg-tw-vc-status',d.tw_vc_status||'');
   set('cfg-tw-vc-viewers',d.tw_vc_viewers||''); set('cfg-tw-vc-game',d.tw_vc_game||'');
@@ -466,7 +472,7 @@ function populateForm(d) {
   setVcFmt('viewers',      d.tw_fmt_viewers       || '🪻 | Viewers : {value}');
   setVcFmt('game',         d.tw_fmt_game          || '🪻 | Game : {value}');
   set('cfg-tw-alert-channel',d.tw_alert_channel_id); set('cfg-tw-alert-msg',d.tw_alert_message);
-  set('cfg-tw-statsvc',d.tw_stats_vc); set('cfg-yt-statsvc',d.yt_stats_vc);
+  set('cfg-tw-statsvc',d.tw_stats_vc);
   set('cfg-boost-enabled',d.boost_enabled); set('cfg-boost-channel',d.boost_channel_id);
   set('cfg-boost-msg',d.boost_message);
   if (d.boost_gradient) selectGrad(null, d.boost_gradient);
@@ -525,13 +531,14 @@ function buildPayload(cat) {
       welcome_message:v('cfg-welcome-msg'), welcome_card_enabled:vb('cfg-welcome-card'),
       welcome_card_bg:v('cfg-welcome-bg'), welcome_card_color:v('cfg-welcome-color'),
       leave_enabled:vb('cfg-leave-enabled'), leave_channel_id:v('cfg-leave-channel'), leave_message:v('cfg-leave-msg') },
-    streams: { yt_alerts:vb('cfg-yt-alerts'), yt_uploads:vb('cfg-yt-uploads'), yt_channel_id:v('cfg-yt-channel-id'),
+    streams: { yt_alerts:vb('cfg-yt-alerts'), yt_uploads:vb('cfg-yt-uploads'),
+      yt_username:v('cfg-yt-username'),
       yt_alert_channel_id:v('cfg-yt-alert-channel'), yt_alert_message:v('cfg-yt-alert-msg'),
+      yt_stats_vc:vb('cfg-yt-statsvc'),
+      yt_fmt_subscribers:getVcFmt('yt-subscribers'), yt_fmt_views:getVcFmt('yt-views'), yt_fmt_videos:getVcFmt('yt-videos'),
       tw_alerts:vb('cfg-tw-alerts'), tw_username:v('cfg-tw-username'),
       tw_alert_channel_id:v('cfg-tw-alert-channel'), tw_alert_message:v('cfg-tw-alert-msg'),
-      tw_stats_vc:vb('cfg-tw-statsvc'), yt_stats_vc:vb('cfg-yt-statsvc'),
-      tw_vc_followers:v('cfg-tw-vc-followers'), tw_vc_status:v('cfg-tw-vc-status'),
-      tw_vc_viewers:v('cfg-tw-vc-viewers'), tw_vc_game:v('cfg-tw-vc-game'),
+      tw_stats_vc:vb('cfg-tw-statsvc'),
       tw_fmt_followers:getVcFmt('followers'), tw_fmt_status_live:getVcFmt('status-live'),
       tw_fmt_status_offline:getVcFmt('status-offline'), tw_fmt_viewers:getVcFmt('viewers'),
       tw_fmt_game:getVcFmt('game') },
@@ -1600,17 +1607,23 @@ timeout_ms: 5000
 // ── VC Format Picker ─────────────────────────────────────────────────────────
 
 const VC_FMT_SAMPLE = {
-  followers: '1,234',
-  viewers:   '89',
-  game:      'Minecraft',
+  followers:      '1,234',
+  viewers:        '89',
+  game:           'Minecraft',
+  'yt-subscribers': '457',
+  'yt-views':       '23,148',
+  'yt-videos':      '344',
 };
 
 const VC_FMT_IDS = {
-  'followers':     'cfg-tw-fmt-followers',
-  'status-live':   'cfg-tw-fmt-status-live',
-  'status-offline':'cfg-tw-fmt-status-offline',
-  'viewers':       'cfg-tw-fmt-viewers',
-  'game':          'cfg-tw-fmt-game',
+  'followers':      'cfg-tw-fmt-followers',
+  'status-live':    'cfg-tw-fmt-status-live',
+  'status-offline': 'cfg-tw-fmt-status-offline',
+  'viewers':        'cfg-tw-fmt-viewers',
+  'game':           'cfg-tw-fmt-game',
+  'yt-subscribers': 'cfg-yt-fmt-subscribers',
+  'yt-views':       'cfg-yt-fmt-views',
+  'yt-videos':      'cfg-yt-fmt-videos',
 };
 
 function applyVcPreset(key) {
