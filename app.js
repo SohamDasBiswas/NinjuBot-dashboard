@@ -10,7 +10,7 @@
 //  6. All saves go to POST /settings/update with Authorization header
 // ══════════════════════════════════════════════════════════════
 
-const BOT_API      = 'https://8a67bab1-a401-4953-93bf-33358e71f895-00-2l6i19t6ly2o6.pike.replit.dev';
+const BOT_API      = 'https://ninju-bot--SohamDasBiswas.replit.app';
 
 // ── Admin config ──────────────────────────────────────────────
 // Only this Discord user ID sees the Database / MongoDB section
