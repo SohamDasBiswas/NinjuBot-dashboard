@@ -54,6 +54,9 @@
 .bk-empty-t{font-size:0.88rem;font-weight:700;color:var(--tx-2);margin-top:4px}
 .bk-empty-s{font-size:0.72rem;color:var(--tx-3);max-width:180px;line-height:1.6;font-family:var(--font-m)}
 @media(max-width:860px){.bk-grid{grid-template-columns:1fr}}
+.vc-preview{margin-top:7px;padding:6px 12px;border-radius:8px;background:rgba(145,70,255,0.10);border:1px solid rgba(145,70,255,0.22);font-size:0.78rem;color:var(--tx-2);font-family:var(--font-m);letter-spacing:0.01em;min-height:28px;display:flex;align-items:center;gap:6px}
+.vc-preview::before{content:"🔊";font-size:0.82rem;opacity:0.7}
+.vc-preview:empty{display:none}
 </style>
 </head>
 <body class="db-body">
@@ -460,7 +463,81 @@
           <div class="settings-section">
             <div class="settings-section-title">📊 Stats VC Channels</div>
             <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Twitch Stats VC</div><div class="toggle-desc">Live follower/viewer count in VC name</div></div><label class="toggle"><input type="checkbox" id="cfg-tw-statsvc" checked onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">YouTube Stats VC</div><div class="toggle-desc">Live subscriber/view count in VC name</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-statsvc" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
+            <div class="field" style="margin-top:14px"><label class="field-label">Followers VC ID</label><input type="text" id="cfg-tw-vc-followers" class="f-input" placeholder="Right-click VC → Copy ID" oninput="markDirty('streams')"></div>
+            <div class="field"><label class="field-label">Status VC ID</label><input type="text" id="cfg-tw-vc-status" class="f-input" placeholder="Right-click VC → Copy ID" oninput="markDirty('streams')"></div>
+            <div class="field"><label class="field-label">Viewers VC ID</label><input type="text" id="cfg-tw-vc-viewers" class="f-input" placeholder="Right-click VC → Copy ID" oninput="markDirty('streams')"></div>
+            <div class="field"><label class="field-label">Game VC ID</label><input type="text" id="cfg-tw-vc-game" class="f-input" placeholder="Right-click VC → Copy ID" oninput="markDirty('streams')"></div>
+            <div class="toggle-row" style="margin-top:14px"><div class="toggle-info"><div class="toggle-name">YouTube Stats VC</div><div class="toggle-desc">Live subscriber/view count in VC name</div></div><label class="toggle"><input type="checkbox" id="cfg-yt-statsvc" onchange="markDirty('streams')"><span class="toggle-track"></span></label></div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">✏️ VC Name Formats</div>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 14px 0">Customise how each stat channel is named. Use <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px">{value}</code> as placeholder for the live stat.</p>
+
+            <div class="field">
+              <label class="field-label">Followers VC</label>
+              <select id="cfg-tw-fmt-followers-preset" class="f-select" onchange="applyVcPreset('followers')">
+                <option value="🪻 | Followers : {value}">🪻 | Followers : {value}</option>
+                <option value="👥 Followers ➜ {value}">👥 Followers ➜ {value}</option>
+                <option value="📊 Followers • {value}">📊 Followers • {value}</option>
+                <option value="[Followers] {value}">[Followers] {value}</option>
+                <option value="Followers: {value}">Followers: {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-tw-fmt-followers" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🪻 | Followers : {value}" oninput="markDirty('streams');updateVcPreview('followers')">
+              <div class="vc-preview" id="prev-followers"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Status VC — when LIVE</label>
+              <select id="cfg-tw-fmt-status-live-preset" class="f-select" onchange="applyVcPreset('status-live')">
+                <option value="🪻 | Status : 🔴 LIVE">🪻 | Status : 🔴 LIVE</option>
+                <option value="🔴 Currently LIVE">🔴 Currently LIVE</option>
+                <option value="🟣 Streaming NOW">🟣 Streaming NOW</option>
+                <option value="✅ Online">✅ Online</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-tw-fmt-status-live" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🪻 | Status : 🔴 LIVE" oninput="markDirty('streams');updateVcPreview('status-live')">
+              <div class="vc-preview" id="prev-status-live"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Status VC — when Offline</label>
+              <select id="cfg-tw-fmt-status-offline-preset" class="f-select" onchange="applyVcPreset('status-offline')">
+                <option value="🪻 | Status : ⚫ Offline">🪻 | Status : ⚫ Offline</option>
+                <option value="⚫ OFFLINE">⚫ OFFLINE</option>
+                <option value="💤 Not Streaming">💤 Not Streaming</option>
+                <option value="❌ Offline">❌ Offline</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-tw-fmt-status-offline" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🪻 | Status : ⚫ Offline" oninput="markDirty('streams');updateVcPreview('status-offline')">
+              <div class="vc-preview" id="prev-status-offline"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Viewers VC</label>
+              <select id="cfg-tw-fmt-viewers-preset" class="f-select" onchange="applyVcPreset('viewers')">
+                <option value="🪻 | Viewers : {value}">🪻 | Viewers : {value}</option>
+                <option value="👁️ Viewers ➜ {value}">👁️ Viewers ➜ {value}</option>
+                <option value="📺 Viewers • {value}">📺 Viewers • {value}</option>
+                <option value="Viewers: {value}">Viewers: {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-tw-fmt-viewers" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🪻 | Viewers : {value}" oninput="markDirty('streams');updateVcPreview('viewers')">
+              <div class="vc-preview" id="prev-viewers"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Game VC</label>
+              <select id="cfg-tw-fmt-game-preset" class="f-select" onchange="applyVcPreset('game')">
+                <option value="🪻 | Game : {value}">🪻 | Game : {value}</option>
+                <option value="🎮 Playing: {value}">🎮 Playing: {value}</option>
+                <option value="🕹️ Game ➜ {value}">🕹️ Game ➜ {value}</option>
+                <option value="[Game] {value}">[Game] {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-tw-fmt-game" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🪻 | Game : {value}" oninput="markDirty('streams');updateVcPreview('game')">
+              <div class="vc-preview" id="prev-game"></div>
+            </div>
           </div>
         </div>
       </div>

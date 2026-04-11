@@ -458,6 +458,13 @@ function populateForm(d) {
   set('cfg-yt-channel-id',d.yt_channel_id); set('cfg-yt-alert-channel',d.yt_alert_channel_id);
   set('cfg-yt-alert-msg',d.yt_alert_message);
   set('cfg-tw-alerts',d.tw_alerts); set('cfg-tw-username',d.tw_username);
+  set('cfg-tw-vc-followers',d.tw_vc_followers||''); set('cfg-tw-vc-status',d.tw_vc_status||'');
+  set('cfg-tw-vc-viewers',d.tw_vc_viewers||''); set('cfg-tw-vc-game',d.tw_vc_game||'');
+  setVcFmt('followers',    d.tw_fmt_followers     || '🪻 | Followers : {value}');
+  setVcFmt('status-live',  d.tw_fmt_status_live   || '🪻 | Status : 🔴 LIVE');
+  setVcFmt('status-offline',d.tw_fmt_status_offline|| '🪻 | Status : ⚫ Offline');
+  setVcFmt('viewers',      d.tw_fmt_viewers       || '🪻 | Viewers : {value}');
+  setVcFmt('game',         d.tw_fmt_game          || '🪻 | Game : {value}');
   set('cfg-tw-alert-channel',d.tw_alert_channel_id); set('cfg-tw-alert-msg',d.tw_alert_message);
   set('cfg-tw-statsvc',d.tw_stats_vc); set('cfg-yt-statsvc',d.yt_stats_vc);
   set('cfg-boost-enabled',d.boost_enabled); set('cfg-boost-channel',d.boost_channel_id);
@@ -522,7 +529,12 @@ function buildPayload(cat) {
       yt_alert_channel_id:v('cfg-yt-alert-channel'), yt_alert_message:v('cfg-yt-alert-msg'),
       tw_alerts:vb('cfg-tw-alerts'), tw_username:v('cfg-tw-username'),
       tw_alert_channel_id:v('cfg-tw-alert-channel'), tw_alert_message:v('cfg-tw-alert-msg'),
-      tw_stats_vc:vb('cfg-tw-statsvc'), yt_stats_vc:vb('cfg-yt-statsvc') },
+      tw_stats_vc:vb('cfg-tw-statsvc'), yt_stats_vc:vb('cfg-yt-statsvc'),
+      tw_vc_followers:v('cfg-tw-vc-followers'), tw_vc_status:v('cfg-tw-vc-status'),
+      tw_vc_viewers:v('cfg-tw-vc-viewers'), tw_vc_game:v('cfg-tw-vc-game'),
+      tw_fmt_followers:getVcFmt('followers'), tw_fmt_status_live:getVcFmt('status-live'),
+      tw_fmt_status_offline:getVcFmt('status-offline'), tw_fmt_viewers:getVcFmt('viewers'),
+      tw_fmt_game:getVcFmt('game') },
     booster: { boost_enabled:vb('cfg-boost-enabled'), boost_channel_id:v('cfg-boost-channel'),
       boost_message:v('cfg-boost-msg'), boost_gradient:boostGrad, boost_accent:boostAccent, boost_emoji:boostEmoji },
     moderation: { antispam_enabled:vb('cfg-antispam'), link_filter_enabled:vb('cfg-linkfilter'),
@@ -1584,3 +1596,70 @@ timeout_ms: 5000
     if (id === 'minecraft') mcLoadSettings();
   };
 })();
+
+// ── VC Format Picker ─────────────────────────────────────────────────────────
+
+const VC_FMT_SAMPLE = {
+  followers: '1,234',
+  viewers:   '89',
+  game:      'Minecraft',
+};
+
+const VC_FMT_IDS = {
+  'followers':     'cfg-tw-fmt-followers',
+  'status-live':   'cfg-tw-fmt-status-live',
+  'status-offline':'cfg-tw-fmt-status-offline',
+  'viewers':       'cfg-tw-fmt-viewers',
+  'game':          'cfg-tw-fmt-game',
+};
+
+function applyVcPreset(key) {
+  const preset = document.getElementById(VC_FMT_IDS[key] + '-preset');
+  const input  = document.getElementById(VC_FMT_IDS[key]);
+  if (!preset || !input) return;
+  if (preset.value === '__custom__') {
+    input.style.display = '';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+    input.value = preset.value;
+  }
+  markDirty('streams');
+  updateVcPreview(key);
+}
+
+function updateVcPreview(key) {
+  const input   = document.getElementById(VC_FMT_IDS[key]);
+  const preview = document.getElementById('prev-' + key);
+  if (!input || !preview) return;
+  const sample  = VC_FMT_SAMPLE[key] || '';
+  const text    = input.value.replace('{value}', sample);
+  preview.textContent = text || '';
+}
+
+function getVcFmt(key) {
+  const preset = document.getElementById(VC_FMT_IDS[key] + '-preset');
+  const input  = document.getElementById(VC_FMT_IDS[key]);
+  if (!preset) return '';
+  return preset.value === '__custom__' ? (input ? input.value : '') : preset.value;
+}
+
+function setVcFmt(key, val) {
+  const preset = document.getElementById(VC_FMT_IDS[key] + '-preset');
+  const input  = document.getElementById(VC_FMT_IDS[key]);
+  if (!preset) return;
+  // Check if val matches a preset option
+  let matched = false;
+  for (const opt of preset.options) {
+    if (opt.value === val && opt.value !== '__custom__') {
+      preset.value = val;
+      if (input) { input.style.display = 'none'; input.value = val; }
+      matched = true; break;
+    }
+  }
+  if (!matched && val) {
+    preset.value = '__custom__';
+    if (input) { input.style.display = ''; input.value = val; }
+  }
+  updateVcPreview(key);
+}
