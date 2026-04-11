@@ -307,6 +307,21 @@ function applyChannelValues(settings) {
     const el = document.getElementById(id);
     if (el && val) el.value = val;
   });
+
+  // Auto-fill VC ID text fields saved by -ytsetup / -twitchsetup
+  const vcFields = {
+    'cfg-yt-vc-subscribers': settings.yt_vc_subscribers,
+    'cfg-yt-vc-views':       settings.yt_vc_views,
+    'cfg-yt-vc-videos':      settings.yt_vc_videos,
+    'cfg-tw-vc-followers':   settings.tw_vc_followers,
+    'cfg-tw-vc-status':      settings.tw_vc_status,
+    'cfg-tw-vc-viewers':     settings.tw_vc_viewers,
+    'cfg-tw-vc-game':        settings.tw_vc_game,
+  };
+  Object.entries(vcFields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val) el.value = val;
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
