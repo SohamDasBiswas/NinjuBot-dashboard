@@ -701,3 +701,100 @@ section{padding:100px 40px}
 
 
 #dashboard-app{flex:1;min-height:0;display:flex;overflow:visible}
+
+/* ════════════════════════════════════════
+   Welcome / Leave Card Panel — new styles
+   ════════════════════════════════════════ */
+
+/* Tab bar */
+.wl-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 0 18px 0;
+  border-bottom: 1px solid rgba(78,255,145,0.08);
+  margin-bottom: 20px;
+}
+.wl-tab {
+  padding: 8px 22px;
+  border-radius: 10px;
+  border: 1px solid rgba(78,255,145,0.12);
+  background: var(--surface);
+  color: var(--tx-2);
+  font-family: var(--font-b);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+}
+.wl-tab:hover { color: var(--green); border-color: var(--green-border); }
+.wl-tab.active {
+  background: var(--green-lo);
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: var(--neu-gsm), 0 0 16px rgba(78,255,145,0.1);
+}
+
+/* Color picker inline */
+.color-pick-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-pick-wrap input[type="color"] {
+  width: 44px; height: 44px;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--green-border);
+  background: var(--base-down);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.color-pick-wrap .f-input { flex: 1; min-width: 0; font-family: var(--font-m); letter-spacing: 0.5px; }
+
+/* Two-column color row */
+.wl-colors-row { display: flex; gap: 12px; }
+.wl-colors-row .field { margin-top: 0 !important; }
+
+/* Preset swatches */
+.wl-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.wl-preset {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--pb), color-mix(in srgb,var(--pa) 30%,var(--pb)));
+  border: 2px solid transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s var(--ease);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.wl-preset:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.3); }
+
+/* Description textarea */
+.wl-desc-ta {
+  resize: vertical;
+  min-height: 100px;
+  font-family: var(--font-m) !important;
+  font-size: 0.78rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Preview card */
+.wl-preview-card {
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+}
+
+/* field badge */
+.field-badge {
+  font-size: 0.62rem;
+  background: rgba(78,255,145,0.08);
+  color: var(--green-dim);
+  border: 1px solid var(--green-border);
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}

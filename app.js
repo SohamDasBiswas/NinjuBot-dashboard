@@ -467,8 +467,28 @@ function populateForm(d) {
   set('cfg-levelup-text',d.levelup_message); set('cfg-xp-mult',d.xp_multiplier); set('cfg-level-base',d.level_base_xp);
   set('cfg-welcome-enabled',d.welcome_enabled); set('cfg-welcome-channel',d.welcome_channel_id);
   set('cfg-welcome-msg',d.welcome_message); set('cfg-welcome-card',d.welcome_card_enabled);
-  set('cfg-welcome-bg',d.welcome_card_bg); set('cfg-welcome-color',d.welcome_card_color);
+  // bg color — set both picker and hex input
+  if(d.welcome_card_bg){
+    const el1=document.getElementById('cfg-welcome-bg-hex'); if(el1) el1.value=d.welcome_card_bg;
+    const el2=document.getElementById('cfg-welcome-bg-custom'); if(el2) el2.value=d.welcome_card_bg;
+  }
+  if(d.welcome_card_color){
+    const el3=document.getElementById('cfg-welcome-color'); if(el3) el3.value=d.welcome_card_color;
+    const el4=document.getElementById('cfg-welcome-color-picker'); if(el4) el4.value=d.welcome_card_color;
+  }
+  set('cfg-welcome-card-desc',d.welcome_card_desc);
   set('cfg-leave-enabled',d.leave_enabled); set('cfg-leave-channel',d.leave_channel_id); set('cfg-leave-msg',d.leave_message);
+  set('cfg-leave-card',d.leave_card_enabled);
+  if(d.leave_card_bg){
+    const lb1=document.getElementById('cfg-leave-bg'); if(lb1) lb1.value=d.leave_card_bg;
+    const lb2=document.getElementById('cfg-leave-bg-picker'); if(lb2) lb2.value=d.leave_card_bg;
+  }
+  if(d.leave_card_color){
+    const lc1=document.getElementById('cfg-leave-color'); if(lc1) lc1.value=d.leave_card_color;
+    const lc2=document.getElementById('cfg-leave-color-picker'); if(lc2) lc2.value=d.leave_card_color;
+  }
+  set('cfg-leave-card-desc',d.leave_card_desc);
+  if(typeof updateWelcomePreview==='function'){ updateWelcomePreview(); updateLeavePreview(); }
   set('cfg-yt-alerts',d.yt_alerts); set('cfg-yt-uploads',d.yt_uploads);
   set('cfg-yt-username',d.yt_username||''); set('cfg-yt-alert-channel',d.yt_alert_channel_id);
   set('cfg-yt-alert-msg',d.yt_alert_message);
@@ -554,8 +574,12 @@ function buildPayload(cat) {
       levelup_message:v('cfg-levelup-text'), xp_multiplier:Number(v('cfg-xp-mult'))||1, level_base_xp:vn('cfg-level-base') },
     welcome: { welcome_enabled:vb('cfg-welcome-enabled'), welcome_channel_id:v('cfg-welcome-channel'),
       welcome_message:v('cfg-welcome-msg'), welcome_card_enabled:vb('cfg-welcome-card'),
-      welcome_card_bg:v('cfg-welcome-bg'), welcome_card_color:v('cfg-welcome-color'),
-      leave_enabled:vb('cfg-leave-enabled'), leave_channel_id:v('cfg-leave-channel'), leave_message:v('cfg-leave-msg') },
+      welcome_card_bg:v('cfg-welcome-bg-hex'), welcome_card_color:v('cfg-welcome-color'),
+      welcome_card_desc:v('cfg-welcome-card-desc'),
+      leave_enabled:vb('cfg-leave-enabled'), leave_channel_id:v('cfg-leave-channel'),
+      leave_message:v('cfg-leave-msg'), leave_card_enabled:vb('cfg-leave-card'),
+      leave_card_bg:v('cfg-leave-bg'), leave_card_color:v('cfg-leave-color'),
+      leave_card_desc:v('cfg-leave-card-desc') },
     streams: { yt_alerts:vb('cfg-yt-alerts'), yt_uploads:vb('cfg-yt-uploads'),
       yt_username:v('cfg-yt-username'),
       yt_alert_channel_id:v('cfg-yt-alert-channel'), yt_alert_message:v('cfg-yt-alert-msg'),

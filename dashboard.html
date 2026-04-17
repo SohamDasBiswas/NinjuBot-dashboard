@@ -394,51 +394,442 @@
 
     <!-- ══════ WELCOME / LEAVE ══════ -->
     <div id="panel-cfg-welcome" class="panel">
-      <div class="db-row">
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">👋 Welcome Messages</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Welcome Messages</div><div class="toggle-desc">Send when a new member joins</div></div><label class="toggle"><input type="checkbox" id="cfg-welcome-enabled" checked onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Welcome Channel ID</label><select id="cfg-welcome-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Welcome Message</label><input type="text" id="cfg-welcome-msg" class="f-input" placeholder="Welcome {user} to {server}! 🎉" oninput="markDirty('welcome')"><span class="field-hint">Placeholders: <code>{user}</code> <code>{server}</code> <code>{count}</code></span></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">🎨 Welcome Card Style</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Send Welcome Image Card</div><div class="toggle-desc">Stylized image card instead of plain text</div></div><label class="toggle"><input type="checkbox" id="cfg-welcome-card" checked onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Card Background</label>
-              <select id="cfg-welcome-bg" class="f-select" onchange="markDirty('welcome')">
-                <option value="forest">🌲 Forest Green</option>
-                <option value="midnight">🌌 Midnight</option>
-                <option value="sunset">🌅 Sunset</option>
-                <option value="ocean">🌊 Ocean</option>
-                <option value="custom">🎨 Custom Color</option>
-              </select>
-            </div>
-            <div class="field"><label class="field-label">Card Accent Color</label><input type="color" id="cfg-welcome-color" class="f-input" value="#4eff91" style="height:44px;padding:4px" onchange="markDirty('welcome')"></div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="settings-section">
-            <div class="settings-section-title">🚪 Leave Messages</div>
-            <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Leave Messages</div><div class="toggle-desc">Send when a member leaves</div></div><label class="toggle"><input type="checkbox" id="cfg-leave-enabled" onchange="markDirty('welcome')"><span class="toggle-track"></span></label></div>
-            <div class="field" style="margin-top:14px"><label class="field-label">Leave Channel ID</label><select id="cfg-leave-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select></div>
-            <div class="field"><label class="field-label">Leave Message</label><input type="text" id="cfg-leave-msg" class="f-input" placeholder="Goodbye {user}!" oninput="markDirty('welcome')"></div>
-          </div>
-          <div class="settings-section">
-            <div class="settings-section-title">👋 Welcome Card Preview</div>
-            <div style="border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--neu-out);border:1px solid var(--green-border);background:linear-gradient(135deg,#0e2a1a,#122016);padding:20px;display:flex;align-items:center;gap:14px">
-              <div style="width:52px;height:52px;border-radius:50%;background:var(--green-lo);border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">👤</div>
-              <div>
-                <div style="font-size:0.68rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Welcome to the server!</div>
-                <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:800">New Member</div>
-                <div style="font-size:0.75rem;color:var(--tx-3);margin-top:2px">You are member #1,234</div>
+
+      <!-- ══ TAB BAR ══ -->
+      <div class="wl-tabs">
+        <button class="wl-tab active" onclick="switchWlTab('welcome',this)">👋 Welcome Card</button>
+        <button class="wl-tab" onclick="switchWlTab('leave',this)">🚪 Leave Card</button>
+      </div>
+
+      <!-- ══════════════════════ WELCOME TAB ══════════════════════ -->
+      <div id="wl-tab-welcome" class="wl-tab-body">
+        <div class="db-row" style="align-items:flex-start">
+
+          <!-- LEFT: config -->
+          <div class="db-card" style="flex:1;min-width:0">
+
+            <div class="settings-section">
+              <div class="settings-section-title">👋 Welcome Messages</div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Enable Welcome Messages</div><div class="toggle-desc">Send when a new member joins</div></div>
+                <label class="toggle"><input type="checkbox" id="cfg-welcome-enabled" checked onchange="markDirty('welcome');updateWelcomePreview()"><span class="toggle-track"></span></label>
+              </div>
+              <div class="field" style="margin-top:14px">
+                <label class="field-label">Welcome Channel</label>
+                <select id="cfg-welcome-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
+              </div>
+              <div class="field">
+                <label class="field-label">Welcome Message <span class="field-badge">text above card</span></label>
+                <input type="text" id="cfg-welcome-msg" class="f-input" placeholder="Welcome {user} to {server}! 🎉" oninput="markDirty('welcome');updateWelcomePreview()">
+                <span class="field-hint">Placeholders: <code>{user}</code> <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
               </div>
             </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">🎨 Card Style</div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Send Welcome Image Card</div><div class="toggle-desc">Stylized image card shown in Discord</div></div>
+                <label class="toggle"><input type="checkbox" id="cfg-welcome-card" checked onchange="markDirty('welcome');updateWelcomePreview()"><span class="toggle-track"></span></label>
+              </div>
+              <div class="wl-colors-row" style="margin-top:14px">
+                <div class="field" style="flex:1">
+                  <label class="field-label">Background Color</label>
+                  <div class="color-pick-wrap">
+                    <input type="color" id="cfg-welcome-bg-custom" value="#0e2a1a" oninput="markDirty('welcome');updateWelcomePreview()">
+                    <input type="text" id="cfg-welcome-bg-hex" class="f-input" value="#0e2a1a" placeholder="#0e2a1a" oninput="syncColorHex('welcome-bg-custom','welcome-bg-hex');updateWelcomePreview()">
+                  </div>
+                </div>
+                <div class="field" style="flex:1">
+                  <label class="field-label">Accent Color</label>
+                  <div class="color-pick-wrap">
+                    <input type="color" id="cfg-welcome-color-picker" value="#4eff91" oninput="markDirty('welcome');syncColorPicker('welcome-color-picker','cfg-welcome-color');updateWelcomePreview()">
+                    <input type="text" id="cfg-welcome-color" class="f-input" value="#4eff91" placeholder="#4eff91" oninput="markDirty('welcome');syncColorHex('welcome-color-picker','cfg-welcome-color');updateWelcomePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- preset swatches -->
+              <div class="field">
+                <label class="field-label">Quick Presets</label>
+                <div class="wl-presets">
+                  <button class="wl-preset" style="--pb:#0e2a1a;--pa:#4eff91" onclick="applyWelcomePreset('#0e2a1a','#4eff91')" title="Forest Green">🌲</button>
+                  <button class="wl-preset" style="--pb:#0d0d1a;--pa:#7c6cfc" onclick="applyWelcomePreset('#0d0d1a','#7c6cfc')" title="Midnight Purple">🌌</button>
+                  <button class="wl-preset" style="--pb:#1a0d0d;--pa:#ff6b35" onclick="applyWelcomePreset('#1a0d0d','#ff6b35')" title="Ember">🔥</button>
+                  <button class="wl-preset" style="--pb:#0d1a1a;--pa:#38bdf8" onclick="applyWelcomePreset('#0d1a1a','#38bdf8')" title="Ocean">🌊</button>
+                  <button class="wl-preset" style="--pb:#1a0d18;--pa:#f472b6" onclick="applyWelcomePreset('#1a0d18','#f472b6')" title="Rose">🌸</button>
+                  <button class="wl-preset" style="--pb:#111111;--pa:#fbbf24" onclick="applyWelcomePreset('#111111','#fbbf24')" title="Gold">⭐</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">📝 Card Description Block</div>
+              <p style="font-size:0.75rem;color:var(--tx-2);margin-bottom:12px;line-height:1.5">Multi-line text shown inside the card. Use <code>\n</code> for line breaks. Placeholders supported.</p>
+              <div class="field">
+                <label class="field-label">Description</label>
+                <textarea id="cfg-welcome-card-desc" class="f-input wl-desc-ta" rows="6"
+                  placeholder="FROM SDB_DarkNinja&#10;Welcome to SDB !&#10;Read the Rules in #rules&#10;Get yourself Verified in #verify&#10;If you need help, feel free to reach out&#10;Welcome aboard, and let the magic begin! 🚀"
+                  oninput="markDirty('welcome');updateWelcomePreview()"></textarea>
+                <span class="field-hint">Each line = one line on the card. Supports <code>{user}</code> <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
+              </div>
+            </div>
+
+          </div><!-- /left -->
+
+          <!-- RIGHT: live preview -->
+          <div class="db-card wl-preview-card" style="flex:1;min-width:0">
+            <div class="settings-section-title" style="padding:18px 20px 0">🖼️ Live Preview</div>
+            <div style="padding:14px 20px 20px">
+              <canvas id="welcome-preview-canvas" width="760" height="240" style="width:100%;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.5);display:block"></canvas>
+              <p style="font-size:0.7rem;color:var(--tx-3);margin-top:10px;text-align:center">⚡ Updates live as you edit — actual Discord card may vary slightly</p>
+            </div>
           </div>
+
+        </div><!-- /db-row -->
+      </div><!-- /welcome tab -->
+
+      <!-- ══════════════════════ LEAVE TAB ══════════════════════ -->
+      <div id="wl-tab-leave" class="wl-tab-body" style="display:none">
+        <div class="db-row" style="align-items:flex-start">
+
+          <!-- LEFT: config -->
+          <div class="db-card" style="flex:1;min-width:0">
+
+            <div class="settings-section">
+              <div class="settings-section-title">🚪 Leave Messages</div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Enable Leave Messages</div><div class="toggle-desc">Send when a member leaves</div></div>
+                <label class="toggle"><input type="checkbox" id="cfg-leave-enabled" onchange="markDirty('welcome');updateLeavePreview()"><span class="toggle-track"></span></label>
+              </div>
+              <div class="field" style="margin-top:14px">
+                <label class="field-label">Leave Channel</label>
+                <select id="cfg-leave-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
+              </div>
+              <div class="field">
+                <label class="field-label">Leave Message <span class="field-badge">text above card</span></label>
+                <input type="text" id="cfg-leave-msg" class="f-input" placeholder="Goodbye {user}! We'll miss you." oninput="markDirty('welcome');updateLeavePreview()">
+                <span class="field-hint">Placeholders: <code>{user}</code> <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">🎨 Leave Card Style</div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Send Leave Image Card</div><div class="toggle-desc">Greyscale avatar with red accent</div></div>
+                <label class="toggle"><input type="checkbox" id="cfg-leave-card" onchange="markDirty('welcome');updateLeavePreview()"><span class="toggle-track"></span></label>
+              </div>
+              <div class="wl-colors-row" style="margin-top:14px">
+                <div class="field" style="flex:1">
+                  <label class="field-label">Background Color</label>
+                  <div class="color-pick-wrap">
+                    <input type="color" id="cfg-leave-bg-picker" value="#1a0e0e" oninput="markDirty('welcome');syncColorPicker('leave-bg-picker','cfg-leave-bg');updateLeavePreview()">
+                    <input type="text" id="cfg-leave-bg" class="f-input" value="#1a0e0e" placeholder="#1a0e0e" oninput="markDirty('welcome');syncColorHex('leave-bg-picker','cfg-leave-bg');updateLeavePreview()">
+                  </div>
+                </div>
+                <div class="field" style="flex:1">
+                  <label class="field-label">Accent Color</label>
+                  <div class="color-pick-wrap">
+                    <input type="color" id="cfg-leave-color-picker" value="#ff4e4e" oninput="markDirty('welcome');syncColorPicker('leave-color-picker','cfg-leave-color');updateLeavePreview()">
+                    <input type="text" id="cfg-leave-color" class="f-input" value="#ff4e4e" placeholder="#ff4e4e" oninput="markDirty('welcome');syncColorHex('leave-color-picker','cfg-leave-color');updateLeavePreview()">
+                  </div>
+                </div>
+              </div>
+              <!-- Leave presets -->
+              <div class="field">
+                <label class="field-label">Quick Presets</label>
+                <div class="wl-presets">
+                  <button class="wl-preset" style="--pb:#1a0e0e;--pa:#ff4e4e" onclick="applyLeavePreset('#1a0e0e','#ff4e4e')" title="Red Alert">🔴</button>
+                  <button class="wl-preset" style="--pb:#0d0d1a;--pa:#818cf8" onclick="applyLeavePreset('#0d0d1a','#818cf8')" title="Indigo">💜</button>
+                  <button class="wl-preset" style="--pb:#111111;--pa:#94a3b8" onclick="applyLeavePreset('#111111','#94a3b8')" title="Grey">🩶</button>
+                  <button class="wl-preset" style="--pb:#0d1a0d;--pa:#4ade80" onclick="applyLeavePreset('#0d1a0d','#4ade80')" title="Sage">🍃</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">📝 Leave Card Message</div>
+              <div class="field">
+                <label class="field-label">Goodbye Description</label>
+                <textarea id="cfg-leave-card-desc" class="f-input wl-desc-ta" rows="4"
+                  placeholder="Thanks for being part of {server}!&#10;We hope to see you again someday. 👋"
+                  oninput="markDirty('welcome');updateLeavePreview()"></textarea>
+                <span class="field-hint">Shown on the leave card. Supports <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
+              </div>
+            </div>
+
+          </div><!-- /left -->
+
+          <!-- RIGHT: leave preview -->
+          <div class="db-card wl-preview-card" style="flex:1;min-width:0">
+            <div class="settings-section-title" style="padding:18px 20px 0">🖼️ Live Preview</div>
+            <div style="padding:14px 20px 20px">
+              <canvas id="leave-preview-canvas" width="760" height="200" style="width:100%;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.5);display:block"></canvas>
+              <p style="font-size:0.7rem;color:var(--tx-3);margin-top:10px;text-align:center">⚡ Updates live as you edit — greyscale avatar in actual Discord card</p>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /leave tab -->
+
+      <div class="save-bar">
+        <span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config</span>
+        <div class="save-actions">
+          <button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button>
+          <button class="btn-sm" onclick="saveSettings('welcome')">💾 Save</button>
         </div>
       </div>
-      <div class="save-bar"><span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('welcome')">💾 Save</button></div></div>
     </div>
+
+    <script>
+    /* ── Welcome/Leave Tab Switcher ── */
+    function switchWlTab(tab, btn) {
+      document.querySelectorAll('.wl-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.wl-tab-body').forEach(d => d.style.display='none');
+      document.getElementById('wl-tab-'+tab).style.display='';
+      if(tab==='welcome') updateWelcomePreview();
+      else updateLeavePreview();
+    }
+
+    /* ── Color sync helpers ── */
+    function syncColorPicker(pickerId, textId) {
+      const v = document.getElementById(pickerId)?.value || '';
+      const el = document.getElementById(textId);
+      if(el) el.value = v;
+    }
+    function syncColorHex(pickerId, textId) {
+      const el = document.getElementById(textId);
+      if(!el) return;
+      const v = el.value.trim();
+      if(/^#[0-9a-fA-F]{6}$/.test(v)) {
+        const p = document.getElementById(pickerId);
+        if(p) p.value = v;
+      }
+    }
+
+    /* ── Preset applicators ── */
+    function applyWelcomePreset(bg, accent) {
+      document.getElementById('cfg-welcome-bg-custom').value = bg;
+      document.getElementById('cfg-welcome-bg-hex').value = bg;
+      document.getElementById('cfg-welcome-color-picker').value = accent;
+      document.getElementById('cfg-welcome-color').value = accent;
+      markDirty('welcome'); updateWelcomePreview();
+    }
+    function applyLeavePreset(bg, accent) {
+      document.getElementById('cfg-leave-bg-picker').value = bg;
+      document.getElementById('cfg-leave-bg').value = bg;
+      document.getElementById('cfg-leave-color-picker').value = accent;
+      document.getElementById('cfg-leave-color').value = accent;
+      markDirty('welcome'); updateLeavePreview();
+    }
+
+    /* ═══════════════════════ CANVAS PREVIEW ═══════════════════════ */
+    function hexToRgb(hex) {
+      const h = hex.replace('#','');
+      if(h.length!==6) return [30,30,30];
+      return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+    }
+    function mixAlpha(base, fg, alpha) {
+      return base.map((b,i) => Math.round(b*(1-alpha) + fg[i]*alpha));
+    }
+
+    function drawWelcomeCard(canvas, opts={}) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const bg = opts.bg || '#0e2a1a';
+      const accent = opts.accent || '#4eff91';
+      const displayName = opts.name || 'New Member';
+      const memberCount = opts.count || '1,234';
+      const descLines = opts.desc ? opts.desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
+
+      const bgRgb = hexToRgb(bg);
+      const acRgb = hexToRgb(accent);
+
+      // BG
+      ctx.fillStyle = bg;
+      ctx.fillRect(0,0,W,H);
+
+      // subtle noise pattern
+      ctx.save();
+      ctx.globalAlpha = 0.03;
+      for(let i=0;i<W;i+=4) for(let j=0;j<H;j+=4) {
+        if(Math.random()>0.5){ ctx.fillStyle='#fff'; ctx.fillRect(i,j,2,2); }
+      }
+      ctx.restore();
+
+      // diagonal gradient overlay
+      const grd = ctx.createLinearGradient(W*0.3,0,W,H);
+      grd.addColorStop(0,`rgba(${acRgb.join(',')},0.04)`);
+      grd.addColorStop(1,`rgba(${bgRgb.map(c=>Math.max(0,c-10)).join(',')},0.6)`);
+      ctx.fillStyle = grd;
+      ctx.fillRect(0,0,W,H);
+
+      // Accent left bar
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      ctx.roundRect(0,0,7,H,3);
+      ctx.fill();
+
+      // Separator
+      ctx.strokeStyle = `rgba(${acRgb.join(',')},0.18)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(196,24); ctx.lineTo(196,H-24); ctx.stroke();
+
+      // Avatar circle placeholder
+      const AV=96, AX=50, AY=(H-AV)/2;
+      // ring
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(AX+AV/2, AY+AV/2, AV/2+4, 0, Math.PI*2); ctx.stroke();
+      // fill
+      ctx.fillStyle = `rgba(${acRgb.join(',')},0.18)`;
+      ctx.beginPath(); ctx.arc(AX+AV/2, AY+AV/2, AV/2, 0, Math.PI*2); ctx.fill();
+      // person icon
+      ctx.fillStyle = `rgba(${acRgb.join(',')},0.7)`;
+      ctx.font = `${AV*0.52}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('👤', AX+AV/2, AY+AV/2+2);
+
+      // Text area
+      let ty = 34;
+      const TX = 216;
+
+      // "WELCOME TO THE SERVER!" label
+      ctx.font = '600 11px "Exo 2", sans-serif';
+      ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillStyle = accent;
+      ctx.letterSpacing = '1px';
+      ctx.fillText('WELCOME TO THE SERVER!', TX, ty);
+      ty += 26;
+
+      // Display name — large
+      ctx.font = 'bold 26px "Exo 2", sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(displayName, TX, ty);
+      ty += 36;
+
+      // Member count
+      ctx.font = '14px "Outfit", sans-serif';
+      ctx.fillStyle = 'rgba(200,220,210,0.7)';
+      ctx.fillText(`You are member #${memberCount}`, TX, ty);
+      ty += 26;
+
+      // Description block
+      if(descLines.length > 0) {
+        ty += 6;
+        const pad=10, lh=17;
+        const boxH = descLines.length*lh + pad*2;
+        const boxW = W - TX - 16;
+        // background pill
+        ctx.fillStyle = `rgba(${mixAlpha(bgRgb,[0,0,0],0.3).join(',')},0.55)`;
+        ctx.beginPath();
+        ctx.roundRect(TX-pad, ty-pad, boxW, boxH, 7);
+        ctx.fill();
+        // left accent nub
+        ctx.fillStyle = `rgba(${acRgb.join(',')},0.6)`;
+        ctx.beginPath(); ctx.roundRect(TX-pad, ty-pad, 3, boxH, 2); ctx.fill();
+
+        ctx.font = '12px "Outfit", sans-serif';
+        ctx.fillStyle = 'rgba(220,235,225,0.88)';
+        for(const line of descLines) {
+          ctx.fillText(line, TX, ty);
+          ty += lh;
+        }
+      }
+    }
+
+    function drawLeaveCard(canvas, opts={}) {
+      const ctx = canvas.getContext('2d');
+      const W=canvas.width, H=canvas.height;
+      const bg = opts.bg || '#1a0e0e';
+      const accent = opts.accent || '#ff4e4e';
+      const displayName = opts.name || 'Departed Member';
+      const server = opts.server || 'Your Server';
+      const count = opts.count || '1,233';
+      const descLines = opts.desc ? opts.desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
+      const bgRgb = hexToRgb(bg);
+      const acRgb = hexToRgb(accent);
+
+      ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+      // diagonal overlay
+      const grd = ctx.createLinearGradient(W*0.4,0,W,H);
+      grd.addColorStop(0,`rgba(${acRgb.join(',')},0.03)`);
+      grd.addColorStop(1,`rgba(0,0,0,0.35)`);
+      ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+
+      // Left bar
+      ctx.fillStyle=accent;
+      ctx.beginPath(); ctx.roundRect(0,0,7,H,3); ctx.fill();
+
+      // Separator
+      ctx.strokeStyle=`rgba(${acRgb.join(',')},0.18)`;
+      ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(178,20); ctx.lineTo(178,H-20); ctx.stroke();
+
+      // Avatar (greyscale effect via desaturated fill)
+      const AV=86, AX=42, AY=(H-AV)/2;
+      ctx.strokeStyle=`rgba(${acRgb.join(',')},0.6)`; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(AX+AV/2,AY+AV/2,AV/2+4,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle=`rgba(120,120,120,0.25)`;
+      ctx.beginPath(); ctx.arc(AX+AV/2,AY+AV/2,AV/2,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(160,160,160,0.6)';
+      ctx.font=`${AV*0.52}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('👤',AX+AV/2,AY+AV/2+2);
+
+      let ty=28, TX=196;
+      ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.font='600 11px "Exo 2",sans-serif';
+      ctx.fillStyle=accent;
+      ctx.fillText('GOODBYE', TX, ty); ty+=24;
+
+      ctx.font='bold 24px "Exo 2",sans-serif';
+      ctx.fillStyle='#fff';
+      ctx.fillText(displayName, TX, ty); ty+=34;
+
+      ctx.font='13px "Outfit",sans-serif';
+      ctx.fillStyle='rgba(180,160,160,0.7)';
+      ctx.fillText(`${server} now has ${count} members.`, TX, ty); ty+=22;
+
+      if(descLines.length>0){
+        ty+=6;
+        const pad=8,lh=16;
+        const boxH=descLines.length*lh+pad*2, boxW=W-TX-16;
+        ctx.fillStyle=`rgba(${mixAlpha(bgRgb,[0,0,0],0.3).join(',')},0.5)`;
+        ctx.beginPath(); ctx.roundRect(TX-pad,ty-pad,boxW,boxH,6); ctx.fill();
+        ctx.fillStyle=`rgba(${acRgb.join(',')},0.55)`;
+        ctx.beginPath(); ctx.roundRect(TX-pad,ty-pad,3,boxH,2); ctx.fill();
+        ctx.font='12px "Outfit",sans-serif';
+        ctx.fillStyle='rgba(210,195,195,0.85)';
+        for(const line of descLines){ ctx.fillText(line,TX,ty); ty+=lh; }
+      }
+    }
+
+    function updateWelcomePreview() {
+      const canvas = document.getElementById('welcome-preview-canvas');
+      if(!canvas) return;
+      const bg     = document.getElementById('cfg-welcome-bg-hex')?.value || '#0e2a1a';
+      const accent = document.getElementById('cfg-welcome-color')?.value  || '#4eff91';
+      const desc   = document.getElementById('cfg-welcome-card-desc')?.value || '';
+      drawWelcomeCard(canvas, { bg, accent, name:'SDB_DarkNinja', count:'1,337', desc });
+    }
+
+    function updateLeavePreview() {
+      const canvas = document.getElementById('leave-preview-canvas');
+      if(!canvas) return;
+      const bg     = document.getElementById('cfg-leave-bg')?.value        || '#1a0e0e';
+      const accent = document.getElementById('cfg-leave-color')?.value     || '#ff4e4e';
+      const desc   = document.getElementById('cfg-leave-card-desc')?.value || '';
+      drawLeaveCard(canvas, { bg, accent, name:'SDB_DarkNinja', server:'SDB', count:'1,336', desc });
+    }
+
+    /* Draw on first paint */
+    document.addEventListener('DOMContentLoaded', () => {
+      updateWelcomePreview();
+      updateLeavePreview();
+    });
+    /* Also draw immediately (in case DOM is already ready) */
+    setTimeout(()=>{ updateWelcomePreview(); updateLeavePreview(); }, 100);
+    </script>
 
     <!-- ══════ STREAM ALERTS ══════ -->
     <div id="panel-cfg-streams" class="panel">
