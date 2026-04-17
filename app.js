@@ -488,6 +488,16 @@ function populateForm(d) {
   setVcFmt('game',         d.tw_fmt_game          || '🪻 | Game : {value}');
   set('cfg-tw-alert-channel',d.tw_alert_channel_id); set('cfg-tw-alert-msg',d.tw_alert_message);
   set('cfg-tw-statsvc',d.tw_stats_vc);
+  // Server Stats VC
+  set('cfg-sv-enabled',    d.sv_stats_enabled);
+  set('cfg-sv-vc-all',     d.sv_vc_all     || '');
+  set('cfg-sv-vc-members', d.sv_vc_members || '');
+  set('cfg-sv-vc-bots',    d.sv_vc_bots    || '');
+  set('cfg-sv-vc-boosts',  d.sv_vc_boosts  || '');
+  setSvVcFmt('all',     d.sv_fmt_all     || '📊 | All Members : {value}');
+  setSvVcFmt('members', d.sv_fmt_members || '👥 | Members : {value}');
+  setSvVcFmt('bots',    d.sv_fmt_bots    || '🤖 | Bots : {value}');
+  setSvVcFmt('boosts',  d.sv_fmt_boosts  || '🚀 | Boosts : {value}');
   set('cfg-boost-enabled',d.boost_enabled); set('cfg-boost-channel',d.boost_channel_id);
   set('cfg-boost-msg',d.boost_message);
   if (d.boost_gradient) selectGrad(null, d.boost_gradient);
@@ -557,6 +567,13 @@ function buildPayload(cat) {
       tw_fmt_followers:getVcFmt('followers'), tw_fmt_status_live:getVcFmt('status-live'),
       tw_fmt_status_offline:getVcFmt('status-offline'), tw_fmt_viewers:getVcFmt('viewers'),
       tw_fmt_game:getVcFmt('game') },
+    serverstats: {
+      sv_stats_enabled: vb('cfg-sv-enabled'),
+      sv_fmt_all:     getSvVcFmt('all'),
+      sv_fmt_members: getSvVcFmt('members'),
+      sv_fmt_bots:    getSvVcFmt('bots'),
+      sv_fmt_boosts:  getSvVcFmt('boosts'),
+    },
     booster: { boost_enabled:vb('cfg-boost-enabled'), boost_channel_id:v('cfg-boost-channel'),
       boost_message:v('cfg-boost-msg'), boost_gradient:boostGrad, boost_accent:boostAccent, boost_emoji:boostEmoji },
     moderation: { antispam_enabled:vb('cfg-antispam'), link_filter_enabled:vb('cfg-linkfilter'),
@@ -572,7 +589,7 @@ function buildPayload(cat) {
 // ══════════════════════════════════════════════════════════════
 function markDirty(cat) { dirtyCategories.add(cat); updateAllDots(); }
 function updateAllDots() {
-  ['bot','economy','levels','welcome','streams','booster','moderation'].forEach(cat => {
+  ['bot','economy','levels','welcome','streams','serverstats','booster','moderation'].forEach(cat => {
     const dot = document.getElementById('dd-' + cat);
     if (dot) dot.classList.toggle('show', dirtyCategories.has(cat));
   });
@@ -777,7 +794,7 @@ function showPanel(name, el) {
   const titles = {
     overview:'Overview', stats:'Live Stats', servers:'Server List', leaderboard:'Leaderboards',
     'cfg-bot':'Bot Settings', 'cfg-economy':'Economy Config', 'cfg-levels':'XP & Levels',
-    'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-booster':'Booster Cards',
+    'cfg-welcome':'Welcome / Leave', 'cfg-streams':'Stream Alerts', 'cfg-serverstats':'Server Stats', 'cfg-booster':'Booster Cards',
     'cfg-moderation':'Moderation', 'cfg-antinuke':'🔰 Anti-Nuke', 'server-backup':'💾 Server Backup', 'minecraft':'⛏️ Minecraft',
     'audit-log':'Audit Log', mongodb:'MongoDB Stats',
   };
@@ -1690,4 +1707,107 @@ function setVcFmt(key, val) {
     if (input) { input.style.display = ''; input.value = val; }
   }
   updateVcPreview(key);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SERVER STATS VC — helpers (mirrors Twitch VC format helpers)
+// ══════════════════════════════════════════════════════════════
+
+const SV_FMT_IDS = {
+  all:     'cfg-sv-fmt-all',
+  members: 'cfg-sv-fmt-members',
+  bots:    'cfg-sv-fmt-bots',
+  boosts:  'cfg-sv-fmt-boosts',
+};
+
+const SV_FMT_SAMPLE = {
+  all:     '1,024',
+  members: '987',
+  bots:    '37',
+  boosts:  '12',
+};
+
+function getSvVcFmt(key) {
+  const preset = document.getElementById(SV_FMT_IDS[key] + '-preset');
+  const input  = document.getElementById(SV_FMT_IDS[key]);
+  if (!preset) return '';
+  return preset.value === '__custom__' ? (input ? input.value : '') : preset.value;
+}
+
+function setSvVcFmt(key, val) {
+  const preset = document.getElementById(SV_FMT_IDS[key] + '-preset');
+  const input  = document.getElementById(SV_FMT_IDS[key]);
+  if (!preset) return;
+  let matched = false;
+  for (const opt of preset.options) {
+    if (opt.value === val && opt.value !== '__custom__') {
+      preset.value = val;
+      if (input) { input.style.display = 'none'; input.value = val; }
+      matched = true; break;
+    }
+  }
+  if (!matched && val) {
+    preset.value = '__custom__';
+    if (input) { input.style.display = ''; input.value = val; }
+  }
+  updateSvVcPreview(key);
+}
+
+function applySvVcPreset(key) {
+  const preset = document.getElementById(SV_FMT_IDS[key] + '-preset');
+  const input  = document.getElementById(SV_FMT_IDS[key]);
+  if (!preset) return;
+  if (preset.value === '__custom__') {
+    if (input) { input.style.display = ''; input.focus(); }
+  } else {
+    if (input) { input.style.display = 'none'; input.value = preset.value; }
+  }
+  markDirty('serverstats');
+  updateSvVcPreview(key);
+}
+
+function updateSvVcPreview(key) {
+  const prev = document.getElementById('prev-sv-' + key);
+  if (!prev) return;
+  const fmt   = getSvVcFmt(key);
+  const value = SV_FMT_SAMPLE[key] || '0';
+  const text  = fmt.replace('{value}', value).slice(0, 100);
+  prev.textContent = text ? '👁 ' + text : '';
+}
+
+// ── Bot API calls for -serversetup / -serverreset ─────────────────────────
+
+async function svRunSetup() {
+  if (!discordToken || !currentGuild) { showToast('Not authenticated', 'error'); return; }
+  try {
+    const res = await fetch(`${BOT_API}/bot/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${discordToken}` },
+      body: JSON.stringify({ guild_id: currentGuild.id, command: 'serversetup' })
+    });
+    if (res.status === 401) { showToast('❌ Session expired', 'error'); logout(); return; }
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    showToast('✅ -serversetup triggered! VC channels will be created shortly.');
+    setTimeout(loadSettings, 4000);
+  } catch (e) {
+    showToast('❌ Failed to trigger setup — ' + e.message, 'error');
+  }
+}
+
+async function svRunReset() {
+  if (!discordToken || !currentGuild) { showToast('Not authenticated', 'error'); return; }
+  if (!confirm('Reset server stats VCs? This clears the saved channel IDs (channels themselves are NOT deleted).')) return;
+  try {
+    const res = await fetch(`${BOT_API}/bot/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${discordToken}` },
+      body: JSON.stringify({ guild_id: currentGuild.id, command: 'serverreset' })
+    });
+    if (res.status === 401) { showToast('❌ Session expired', 'error'); logout(); return; }
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    showToast('🔄 VC IDs cleared. Run -serversetup to recreate.');
+    setTimeout(loadSettings, 2000);
+  } catch (e) {
+    showToast('❌ Failed to reset — ' + e.message, 'error');
+  }
 }

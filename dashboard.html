@@ -157,6 +157,7 @@
     <div class="sl" onclick="showPanel('cfg-levels',this)"><span class="sl-icon">📈</span> XP & Levels<span class="dirty-dot" id="dd-levels" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-welcome',this)"><span class="sl-icon">👋</span> Welcome / Leave<span class="dirty-dot" id="dd-welcome" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-streams',this)"><span class="sl-icon">📺</span> Stream Alerts<span class="dirty-dot" id="dd-streams" style="margin-left:auto"></span></div>
+    <div class="sl" onclick="showPanel('cfg-serverstats',this)"><span class="sl-icon">📊</span> Server Stats<span class="dirty-dot" id="dd-serverstats" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-booster',this)"><span class="sl-icon">🚀</span> Booster Cards<span class="dirty-dot" id="dd-booster" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-moderation',this)"><span class="sl-icon">🛡️</span> Moderation<span class="dirty-dot" id="dd-moderation" style="margin-left:auto"></span></div>
     <div class="sl" onclick="showPanel('cfg-antinuke',this)"><span class="sl-icon">🔰</span> Anti-Nuke<span class="dirty-dot" id="dd-antinuke" style="margin-left:auto"></span></div>
@@ -631,6 +632,127 @@
 
       </div>
       <div class="save-bar"><span class="save-bar-text">Saves <strong>Stream Alerts</strong> config</span><div class="save-actions"><button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button><button class="btn-sm" onclick="saveSettings('streams')">💾 Save</button></div></div>
+    </div>
+
+    <!-- ══════ SERVER STATS ══════ -->
+    <div id="panel-cfg-serverstats" class="panel">
+      <div class="db-row">
+
+        <!-- ── LEFT COLUMN: Enable + VC IDs ── -->
+        <div class="db-card">
+          <div class="settings-section">
+            <div class="settings-section-title">📊 Server Stats Voice Channels</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-name">Enable Server Stats VCs</div>
+                <div class="toggle-desc">Auto-updating voice channels showing live member/boost counts</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="cfg-sv-enabled" onchange="markDirty('serverstats')"><span class="toggle-track"></span></label>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:12px 0 4px 0">
+              Run <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px">-serversetup</code> in Discord to create the VC channels.
+              IDs are saved automatically and shown below. Updates every <strong>10 minutes</strong> and instantly on joins/leaves/boosts.
+            </p>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🔗 VC Channel IDs <span style="font-weight:400;font-size:11px;color:var(--muted)">(auto-filled by bot)</span></div>
+
+            <div class="field">
+              <label class="field-label" style="color:var(--muted)">All Members VC ID</label>
+              <input type="text" id="cfg-sv-vc-all" class="f-input" placeholder="Run -serversetup to generate" readonly style="opacity:.6;cursor:default">
+            </div>
+            <div class="field">
+              <label class="field-label" style="color:var(--muted)">Members (humans) VC ID</label>
+              <input type="text" id="cfg-sv-vc-members" class="f-input" placeholder="Run -serversetup to generate" readonly style="opacity:.6;cursor:default">
+            </div>
+            <div class="field">
+              <label class="field-label" style="color:var(--muted)">Bots VC ID</label>
+              <input type="text" id="cfg-sv-vc-bots" class="f-input" placeholder="Run -serversetup to generate" readonly style="opacity:.6;cursor:default">
+            </div>
+            <div class="field">
+              <label class="field-label" style="color:var(--muted)">Boosts VC ID</label>
+              <input type="text" id="cfg-sv-vc-boosts" class="f-input" placeholder="Run -serversetup to generate" readonly style="opacity:.6;cursor:default">
+            </div>
+
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn-sm" onclick="svRunSetup()" title="Equivalent to running -serversetup in Discord">⚙️ Run -serversetup</button>
+              <button class="btn-sm-o" onclick="svRunReset()" title="Clear VC IDs so -serversetup can recreate channels">🔄 Reset VCs</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT COLUMN: VC Name Formats ── -->
+        <div class="db-card">
+          <div class="settings-section">
+            <div class="settings-section-title">✏️ VC Name Formats</div>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 14px 0">
+              Use <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px">{value}</code> as placeholder for the live count.
+              Changes take effect on the next update cycle (up to 10 min) or instantly on next join/leave.
+            </p>
+
+            <div class="field">
+              <label class="field-label">All Members VC</label>
+              <select id="cfg-sv-fmt-all-preset" class="f-select" onchange="applySvVcPreset('all')">
+                <option value="📊 | All Members : {value}">📊 | All Members : {value}</option>
+                <option value="👥 All Members ➜ {value}">👥 All Members ➜ {value}</option>
+                <option value="🌐 Total Members • {value}">🌐 Total Members • {value}</option>
+                <option value="Members: {value}">Members: {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-sv-fmt-all" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 📊 | All Members : {value}" oninput="markDirty('serverstats');updateSvVcPreview('all')">
+              <div class="vc-preview" id="prev-sv-all"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Members (humans) VC</label>
+              <select id="cfg-sv-fmt-members-preset" class="f-select" onchange="applySvVcPreset('members')">
+                <option value="👥 | Members : {value}">👥 | Members : {value}</option>
+                <option value="🧑 Humans ➜ {value}">🧑 Humans ➜ {value}</option>
+                <option value="👤 Members • {value}">👤 Members • {value}</option>
+                <option value="Members: {value}">Members: {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-sv-fmt-members" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 👥 | Members : {value}" oninput="markDirty('serverstats');updateSvVcPreview('members')">
+              <div class="vc-preview" id="prev-sv-members"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Bots VC</label>
+              <select id="cfg-sv-fmt-bots-preset" class="f-select" onchange="applySvVcPreset('bots')">
+                <option value="🤖 | Bots : {value}">🤖 | Bots : {value}</option>
+                <option value="🤖 Bots ➜ {value}">🤖 Bots ➜ {value}</option>
+                <option value="⚙️ Bots • {value}">⚙️ Bots • {value}</option>
+                <option value="Bots: {value}">Bots: {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-sv-fmt-bots" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🤖 | Bots : {value}" oninput="markDirty('serverstats');updateSvVcPreview('bots')">
+              <div class="vc-preview" id="prev-sv-bots"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">Boosts VC</label>
+              <select id="cfg-sv-fmt-boosts-preset" class="f-select" onchange="applySvVcPreset('boosts')">
+                <option value="🚀 | Boosts : {value}">🚀 | Boosts : {value}</option>
+                <option value="🚀 Boosts ➜ {value}">🚀 Boosts ➜ {value}</option>
+                <option value="💎 Boosts • {value}">💎 Boosts • {value}</option>
+                <option value="Boosts: {value}">Boosts: {value}</option>
+                <option value="__custom__">✏️ Custom…</option>
+              </select>
+              <input type="text" id="cfg-sv-fmt-boosts" class="f-input" style="margin-top:6px;display:none" placeholder="e.g. 🚀 | Boosts : {value}" oninput="markDirty('serverstats');updateSvVcPreview('boosts')">
+              <div class="vc-preview" id="prev-sv-boosts"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="save-bar">
+        <span class="save-bar-text">Saves <strong>Server Stats</strong> config</span>
+        <div class="save-actions">
+          <button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button>
+          <button class="btn-sm" onclick="saveSettings('serverstats')">💾 Save</button>
+        </div>
+      </div>
     </div>
 
     <!-- ══════ BOOSTER CARDS ══════ -->
