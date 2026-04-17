@@ -528,7 +528,14 @@ function populateForm(d) {
   set('cfg-spam-threshold',d.spam_threshold);
   set('cfg-modlog',d.modlog_enabled); set('cfg-modlog-channel',d.modlog_channel_id);
   // Apply saved channel IDs to dropdowns after channels load
-  if (_cachedChannels.length) applyChannelValues(d); else setTimeout(()=>applyChannelValues(d), 1500);
+  (function applyWhenReady(settings, attempt) {
+    const sel = document.getElementById('cfg-welcome-channel');
+    if (sel && sel.options.length > 1) {
+      applyChannelValues(settings);
+    } else if (attempt < 20) {
+      setTimeout(() => applyWhenReady(settings, attempt + 1), 200);
+    }
+  })(d, 0);
   set('cfg-admin-role',d.admin_role_id); set('cfg-mod-role',d.mod_role_id); set('cfg-muted-role',d.muted_role_id);
 }
 

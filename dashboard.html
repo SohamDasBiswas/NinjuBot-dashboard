@@ -810,6 +810,8 @@
       const bg     = document.getElementById('cfg-welcome-bg-hex')?.value || '#0e2a1a';
       const accent = document.getElementById('cfg-welcome-color')?.value  || '#4eff91';
       const desc   = document.getElementById('cfg-welcome-card-desc')?.value || '';
+      const descLines = desc ? desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
+      canvas.height = Math.max(240, 240 + Math.max(0, descLines.length - 3) * 17);
       drawWelcomeCard(canvas, { bg, accent, name:'SDB_DarkNinja', count:'1,337', desc });
     }
 
@@ -819,6 +821,8 @@
       const bg     = document.getElementById('cfg-leave-bg')?.value        || '#1a0e0e';
       const accent = document.getElementById('cfg-leave-color')?.value     || '#ff4e4e';
       const desc   = document.getElementById('cfg-leave-card-desc')?.value || '';
+      const descLines = desc ? desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
+      canvas.height = Math.max(200, 200 + Math.max(0, descLines.length - 2) * 19);
       drawLeaveCard(canvas, { bg, accent, name:'SDB_DarkNinja', server:'SDB', count:'1,336', desc });
     }
 
