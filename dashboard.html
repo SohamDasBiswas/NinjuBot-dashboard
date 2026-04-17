@@ -394,201 +394,451 @@
 
     <!-- ══════ WELCOME / LEAVE ══════ -->
     <div id="panel-cfg-welcome" class="panel">
+    <style>
+    /* ══ Welcome Panel — Enhanced Neumorphic ══ */
+    .wlp-tabs {
+      display:flex;gap:6px;margin-bottom:22px;
+      padding:5px;border-radius:14px;
+      background:#060e08;
+      box-shadow:inset 4px 4px 10px #030a05,inset -4px -4px 10px #152b1a,0 0 0 1px rgba(78,255,145,0.07);
+      width:fit-content;
+    }
+    .wlp-tab {
+      padding:9px 24px;border-radius:10px;border:none;
+      background:transparent;color:rgba(180,255,210,0.5);
+      font-family:var(--font-b);font-size:0.85rem;font-weight:600;
+      cursor:pointer;transition:all 0.2s var(--ease);white-space:nowrap;
+    }
+    .wlp-tab:hover { color:var(--tx); }
+    .wlp-tab.active {
+      background:var(--surface);
+      color:var(--green);
+      box-shadow:4px 4px 10px #040c07,-4px -4px 10px #1e3828,0 0 0 1px var(--green-border),0 0 16px rgba(78,255,145,0.08);
+    }
 
-      <!-- ══ TAB BAR ══ -->
-      <div class="wl-tabs">
-        <button class="wl-tab active" onclick="switchWlTab('welcome',this)">👋 Welcome Card</button>
-        <button class="wl-tab" onclick="switchWlTab('leave',this)">🚪 Leave Card</button>
+    /* Two-col layout */
+    .wlp-layout { display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start; }
+
+    /* Config card */
+    .wlp-cfg {
+      background:var(--surface);border-radius:var(--r-xl);
+      box-shadow:var(--neu-out);border:1px solid rgba(78,255,145,0.06);
+      overflow:hidden;position:relative;
+    }
+    .wlp-cfg::before {
+      content:'';position:absolute;top:0;left:30px;right:30px;height:1px;
+      background:linear-gradient(90deg,transparent,var(--green-border),transparent);
+    }
+    .wlp-cfg-inner { padding:22px 22px 18px; }
+
+    /* Section header inside cfg card */
+    .wlp-sec-hdr {
+      display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:10px;
+      border-bottom:1px solid rgba(78,255,145,0.07);
+      font-family:var(--font-m);font-size:0.68rem;font-weight:700;
+      color:var(--green);letter-spacing:2px;text-transform:uppercase;
+      text-shadow:0 0 8px rgba(78,255,145,0.3);
+    }
+
+    /* Toggle row — slightly enhanced */
+    .wlp-toggle-row {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 14px;border-radius:var(--r-md);
+      background:var(--base-down);box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.05);margin-bottom:10px;
+      transition:border-color 0.2s;
+    }
+    .wlp-toggle-row:hover { border-color:rgba(78,255,145,0.15); }
+
+    /* Color row */
+    .wlp-color-row { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px; }
+    .wlp-color-field label {
+      display:block;font-size:0.65rem;font-weight:700;
+      color:rgba(78,255,145,0.55);font-family:var(--font-m);
+      text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;
+    }
+    .wlp-color-input {
+      display:flex;align-items:center;gap:6px;
+      padding:8px 10px;border-radius:var(--r-md);
+      background:#06100a;box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.12);
+      transition:border-color 0.2s;
+    }
+    .wlp-color-input:focus-within { border-color:var(--green-border); }
+    .wlp-color-input input[type="color"] {
+      width:28px;height:28px;border-radius:6px;border:none;
+      background:none;padding:0;cursor:pointer;flex-shrink:0;
+    }
+    .wlp-color-input input[type="text"] {
+      flex:1;background:none;border:none;outline:none;
+      color:var(--tx);font-family:var(--font-m);font-size:0.78rem;
+      letter-spacing:0.5px;
+    }
+
+    /* Preset row */
+    .wlp-presets { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px; }
+    .wlp-preset {
+      width:32px;height:32px;border-radius:9px;cursor:pointer;
+      border:2px solid transparent;font-size:0.9rem;
+      display:flex;align-items:center;justify-content:center;
+      transition:all 0.15s var(--spring);
+      box-shadow:3px 3px 8px #040c07,-2px -2px 6px #1a3020;
+    }
+    .wlp-preset:hover { transform:scale(1.18);border-color:rgba(255,255,255,0.3); }
+
+    /* Description textarea */
+    .wlp-textarea {
+      width:100%;padding:12px 14px;border-radius:var(--r-md);
+      background:#060e08;box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.12);
+      color:var(--tx);font-family:var(--font-m);font-size:0.8rem;
+      line-height:1.8;outline:none;resize:vertical;min-height:110px;
+      transition:border-color 0.2s;
+    }
+    .wlp-textarea:focus { border-color:var(--green-border);box-shadow:var(--neu-in),0 0 0 2px rgba(78,255,145,0.09); }
+    .wlp-textarea::placeholder { color:var(--tx-3); }
+
+    /* Channel select */
+    .wlp-select {
+      width:100%;padding:10px 14px;border-radius:var(--r-md);
+      background:#06100a;box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.12);
+      color:var(--tx);font-family:var(--font-m);font-size:0.8rem;
+      outline:none;-webkit-appearance:none;cursor:pointer;
+      transition:border-color 0.2s;
+    }
+    .wlp-select:focus { border-color:var(--green-border); }
+    .wlp-select option { background:var(--surface);color:var(--tx); }
+
+    /* Text input */
+    .wlp-input {
+      width:100%;padding:10px 14px;border-radius:var(--r-md);
+      background:#06100a;box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.12);
+      color:var(--tx);font-family:var(--font-m);font-size:0.8rem;
+      outline:none;transition:border-color 0.2s;
+    }
+    .wlp-input:focus { border-color:var(--green-border);box-shadow:var(--neu-in),0 0 0 2px rgba(78,255,145,0.09); }
+    .wlp-input::placeholder { color:var(--tx-3); }
+
+    /* Field label */
+    .wlp-label {
+      display:block;font-size:0.65rem;font-weight:700;
+      color:rgba(78,255,145,0.55);font-family:var(--font-m);
+      text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;
+    }
+    .wlp-hint { font-size:0.64rem;color:var(--tx-3);font-family:var(--font-m);margin-top:5px;line-height:1.6; }
+
+    /* Field spacing */
+    .wlp-field { margin-bottom:14px; }
+    .wlp-field:last-child { margin-bottom:0; }
+
+    /* Preview card */
+    .wlp-preview {
+      background:var(--surface);border-radius:var(--r-xl);
+      box-shadow:var(--neu-out-lg);border:1px solid rgba(78,255,145,0.07);
+      overflow:hidden;position:sticky;top:80px;
+    }
+    .wlp-preview-hdr {
+      padding:16px 20px 14px;border-bottom:1px solid rgba(78,255,145,0.07);
+      display:flex;align-items:center;justify-content:space-between;
+      background:linear-gradient(135deg,rgba(78,255,145,0.04),transparent);
+      position:relative;
+    }
+    .wlp-preview-hdr::after {
+      content:'';position:absolute;bottom:0;left:20px;right:20px;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(78,255,145,0.2),transparent);
+    }
+    .wlp-preview-title {
+      font-family:var(--font-m);font-size:0.68rem;font-weight:700;
+      color:var(--green);letter-spacing:2px;text-transform:uppercase;
+      display:flex;align-items:center;gap:8px;
+    }
+    .wlp-preview-body { padding:16px 18px 20px; }
+    .wlp-canvas-wrap {
+      border-radius:12px;overflow:hidden;
+      box-shadow:8px 8px 20px #040c07,-4px -4px 12px #1a3020,0 0 0 1px rgba(78,255,145,0.1);
+    }
+    .wlp-preview canvas {
+      width:100%;display:block;
+    }
+    .wlp-preview-note {
+      display:flex;align-items:center;gap:6px;margin-top:12px;
+      font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m);
+    }
+    .wlp-live-dot {
+      width:5px;height:5px;border-radius:50%;background:var(--green);
+      box-shadow:0 0 5px var(--green);animation:blink 1.8s ease infinite;flex-shrink:0;
+    }
+
+    /* Placeholder chips */
+    .wlp-chips { display:flex;gap:5px;flex-wrap:wrap;margin-top:6px; }
+    .wlp-chip {
+      padding:2px 9px;border-radius:999px;
+      background:var(--green-lo);border:1px solid var(--green-border);
+      font-family:var(--font-m);font-size:0.65rem;font-weight:700;
+      color:var(--green);cursor:pointer;transition:all 0.15s;
+    }
+    .wlp-chip:hover { background:rgba(78,255,145,0.18); }
+
+    @media(max-width:1100px){.wlp-layout{grid-template-columns:1fr}}
+    </style>
+
+      <!-- ══ Tab Bar ══ -->
+      <div class="wlp-tabs">
+        <button class="wlp-tab active" onclick="wlpTab('welcome',this)">👋 Welcome Card</button>
+        <button class="wlp-tab" onclick="wlpTab('leave',this)">🚪 Leave Card</button>
       </div>
 
       <!-- ══════════════════════ WELCOME TAB ══════════════════════ -->
-      <div id="wl-tab-welcome" class="wl-tab-body">
-        <div class="db-row" style="align-items:flex-start">
+      <div id="wlp-welcome" class="wlp-tab-body">
+        <div class="wlp-layout">
 
-          <!-- LEFT: config -->
-          <div class="db-card" style="flex:1;min-width:0">
+          <!-- LEFT: Config -->
+          <div class="wlp-cfg">
+            <div class="wlp-cfg-inner">
 
-            <div class="settings-section">
-              <div class="settings-section-title">👋 Welcome Messages</div>
-              <div class="toggle-row">
+              <!-- Toggle + Channel -->
+              <div class="wlp-sec-hdr">👋 Welcome Settings</div>
+              <div class="wlp-toggle-row">
                 <div class="toggle-info"><div class="toggle-name">Enable Welcome Messages</div><div class="toggle-desc">Send when a new member joins</div></div>
                 <label class="toggle"><input type="checkbox" id="cfg-welcome-enabled" checked onchange="markDirty('welcome');updateWelcomePreview()"><span class="toggle-track"></span></label>
               </div>
-              <div class="field" style="margin-top:14px">
-                <label class="field-label">Welcome Channel</label>
-                <select id="cfg-welcome-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
-              </div>
-              <div class="field">
-                <label class="field-label">Welcome Message <span class="field-badge">text above card</span></label>
-                <input type="text" id="cfg-welcome-msg" class="f-input" placeholder="Welcome {user} to {server}! 🎉" oninput="markDirty('welcome');updateWelcomePreview()">
-                <span class="field-hint">Placeholders: <code>{user}</code> <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
-              </div>
-            </div>
-
-            <div class="settings-section">
-              <div class="settings-section-title">🎨 Card Style</div>
-              <div class="toggle-row">
-                <div class="toggle-info"><div class="toggle-name">Send Welcome Image Card</div><div class="toggle-desc">Stylized image card shown in Discord</div></div>
+              <div class="wlp-toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Send Welcome Image Card</div><div class="toggle-desc">Beautiful stylized card image in Discord</div></div>
                 <label class="toggle"><input type="checkbox" id="cfg-welcome-card" checked onchange="markDirty('welcome');updateWelcomePreview()"><span class="toggle-track"></span></label>
               </div>
-              <div class="wl-colors-row" style="margin-top:14px">
-                <div class="field" style="flex:1">
-                  <label class="field-label">Background Color</label>
-                  <div class="color-pick-wrap">
-                    <input type="color" id="cfg-welcome-bg-custom" value="#0e2a1a" oninput="markDirty('welcome');updateWelcomePreview()">
-                    <input type="text" id="cfg-welcome-bg-hex" class="f-input" value="#0e2a1a" placeholder="#0e2a1a" oninput="syncColorHex('welcome-bg-custom','welcome-bg-hex');updateWelcomePreview()">
+
+              <div class="wlp-field" style="margin-top:14px">
+                <label class="wlp-label">Welcome Channel</label>
+                <select id="cfg-welcome-channel" class="wlp-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
+              </div>
+
+              <div class="wlp-field">
+                <label class="wlp-label">Welcome Message <span style="font-size:0.62rem;background:rgba(78,255,145,0.08);color:var(--green-dim);border:1px solid var(--green-border);padding:1px 7px;border-radius:999px;font-weight:600;margin-left:4px">Text above card</span></label>
+                <input type="text" id="cfg-welcome-msg" class="wlp-input" placeholder="Welcome {user} to {server}! 🎉" oninput="markDirty('welcome');updateWelcomePreview()">
+                <div class="wlp-chips">
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-msg','{user}')">{user}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-msg','{name}')">{name}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-msg','{server}')">{server}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-msg','{count}')">{count}</span>
+                </div>
+              </div>
+
+              <!-- Card Colors -->
+              <div class="wlp-sec-hdr" style="margin-top:18px">🎨 Card Colors</div>
+              <div class="wlp-color-row">
+                <div class="wlp-color-field">
+                  <label>Background</label>
+                  <div class="wlp-color-input">
+                    <input type="color" id="cfg-welcome-bg-custom" value="#0e2a1a" oninput="markDirty('welcome');document.getElementById('cfg-welcome-bg-hex').value=this.value;updateWelcomePreview()">
+                    <input type="text" id="cfg-welcome-bg-hex" value="#0e2a1a" placeholder="#0e2a1a" oninput="markDirty('welcome');syncColorHex('welcome-bg-custom','cfg-welcome-bg-hex');updateWelcomePreview()">
                   </div>
                 </div>
-                <div class="field" style="flex:1">
-                  <label class="field-label">Accent Color</label>
-                  <div class="color-pick-wrap">
+                <div class="wlp-color-field">
+                  <label>Accent</label>
+                  <div class="wlp-color-input">
                     <input type="color" id="cfg-welcome-color-picker" value="#4eff91" oninput="markDirty('welcome');syncColorPicker('welcome-color-picker','cfg-welcome-color');updateWelcomePreview()">
-                    <input type="text" id="cfg-welcome-color" class="f-input" value="#4eff91" placeholder="#4eff91" oninput="markDirty('welcome');syncColorHex('welcome-color-picker','cfg-welcome-color');updateWelcomePreview()">
+                    <input type="text" id="cfg-welcome-color" value="#4eff91" placeholder="#4eff91" oninput="markDirty('welcome');syncColorHex('welcome-color-picker','cfg-welcome-color');updateWelcomePreview()">
                   </div>
                 </div>
               </div>
 
-              <!-- preset swatches -->
-              <div class="field">
-                <label class="field-label">Quick Presets</label>
-                <div class="wl-presets">
-                  <button class="wl-preset" style="--pb:#0e2a1a;--pa:#4eff91" onclick="applyWelcomePreset('#0e2a1a','#4eff91')" title="Forest Green">🌲</button>
-                  <button class="wl-preset" style="--pb:#0d0d1a;--pa:#7c6cfc" onclick="applyWelcomePreset('#0d0d1a','#7c6cfc')" title="Midnight Purple">🌌</button>
-                  <button class="wl-preset" style="--pb:#1a0d0d;--pa:#ff6b35" onclick="applyWelcomePreset('#1a0d0d','#ff6b35')" title="Ember">🔥</button>
-                  <button class="wl-preset" style="--pb:#0d1a1a;--pa:#38bdf8" onclick="applyWelcomePreset('#0d1a1a','#38bdf8')" title="Ocean">🌊</button>
-                  <button class="wl-preset" style="--pb:#1a0d18;--pa:#f472b6" onclick="applyWelcomePreset('#1a0d18','#f472b6')" title="Rose">🌸</button>
-                  <button class="wl-preset" style="--pb:#111111;--pa:#fbbf24" onclick="applyWelcomePreset('#111111','#fbbf24')" title="Gold">⭐</button>
+              <!-- Presets -->
+              <div class="wlp-field">
+                <label class="wlp-label">Quick Presets</label>
+                <div class="wlp-presets">
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#0e2a1a,#1e5c34)" onclick="applyWelcomePreset('#0e2a1a','#4eff91')" title="Forest Green">🌲</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#0d0d1a,#2a1a4e)" onclick="applyWelcomePreset('#0d0d1a','#7c6cfc')" title="Midnight">🌌</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#1a0d0d,#4e1a0d)" onclick="applyWelcomePreset('#1a0d0d','#ff6b35')" title="Ember">🔥</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#0d1a1a,#0d2e3a)" onclick="applyWelcomePreset('#0d1a1a','#38bdf8')" title="Ocean">🌊</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#1a0d18,#3a1a30)" onclick="applyWelcomePreset('#1a0d18','#f472b6')" title="Rose">🌸</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#111,#2a2a0d)" onclick="applyWelcomePreset('#111111','#fbbf24')" title="Gold">⭐</button>
                 </div>
               </div>
-            </div>
 
-            <div class="settings-section">
-              <div class="settings-section-title">📝 Card Description Block</div>
-              <p style="font-size:0.75rem;color:var(--tx-2);margin-bottom:12px;line-height:1.5">Multi-line text shown inside the card. Use <code>\n</code> for line breaks. Placeholders supported.</p>
-              <div class="field">
-                <label class="field-label">Description</label>
-                <textarea id="cfg-welcome-card-desc" class="f-input wl-desc-ta" rows="6"
-                  placeholder="FROM SDB_DarkNinja&#10;Welcome to SDB !&#10;Read the Rules in #rules&#10;Get yourself Verified in #verify&#10;If you need help, feel free to reach out&#10;Welcome aboard, and let the magic begin! 🚀"
+              <!-- Card Description -->
+              <div class="wlp-sec-hdr" style="margin-top:18px">📝 Card Message</div>
+              <div class="wlp-field">
+                <label class="wlp-label">Description Lines</label>
+                <textarea id="cfg-welcome-card-desc" class="wlp-textarea" rows="6"
+                  placeholder="FROM SDB_DarkNinja&#10;Welcome to SDB!&#10;Read the Rules in #rules&#10;Get yourself Verified in #verify&#10;If you need help, feel free to reach out&#10;Welcome aboard, and let the magic begin! 🚀"
                   oninput="markDirty('welcome');updateWelcomePreview()"></textarea>
-                <span class="field-hint">Each line = one line on the card. Supports <code>{user}</code> <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
+                <div class="wlp-hint">Each line = one line on the card. Supports placeholders:</div>
+                <div class="wlp-chips">
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-card-desc','{user}')">{user}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-card-desc','{name}')">{name}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-card-desc','{server}')">{server}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-card-desc','{count}')">{count}</span>
+                </div>
               </div>
-            </div>
 
-          </div><!-- /left -->
-
-          <!-- RIGHT: live preview -->
-          <div class="db-card wl-preview-card" style="flex:1;min-width:0">
-            <div class="settings-section-title" style="padding:18px 20px 0">🖼️ Live Preview</div>
-            <div style="padding:14px 20px 20px">
-              <canvas id="welcome-preview-canvas" width="760" height="240" style="width:100%;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.5);display:block"></canvas>
-              <p style="font-size:0.7rem;color:var(--tx-3);margin-top:10px;text-align:center">⚡ Updates live as you edit — actual Discord card may vary slightly</p>
             </div>
           </div>
 
-        </div><!-- /db-row -->
-      </div><!-- /welcome tab -->
-
-      <!-- ══════════════════════ LEAVE TAB ══════════════════════ -->
-      <div id="wl-tab-leave" class="wl-tab-body" style="display:none">
-        <div class="db-row" style="align-items:flex-start">
-
-          <!-- LEFT: config -->
-          <div class="db-card" style="flex:1;min-width:0">
-
-            <div class="settings-section">
-              <div class="settings-section-title">🚪 Leave Messages</div>
-              <div class="toggle-row">
-                <div class="toggle-info"><div class="toggle-name">Enable Leave Messages</div><div class="toggle-desc">Send when a member leaves</div></div>
-                <label class="toggle"><input type="checkbox" id="cfg-leave-enabled" onchange="markDirty('welcome');updateLeavePreview()"><span class="toggle-track"></span></label>
-              </div>
-              <div class="field" style="margin-top:14px">
-                <label class="field-label">Leave Channel</label>
-                <select id="cfg-leave-channel" class="f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
-              </div>
-              <div class="field">
-                <label class="field-label">Leave Message <span class="field-badge">text above card</span></label>
-                <input type="text" id="cfg-leave-msg" class="f-input" placeholder="Goodbye {user}! We'll miss you." oninput="markDirty('welcome');updateLeavePreview()">
-                <span class="field-hint">Placeholders: <code>{user}</code> <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
-              </div>
+          <!-- RIGHT: Preview -->
+          <div class="wlp-preview">
+            <div class="wlp-preview-hdr">
+              <span class="wlp-preview-title"><span class="wlp-live-dot"></span> Live Preview</span>
+              <span style="font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m)">Updates as you type</span>
             </div>
-
-            <div class="settings-section">
-              <div class="settings-section-title">🎨 Leave Card Style</div>
-              <div class="toggle-row">
-                <div class="toggle-info"><div class="toggle-name">Send Leave Image Card</div><div class="toggle-desc">Greyscale avatar with red accent</div></div>
-                <label class="toggle"><input type="checkbox" id="cfg-leave-card" onchange="markDirty('welcome');updateLeavePreview()"><span class="toggle-track"></span></label>
+            <div class="wlp-preview-body">
+              <div class="wlp-canvas-wrap">
+                <canvas id="welcome-preview-canvas" width="760" height="260"></canvas>
               </div>
-              <div class="wl-colors-row" style="margin-top:14px">
-                <div class="field" style="flex:1">
-                  <label class="field-label">Background Color</label>
-                  <div class="color-pick-wrap">
-                    <input type="color" id="cfg-leave-bg-picker" value="#1a0e0e" oninput="markDirty('welcome');syncColorPicker('leave-bg-picker','cfg-leave-bg');updateLeavePreview()">
-                    <input type="text" id="cfg-leave-bg" class="f-input" value="#1a0e0e" placeholder="#1a0e0e" oninput="markDirty('welcome');syncColorHex('leave-bg-picker','cfg-leave-bg');updateLeavePreview()">
-                  </div>
+              <div class="wlp-preview-note">
+                <span class="wlp-live-dot"></span>
+                <span>Pixel-perfect preview — actual Discord card matches this closely</span>
+              </div>
+
+              <!-- Mini stats -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px">
+                <div style="padding:10px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);text-align:center;border:1px solid rgba(78,255,145,0.06)">
+                  <div style="font-family:var(--font-m);font-size:1rem;color:var(--green);font-weight:500" id="wlp-w-lines">0</div>
+                  <div style="font-size:0.62rem;color:var(--tx-3);text-transform:uppercase;letter-spacing:1px;margin-top:3px">Lines</div>
                 </div>
-                <div class="field" style="flex:1">
-                  <label class="field-label">Accent Color</label>
-                  <div class="color-pick-wrap">
-                    <input type="color" id="cfg-leave-color-picker" value="#ff4e4e" oninput="markDirty('welcome');syncColorPicker('leave-color-picker','cfg-leave-color');updateLeavePreview()">
-                    <input type="text" id="cfg-leave-color" class="f-input" value="#ff4e4e" placeholder="#ff4e4e" oninput="markDirty('welcome');syncColorHex('leave-color-picker','cfg-leave-color');updateLeavePreview()">
-                  </div>
+                <div style="padding:10px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);text-align:center;border:1px solid rgba(78,255,145,0.06)">
+                  <div style="font-family:var(--font-m);font-size:1rem;color:var(--green);font-weight:500" id="wlp-w-chars">0</div>
+                  <div style="font-size:0.62rem;color:var(--tx-3);text-transform:uppercase;letter-spacing:1px;margin-top:3px">Chars</div>
+                </div>
+                <div style="padding:10px;border-radius:var(--r-md);background:var(--base-down);box-shadow:var(--neu-in);text-align:center;border:1px solid rgba(78,255,145,0.06)">
+                  <div style="font-family:var(--font-m);font-size:1rem;color:var(--green);font-weight:500" id="wlp-w-status">ON</div>
+                  <div style="font-size:0.62rem;color:var(--tx-3);text-transform:uppercase;letter-spacing:1px;margin-top:3px">Status</div>
                 </div>
               </div>
-              <!-- Leave presets -->
-              <div class="field">
-                <label class="field-label">Quick Presets</label>
-                <div class="wl-presets">
-                  <button class="wl-preset" style="--pb:#1a0e0e;--pa:#ff4e4e" onclick="applyLeavePreset('#1a0e0e','#ff4e4e')" title="Red Alert">🔴</button>
-                  <button class="wl-preset" style="--pb:#0d0d1a;--pa:#818cf8" onclick="applyLeavePreset('#0d0d1a','#818cf8')" title="Indigo">💜</button>
-                  <button class="wl-preset" style="--pb:#111111;--pa:#94a3b8" onclick="applyLeavePreset('#111111','#94a3b8')" title="Grey">🩶</button>
-                  <button class="wl-preset" style="--pb:#0d1a0d;--pa:#4ade80" onclick="applyLeavePreset('#0d1a0d','#4ade80')" title="Sage">🍃</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-section">
-              <div class="settings-section-title">📝 Leave Card Message</div>
-              <div class="field">
-                <label class="field-label">Goodbye Description</label>
-                <textarea id="cfg-leave-card-desc" class="f-input wl-desc-ta" rows="4"
-                  placeholder="Thanks for being part of {server}!&#10;We hope to see you again someday. 👋"
-                  oninput="markDirty('welcome');updateLeavePreview()"></textarea>
-                <span class="field-hint">Shown on the leave card. Supports <code>{name}</code> <code>{server}</code> <code>{count}</code></span>
-              </div>
-            </div>
-
-          </div><!-- /left -->
-
-          <!-- RIGHT: leave preview -->
-          <div class="db-card wl-preview-card" style="flex:1;min-width:0">
-            <div class="settings-section-title" style="padding:18px 20px 0">🖼️ Live Preview</div>
-            <div style="padding:14px 20px 20px">
-              <canvas id="leave-preview-canvas" width="760" height="200" style="width:100%;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.5);display:block"></canvas>
-              <p style="font-size:0.7rem;color:var(--tx-3);margin-top:10px;text-align:center">⚡ Updates live as you edit — greyscale avatar in actual Discord card</p>
             </div>
           </div>
 
         </div>
-      </div><!-- /leave tab -->
+      </div>
 
-      <div class="save-bar">
-        <span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config</span>
+      <!-- ══════════════════════ LEAVE TAB ══════════════════════ -->
+      <div id="wlp-leave" class="wlp-tab-body" style="display:none">
+        <div class="wlp-layout">
+
+          <!-- LEFT: Config -->
+          <div class="wlp-cfg">
+            <div class="wlp-cfg-inner">
+
+              <div class="wlp-sec-hdr">🚪 Leave Settings</div>
+              <div class="wlp-toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Enable Leave Messages</div><div class="toggle-desc">Send when a member leaves</div></div>
+                <label class="toggle"><input type="checkbox" id="cfg-leave-enabled" onchange="markDirty('welcome');updateLeavePreview()"><span class="toggle-track"></span></label>
+              </div>
+              <div class="wlp-toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Send Leave Image Card</div><div class="toggle-desc">Greyscale avatar with red accent</div></div>
+                <label class="toggle"><input type="checkbox" id="cfg-leave-card" onchange="markDirty('welcome');updateLeavePreview()"><span class="toggle-track"></span></label>
+              </div>
+
+              <div class="wlp-field" style="margin-top:14px">
+                <label class="wlp-label">Leave Channel</label>
+                <select id="cfg-leave-channel" class="wlp-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
+              </div>
+
+              <div class="wlp-field">
+                <label class="wlp-label">Leave Message <span style="font-size:0.62rem;background:rgba(78,255,145,0.08);color:var(--green-dim);border:1px solid var(--green-border);padding:1px 7px;border-radius:999px;font-weight:600;margin-left:4px">Text above card</span></label>
+                <input type="text" id="cfg-leave-msg" class="wlp-input" placeholder="Goodbye {user}! We'll miss you. 👋" oninput="markDirty('welcome');updateLeavePreview()">
+                <div class="wlp-chips">
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-msg','{user}')">{user}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-msg','{name}')">{name}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-msg','{server}')">{server}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-msg','{count}')">{count}</span>
+                </div>
+              </div>
+
+              <div class="wlp-sec-hdr" style="margin-top:18px">🎨 Leave Card Colors</div>
+              <div class="wlp-color-row">
+                <div class="wlp-color-field">
+                  <label>Background</label>
+                  <div class="wlp-color-input">
+                    <input type="color" id="cfg-leave-bg-picker" value="#1a0e0e" oninput="markDirty('welcome');document.getElementById('cfg-leave-bg').value=this.value;updateLeavePreview()">
+                    <input type="text" id="cfg-leave-bg" value="#1a0e0e" placeholder="#1a0e0e" oninput="markDirty('welcome');syncColorHex('leave-bg-picker','cfg-leave-bg');updateLeavePreview()">
+                  </div>
+                </div>
+                <div class="wlp-color-field">
+                  <label>Accent</label>
+                  <div class="wlp-color-input">
+                    <input type="color" id="cfg-leave-color-picker" value="#ff4e4e" oninput="markDirty('welcome');document.getElementById('cfg-leave-color').value=this.value;updateLeavePreview()">
+                    <input type="text" id="cfg-leave-color" value="#ff4e4e" placeholder="#ff4e4e" oninput="markDirty('welcome');syncColorHex('leave-color-picker','cfg-leave-color');updateLeavePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <div class="wlp-field">
+                <label class="wlp-label">Quick Presets</label>
+                <div class="wlp-presets">
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#1a0e0e,#4e1a1a)" onclick="applyLeavePreset('#1a0e0e','#ff4e4e')" title="Red Alert">🔴</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#0d0d1a,#1a1a3a)" onclick="applyLeavePreset('#0d0d1a','#818cf8')" title="Indigo">💜</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#111,#222)" onclick="applyLeavePreset('#111111','#94a3b8')" title="Grey">🩶</button>
+                  <button class="wlp-preset" style="background:linear-gradient(135deg,#0d1a0d,#1a3a1a)" onclick="applyLeavePreset('#0d1a0d','#4ade80')" title="Sage">🍃</button>
+                </div>
+              </div>
+
+              <div class="wlp-sec-hdr" style="margin-top:18px">📝 Leave Card Message</div>
+              <div class="wlp-field">
+                <label class="wlp-label">Goodbye Description</label>
+                <textarea id="cfg-leave-card-desc" class="wlp-textarea" rows="4"
+                  placeholder="Thanks for being part of {server}!&#10;We hope to see you again someday. 👋"
+                  oninput="markDirty('welcome');updateLeavePreview()"></textarea>
+                <div class="wlp-chips">
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-card-desc','{name}')">{name}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-card-desc','{server}')">{server}</span>
+                  <span class="wlp-chip" onclick="insertPlaceholder('cfg-leave-card-desc','{count}')">{count}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- RIGHT: Leave Preview -->
+          <div class="wlp-preview">
+            <div class="wlp-preview-hdr">
+              <span class="wlp-preview-title"><span class="wlp-live-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></span> Live Preview</span>
+              <span style="font-size:0.68rem;color:var(--tx-3);font-family:var(--font-m)">Updates as you type</span>
+            </div>
+            <div class="wlp-preview-body">
+              <div class="wlp-canvas-wrap">
+                <canvas id="leave-preview-canvas" width="760" height="220"></canvas>
+              </div>
+              <div class="wlp-preview-note">
+                <span class="wlp-live-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></span>
+                <span>Greyscale avatar effect applied in the actual Discord card</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Save Bar -->
+      <div class="save-bar" style="margin-top:18px">
+        <span class="save-bar-text">Saves <strong>Welcome / Leave</strong> config for <strong id="save-server-welcome">this server</strong></span>
         <div class="save-actions">
           <button class="btn-sm-o" onclick="loadSettings()">↩ Reset</button>
           <button class="btn-sm" onclick="saveSettings('welcome')">💾 Save</button>
         </div>
       </div>
-    </div>
 
     <script>
-    /* ── Welcome/Leave Tab Switcher ── */
-    function switchWlTab(tab, btn) {
-      document.querySelectorAll('.wl-tab').forEach(b => b.classList.remove('active'));
+    /* ── Tab switcher ── */
+    function wlpTab(tab, btn) {
+      document.querySelectorAll('.wlp-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.querySelectorAll('.wl-tab-body').forEach(d => d.style.display='none');
-      document.getElementById('wl-tab-'+tab).style.display='';
+      document.querySelectorAll('.wlp-tab-body').forEach(d => d.style.display='none');
+      document.getElementById('wlp-'+tab).style.display='';
       if(tab==='welcome') updateWelcomePreview();
       else updateLeavePreview();
+    }
+
+    /* ── Placeholder inserter ── */
+    function insertPlaceholder(id, text) {
+      const el = document.getElementById(id);
+      if(!el) return;
+      const s = el.selectionStart, e = el.selectionEnd;
+      el.value = el.value.slice(0,s) + text + el.value.slice(e);
+      el.selectionStart = el.selectionEnd = s + text.length;
+      el.focus();
+      el.dispatchEvent(new Event('input'));
     }
 
     /* ── Color sync helpers ── */
@@ -623,219 +873,237 @@
       markDirty('welcome'); updateLeavePreview();
     }
 
-    /* ═══════════════════════ CANVAS PREVIEW ═══════════════════════ */
+    /* ════════════════════ CANVAS RENDERER ════════════════════ */
     function hexToRgb(hex) {
       const h = hex.replace('#','');
       if(h.length!==6) return [30,30,30];
       return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
     }
-    function mixAlpha(base, fg, alpha) {
-      return base.map((b,i) => Math.round(b*(1-alpha) + fg[i]*alpha));
-    }
 
-    function drawWelcomeCard(canvas, opts={}) {
+    function drawCard(canvas, opts) {
       const ctx = canvas.getContext('2d');
       const W = canvas.width, H = canvas.height;
       const bg = opts.bg || '#0e2a1a';
       const accent = opts.accent || '#4eff91';
-      const displayName = opts.name || 'New Member';
-      const memberCount = opts.count || '1,234';
-      const descLines = opts.desc ? opts.desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
-
       const bgRgb = hexToRgb(bg);
       const acRgb = hexToRgb(accent);
+      const isLeave = opts.isLeave || false;
+      const name = opts.name || 'NewMember';
+      const count = opts.count || '1,234';
+      const server = opts.server || 'Your Server';
+      const descLines = (opts.desc||'').replace(/\\n/g,'\n').split('\n').filter(l=>l.trim());
 
-      // BG
+      // Background
       ctx.fillStyle = bg;
       ctx.fillRect(0,0,W,H);
 
-      // subtle noise pattern
+      // Subtle grid overlay
       ctx.save();
-      ctx.globalAlpha = 0.03;
-      for(let i=0;i<W;i+=4) for(let j=0;j<H;j+=4) {
-        if(Math.random()>0.5){ ctx.fillStyle='#fff'; ctx.fillRect(i,j,2,2); }
-      }
+      ctx.globalAlpha = 0.025;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 0.5;
+      for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+      for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
       ctx.restore();
 
-      // diagonal gradient overlay
-      const grd = ctx.createLinearGradient(W*0.3,0,W,H);
-      grd.addColorStop(0,`rgba(${acRgb.join(',')},0.04)`);
-      grd.addColorStop(1,`rgba(${bgRgb.map(c=>Math.max(0,c-10)).join(',')},0.6)`);
+      // Gradient overlay
+      const grd = ctx.createLinearGradient(W*0.25,0,W,H);
+      grd.addColorStop(0, `rgba(${acRgb.join(',')},0.05)`);
+      grd.addColorStop(0.5, `rgba(${bgRgb.map(c=>Math.max(0,c-5)).join(',')},0.3)`);
+      grd.addColorStop(1, `rgba(0,0,0,0.4)`);
       ctx.fillStyle = grd;
       ctx.fillRect(0,0,W,H);
 
-      // Accent left bar
+      // Glow blob top-right
+      const gl = ctx.createRadialGradient(W*0.85, H*0.15, 0, W*0.85, H*0.15, W*0.4);
+      gl.addColorStop(0, `rgba(${acRgb.join(',')},0.07)`);
+      gl.addColorStop(1, 'transparent');
+      ctx.fillStyle = gl;
+      ctx.fillRect(0,0,W,H);
+
+      // Left accent bar
       ctx.fillStyle = accent;
+      ctx.shadowColor = accent;
+      ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.roundRect(0,0,7,H,3);
+      ctx.roundRect(0, 0, 6, H, 3);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Vertical separator
+      ctx.strokeStyle = `rgba(${acRgb.join(',')},0.2)`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      ctx.moveTo(190, 20);
+      ctx.lineTo(190, H-20);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Avatar area
+      const AV = 100, AX = 44, AY = (H-AV)/2;
+      const cx = AX + AV/2, cy = AY + AV/2;
+
+      // Outer ring glow
+      ctx.shadowColor = accent;
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, AV/2+7, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Inner ring
+      ctx.strokeStyle = `rgba(${acRgb.join(',')},0.25)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, AV/2+13, 0, Math.PI*2);
+      ctx.stroke();
+
+      // Avatar fill
+      if(isLeave) {
+        ctx.fillStyle = `rgba(80,80,80,0.3)`;
+      } else {
+        ctx.fillStyle = `rgba(${acRgb.join(',')},0.15)`;
+      }
+      ctx.beginPath();
+      ctx.arc(cx, cy, AV/2, 0, Math.PI*2);
       ctx.fill();
 
-      // Separator
-      ctx.strokeStyle = `rgba(${acRgb.join(',')},0.18)`;
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(196,24); ctx.lineTo(196,H-24); ctx.stroke();
-
-      // Avatar circle placeholder
-      const AV=96, AX=50, AY=(H-AV)/2;
-      // ring
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(AX+AV/2, AY+AV/2, AV/2+4, 0, Math.PI*2); ctx.stroke();
-      // fill
-      ctx.fillStyle = `rgba(${acRgb.join(',')},0.18)`;
-      ctx.beginPath(); ctx.arc(AX+AV/2, AY+AV/2, AV/2, 0, Math.PI*2); ctx.fill();
-      // person icon
-      ctx.fillStyle = `rgba(${acRgb.join(',')},0.7)`;
-      ctx.font = `${AV*0.52}px serif`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('👤', AX+AV/2, AY+AV/2+2);
+      // Avatar icon
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = `${AV*0.5}px serif`;
+      ctx.globalAlpha = isLeave ? 0.4 : 0.75;
+      ctx.fillStyle = isLeave ? '#aaa' : `rgba(${acRgb.join(',')},1)`;
+      ctx.fillText('👤', cx, cy+2);
+      ctx.globalAlpha = 1;
 
       // Text area
-      let ty = 34;
-      const TX = 216;
+      const TX = 208, TY_START = 22;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      let ty = TY_START;
 
-      // "WELCOME TO THE SERVER!" label
-      ctx.font = '600 11px "Exo 2", sans-serif';
-      ctx.textAlign='left'; ctx.textBaseline='top';
+      // Top label
+      ctx.font = '700 10px "Exo 2",sans-serif';
       ctx.fillStyle = accent;
-      ctx.letterSpacing = '1px';
-      ctx.fillText('WELCOME TO THE SERVER!', TX, ty);
-      ty += 26;
+      ctx.letterSpacing = '2px';
+      ctx.fillText(isLeave ? 'GOODBYE' : 'WELCOME TO THE SERVER!', TX, ty);
+      ty += 22;
 
-      // Display name — large
-      ctx.font = 'bold 26px "Exo 2", sans-serif';
-      ctx.fillStyle = '#fff';
-      ctx.fillText(displayName, TX, ty);
-      ty += 36;
+      // Username — large gradient-ish
+      const nameGrd = ctx.createLinearGradient(TX, ty, TX+280, ty+30);
+      nameGrd.addColorStop(0, '#ffffff');
+      nameGrd.addColorStop(1, `rgba(${acRgb.join(',')},0.85)`);
+      ctx.font = 'bold 26px "Exo 2",sans-serif';
+      ctx.fillStyle = nameGrd;
+      ctx.fillText(name, TX, ty);
+      ty += 34;
 
-      // Member count
-      ctx.font = '14px "Outfit", sans-serif';
-      ctx.fillStyle = 'rgba(200,220,210,0.7)';
-      ctx.fillText(`You are member #${memberCount}`, TX, ty);
-      ty += 26;
+      // Sub-label
+      ctx.font = '300 13px "Outfit",sans-serif';
+      ctx.fillStyle = 'rgba(200,220,210,0.65)';
+      ctx.fillText(isLeave ? `${server} now has ${count} members` : `Member #${count}`, TX, ty);
+      ty += 22;
 
       // Description block
       if(descLines.length > 0) {
-        ty += 6;
-        const pad=10, lh=17;
-        const boxH = descLines.length*lh + pad*2;
-        const boxW = W - TX - 16;
-        // background pill
-        ctx.fillStyle = `rgba(${mixAlpha(bgRgb,[0,0,0],0.3).join(',')},0.55)`;
-        ctx.beginPath();
-        ctx.roundRect(TX-pad, ty-pad, boxW, boxH, 7);
-        ctx.fill();
-        // left accent nub
-        ctx.fillStyle = `rgba(${acRgb.join(',')},0.6)`;
-        ctx.beginPath(); ctx.roundRect(TX-pad, ty-pad, 3, boxH, 2); ctx.fill();
+        ty += 8;
+        const pad = 10, lh = 18;
+        const boxH = descLines.length * lh + pad * 2;
+        const boxW = W - TX - 14;
 
-        ctx.font = '12px "Outfit", sans-serif';
-        ctx.fillStyle = 'rgba(220,235,225,0.88)';
+        // Box background
+        ctx.fillStyle = `rgba(0,0,0,0.35)`;
+        ctx.beginPath();
+        ctx.roundRect(TX-pad, ty-pad, boxW, boxH, 8);
+        ctx.fill();
+
+        // Box top shimmer
+        const shimmer = ctx.createLinearGradient(TX-pad, ty-pad, TX-pad+boxW, ty-pad);
+        shimmer.addColorStop(0, 'transparent');
+        shimmer.addColorStop(0.4, `rgba(${acRgb.join(',')},0.07)`);
+        shimmer.addColorStop(1, 'transparent');
+        ctx.fillStyle = shimmer;
+        ctx.beginPath();
+        ctx.roundRect(TX-pad, ty-pad, boxW, 1, 0);
+        ctx.fill();
+
+        // Left accent nub
+        ctx.fillStyle = `rgba(${acRgb.join(',')},0.6)`;
+        ctx.shadowColor = accent;
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.roundRect(TX-pad, ty-pad, 3, boxH, 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.font = '12px "Outfit",sans-serif';
         for(const line of descLines) {
-          ctx.fillText(line, TX, ty);
+          // Check if line starts with FROM pattern — make it stand out
+          if(line.startsWith('FROM ')) {
+            ctx.fillStyle = `rgba(${acRgb.join(',')},0.9)`;
+            ctx.font = '700 11px "DM Mono","Courier New",monospace';
+            ctx.fillText(line, TX, ty);
+            ctx.font = '12px "Outfit",sans-serif';
+          } else {
+            ctx.fillStyle = 'rgba(215,235,225,0.88)';
+            ctx.fillText(line, TX, ty);
+          }
           ty += lh;
         }
-      }
-    }
-
-    function drawLeaveCard(canvas, opts={}) {
-      const ctx = canvas.getContext('2d');
-      const W=canvas.width, H=canvas.height;
-      const bg = opts.bg || '#1a0e0e';
-      const accent = opts.accent || '#ff4e4e';
-      const displayName = opts.name || 'Departed Member';
-      const server = opts.server || 'Your Server';
-      const count = opts.count || '1,233';
-      const descLines = opts.desc ? opts.desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
-      const bgRgb = hexToRgb(bg);
-      const acRgb = hexToRgb(accent);
-
-      ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
-      // diagonal overlay
-      const grd = ctx.createLinearGradient(W*0.4,0,W,H);
-      grd.addColorStop(0,`rgba(${acRgb.join(',')},0.03)`);
-      grd.addColorStop(1,`rgba(0,0,0,0.35)`);
-      ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
-
-      // Left bar
-      ctx.fillStyle=accent;
-      ctx.beginPath(); ctx.roundRect(0,0,7,H,3); ctx.fill();
-
-      // Separator
-      ctx.strokeStyle=`rgba(${acRgb.join(',')},0.18)`;
-      ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(178,20); ctx.lineTo(178,H-20); ctx.stroke();
-
-      // Avatar (greyscale effect via desaturated fill)
-      const AV=86, AX=42, AY=(H-AV)/2;
-      ctx.strokeStyle=`rgba(${acRgb.join(',')},0.6)`; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.arc(AX+AV/2,AY+AV/2,AV/2+4,0,Math.PI*2); ctx.stroke();
-      ctx.fillStyle=`rgba(120,120,120,0.25)`;
-      ctx.beginPath(); ctx.arc(AX+AV/2,AY+AV/2,AV/2,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(160,160,160,0.6)';
-      ctx.font=`${AV*0.52}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('👤',AX+AV/2,AY+AV/2+2);
-
-      let ty=28, TX=196;
-      ctx.textAlign='left'; ctx.textBaseline='top';
-      ctx.font='600 11px "Exo 2",sans-serif';
-      ctx.fillStyle=accent;
-      ctx.fillText('GOODBYE', TX, ty); ty+=24;
-
-      ctx.font='bold 24px "Exo 2",sans-serif';
-      ctx.fillStyle='#fff';
-      ctx.fillText(displayName, TX, ty); ty+=34;
-
-      ctx.font='13px "Outfit",sans-serif';
-      ctx.fillStyle='rgba(180,160,160,0.7)';
-      ctx.fillText(`${server} now has ${count} members.`, TX, ty); ty+=22;
-
-      if(descLines.length>0){
-        ty+=6;
-        const pad=8,lh=16;
-        const boxH=descLines.length*lh+pad*2, boxW=W-TX-16;
-        ctx.fillStyle=`rgba(${mixAlpha(bgRgb,[0,0,0],0.3).join(',')},0.5)`;
-        ctx.beginPath(); ctx.roundRect(TX-pad,ty-pad,boxW,boxH,6); ctx.fill();
-        ctx.fillStyle=`rgba(${acRgb.join(',')},0.55)`;
-        ctx.beginPath(); ctx.roundRect(TX-pad,ty-pad,3,boxH,2); ctx.fill();
-        ctx.font='12px "Outfit",sans-serif';
-        ctx.fillStyle='rgba(210,195,195,0.85)';
-        for(const line of descLines){ ctx.fillText(line,TX,ty); ty+=lh; }
       }
     }
 
     function updateWelcomePreview() {
       const canvas = document.getElementById('welcome-preview-canvas');
       if(!canvas) return;
-      const bg     = document.getElementById('cfg-welcome-bg-hex')?.value || '#0e2a1a';
-      const accent = document.getElementById('cfg-welcome-color')?.value  || '#4eff91';
+      const bg     = document.getElementById('cfg-welcome-bg-hex')?.value    || '#0e2a1a';
+      const accent = document.getElementById('cfg-welcome-color')?.value     || '#4eff91';
       const desc   = document.getElementById('cfg-welcome-card-desc')?.value || '';
-      const descLines = desc ? desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
-      canvas.height = Math.max(240, 240 + Math.max(0, descLines.length - 3) * 17);
-      drawWelcomeCard(canvas, { bg, accent, name:'SDB_DarkNinja', count:'1,337', desc });
+      const descLines = desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim());
+
+      // Resize canvas height based on content
+      const minH = 260, lineH = 18;
+      canvas.height = Math.max(minH, 140 + descLines.length * lineH + 30);
+      drawCard(canvas, { bg, accent, name:'SDB_DarkNinja', count:'1,337', server:'SDB', desc, isLeave:false });
+
+      // Update mini stats
+      const lines = document.getElementById('wlp-w-lines');
+      const chars = document.getElementById('wlp-w-chars');
+      const status = document.getElementById('wlp-w-status');
+      if(lines) lines.textContent = descLines.length;
+      if(chars) chars.textContent = desc.length;
+      const enabled = document.getElementById('cfg-welcome-enabled')?.checked;
+      if(status) { status.textContent = enabled ? 'ON' : 'OFF'; status.style.color = enabled ? 'var(--green)' : 'var(--red)'; }
     }
 
     function updateLeavePreview() {
       const canvas = document.getElementById('leave-preview-canvas');
       if(!canvas) return;
-      const bg     = document.getElementById('cfg-leave-bg')?.value        || '#1a0e0e';
-      const accent = document.getElementById('cfg-leave-color')?.value     || '#ff4e4e';
-      const desc   = document.getElementById('cfg-leave-card-desc')?.value || '';
-      const descLines = desc ? desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim()) : [];
-      canvas.height = Math.max(200, 200 + Math.max(0, descLines.length - 2) * 19);
-      drawLeaveCard(canvas, { bg, accent, name:'SDB_DarkNinja', server:'SDB', count:'1,336', desc });
+      const bg     = document.getElementById('cfg-leave-bg')?.value          || '#1a0e0e';
+      const accent = document.getElementById('cfg-leave-color')?.value       || '#ff4e4e';
+      const desc   = document.getElementById('cfg-leave-card-desc')?.value   || '';
+      const descLines = desc.replace(/\\n/g,'\n').split('\n').filter(l=>l.trim());
+      canvas.height = Math.max(220, 140 + descLines.length * 18 + 30);
+      drawCard(canvas, { bg, accent, name:'SDB_DarkNinja', count:'1,336', server:'SDB', desc, isLeave:true });
     }
 
-    /* Draw on first paint */
-    document.addEventListener('DOMContentLoaded', () => {
-      updateWelcomePreview();
-      updateLeavePreview();
-    });
-    /* Also draw immediately (in case DOM is already ready) */
-    setTimeout(()=>{ updateWelcomePreview(); updateLeavePreview(); }, 100);
+    /* Draw on panel open + DOM ready */
+    document.addEventListener('DOMContentLoaded', () => { updateWelcomePreview(); updateLeavePreview(); });
+    setTimeout(() => { updateWelcomePreview(); updateLeavePreview(); }, 150);
+
+    /* Also hook into existing switchWlTab for backward compat */
+    window.switchWlTab = function(tab, btn) { wlpTab(tab, btn); };
     </script>
 
-    <!-- ══════ STREAM ALERTS ══════ -->
+    </div><!-- /panel-cfg-welcome -->
+
+
+
+        <!-- ══════ STREAM ALERTS ══════ -->
     <div id="panel-cfg-streams" class="panel">
       <div class="db-row">
 
