@@ -581,6 +581,27 @@
     }
     .wlp-chip:hover { background:rgba(78,255,145,0.18); }
 
+    /* When app.js replaces a channel select with a text input fallback,
+       make it match the wlp style */
+    #panel-cfg-welcome .f-input {
+      width:100%;padding:10px 14px;border-radius:var(--r-md);
+      background:#06100a;box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.12);
+      color:var(--tx);font-family:var(--font-m);font-size:0.8rem;
+      outline:none;transition:border-color 0.2s;
+    }
+    #panel-cfg-welcome .f-input:focus { border-color:var(--green-border); }
+    #panel-cfg-welcome .f-select {
+      width:100%;padding:10px 14px;border-radius:var(--r-md);
+      background:#06100a;box-shadow:var(--neu-in);
+      border:1px solid rgba(78,255,145,0.12);
+      color:var(--tx);font-family:var(--font-m);font-size:0.8rem;
+      outline:none;-webkit-appearance:none;cursor:pointer;
+    }
+    #panel-cfg-welcome .f-select:focus { border-color:var(--green-border); }
+    #panel-cfg-welcome .f-select option,
+    #panel-cfg-welcome .f-select optgroup { background:var(--surface);color:var(--tx); }
+
     @media(max-width:1100px){.wlp-layout{grid-template-columns:1fr}}
     </style>
 
@@ -611,7 +632,7 @@
 
               <div class="wlp-field" style="margin-top:14px">
                 <label class="wlp-label">Welcome Channel</label>
-                <select id="cfg-welcome-channel" class="wlp-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
+                <select id="cfg-welcome-channel" class="wlp-select f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
               </div>
 
               <div class="wlp-field">
@@ -732,7 +753,7 @@
 
               <div class="wlp-field" style="margin-top:14px">
                 <label class="wlp-label">Leave Channel</label>
-                <select id="cfg-leave-channel" class="wlp-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
+                <select id="cfg-leave-channel" class="wlp-select f-select" onchange="markDirty('welcome')"><option value="">Loading channels…</option></select>
               </div>
 
               <div class="wlp-field">
