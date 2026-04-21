@@ -683,9 +683,23 @@
               <div class="wlp-field">
                 <label class="wlp-label">Description Lines</label>
                 <textarea id="cfg-welcome-card-desc" class="wlp-textarea" rows="6"
-                  placeholder="FROM SDB_DarkNinja&#10;Welcome to SDB!&#10;Read the Rules in #rules&#10;Get yourself Verified in #verify&#10;If you need help, feel free to reach out&#10;Welcome aboard, and let the magic begin! 🚀"
+                  placeholder="FROM SDB_DarkNinja​&#10;* Welcome to NINJA DYNASTY ! *&#10;Read the Rules in <#CHANNEL_ID>&#10;Get yourself Verified <#CHANNEL_ID>&#10;If you need help, feel free to reach out 🙌&#10;Welcome aboard, and let the magic begin! 🎉"
                   oninput="markDirty('welcome');updateWelcomePreview()"></textarea>
-                <div class="wlp-hint">Each line = one line on the card. Supports placeholders:</div>
+
+                <!-- Channel mention picker — inserts <#id> so the bot creates jump buttons -->
+                <div style="display:flex;gap:6px;margin-top:7px;align-items:center">
+                  <select id="welcome-desc-ch-pick" class="f-select" style="flex:1;font-size:0.78rem;padding:5px 8px">
+                    <option value="">— Pick a channel to insert —</option>
+                  </select>
+                  <button class="btn-sm-o" onclick="insertChannelMention('cfg-welcome-card-desc','welcome-desc-ch-pick')" style="white-space:nowrap;padding:5px 10px">
+                    &#128204; Insert &lt;#channel&gt;
+                  </button>
+                </div>
+                <div class="wlp-hint" style="margin-top:4px">
+                  &#128204; <strong>&lt;#channel&gt; mentions</strong> create clickable jump buttons in Discord and show as <code>#channel-name</code> on the card.
+                  &nbsp;&#128512; Emojis are fully supported — paste them directly.
+                </div>
+                <div class="wlp-hint" style="margin-top:6px">Placeholders:</div>
                 <div class="wlp-chips">
                   <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-card-desc','{user}')">{user}</span>
                   <span class="wlp-chip" onclick="insertPlaceholder('cfg-welcome-card-desc','{name}')">{name}</span>
@@ -860,6 +874,23 @@
       el.selectionStart = el.selectionEnd = s + text.length;
       el.focus();
       el.dispatchEvent(new Event('input'));
+    }
+
+    /* Insert <#channel_id> mention into a textarea from a select dropdown */
+    function insertChannelMention(textareaId, selectId) {
+      const sel = document.getElementById(selectId);
+      const ta  = document.getElementById(textareaId);
+      if (!sel || !ta || !sel.value) {
+        showToast('⚠️ Please pick a channel first.', 'warn');
+        return;
+      }
+      const mention = '<#' + sel.value + '>';
+      const s = ta.selectionStart, e = ta.selectionEnd;
+      ta.value = ta.value.slice(0, s) + mention + ta.value.slice(e);
+      ta.selectionStart = ta.selectionEnd = s + mention.length;
+      ta.focus();
+      ta.dispatchEvent(new Event('input'));
+      showToast('📌 Channel mention inserted!');
     }
 
     /* ── Color sync helpers ── */
@@ -1063,15 +1094,20 @@
 
         ctx.font = '12px "Outfit",sans-serif';
         for(const line of descLines) {
+          // Resolve <#channel_id> → #channel-name for preview display
+          const displayLine = line.replace(/<#(\d+)>/g, (_, id) => {
+            const ch = (_cachedChannels||[]).find(c => c.id === id);
+            return ch ? `#${ch.name}` : '#channel';
+          });
           // Check if line starts with FROM pattern — make it stand out
-          if(line.startsWith('FROM ')) {
+          if(displayLine.startsWith('FROM ')) {
             ctx.fillStyle = `rgba(${acRgb.join(',')},0.9)`;
             ctx.font = '700 11px "DM Mono","Courier New",monospace';
-            ctx.fillText(line, TX, ty);
+            ctx.fillText(displayLine, TX, ty);
             ctx.font = '12px "Outfit",sans-serif';
           } else {
             ctx.fillStyle = 'rgba(215,235,225,0.88)';
-            ctx.fillText(line, TX, ty);
+            ctx.fillText(displayLine, TX, ty);
           }
           ty += lh;
         }

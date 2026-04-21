@@ -291,6 +291,30 @@ function populateChannelDropdowns(channels) {
     });
     if (currentVal) el.value = currentVal;
   });
+
+  // Populate the welcome card description channel-mention picker
+  const descPick = document.getElementById('welcome-desc-ch-pick');
+  if (descPick) {
+    descPick.innerHTML = '<option value="">— Pick a channel to insert —</option>';
+    const textChs = channels.filter(c => c.type === 0 || c.type == null);
+    const cats2 = {};
+    textChs.forEach(ch => {
+      const cat = ch.category || 'Uncategorized';
+      if (!cats2[cat]) cats2[cat] = [];
+      cats2[cat].push(ch);
+    });
+    Object.entries(cats2).forEach(([cat, chs]) => {
+      const grp = document.createElement('optgroup');
+      grp.label = cat;
+      chs.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.id;
+        opt.textContent = '# ' + ch.name;
+        grp.appendChild(opt);
+      });
+      descPick.appendChild(grp);
+    });
+  }
 }
 
 // Re-populate dropdowns after settings are loaded (so saved values are selected)
